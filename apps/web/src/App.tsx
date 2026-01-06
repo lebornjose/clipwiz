@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Layout, Button, Upload, Space, message } from 'antd'
-import { UploadOutlined, PlayCircleOutlined, ScissorOutlined } from '@ant-design/icons'
+import { Layout, Button, message } from 'antd'
+import { UploadOutlined, PlayCircleOutlined, ScissorOutlined, DownloadOutlined } from '@ant-design/icons'
 import type { UploadProps } from 'antd'
+import LeftCon from './components/leftCon'
 import './App.css'
 
 const { Header, Content, Sider } = Layout
@@ -33,39 +34,20 @@ function App() {
         display: 'flex',
         alignItems: 'center'
       }}>
-        <ScissorOutlined style={{ marginRight: '12px' }} />
-        ClipWiz 视频编辑器
+        <div className='header-left'>
+          <ScissorOutlined style={{ marginRight: '12px' }} />
+          ClipWiz 视频编辑器
+        </div>
+
+        <div className='header-right'>
+          <Button icon={<DownloadOutlined />} type="primary" size="small">
+            导出视频
+          </Button>
+        </div>
       </Header>
 
-      <Layout>
-        <Sider width={250} style={{ background: '#fff', padding: '20px' }}>
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <Upload {...uploadProps}>
-              <Button icon={<UploadOutlined />} block>
-                上传视频
-              </Button>
-            </Upload>
-
-            <Button icon={<PlayCircleOutlined />} block disabled={!videoUrl}>
-              预览
-            </Button>
-
-            <Button type="primary" block disabled={!videoUrl}>
-              导出视频
-            </Button>
-          </Space>
-
-          <div style={{ marginTop: '30px' }}>
-            <h3>工具栏</h3>
-            <Space direction="vertical" style={{ width: '100%' }}>
-              <Button block>裁剪</Button>
-              <Button block>分割</Button>
-              <Button block>添加文字</Button>
-              <Button block>添加滤镜</Button>
-              <Button block>添加音频</Button>
-            </Space>
-          </div>
-        </Sider>
+      <Layout className='app-layout'>
+        <LeftCon />
 
         <Content style={{ padding: '24px', background: '#f0f2f5' }}>
           <div style={{
@@ -88,24 +70,6 @@ function App() {
                 <p>请上传视频文件开始编辑</p>
               </div>
             )}
-          </div>
-
-          <div style={{
-            marginTop: '24px',
-            background: '#fff',
-            padding: '20px',
-            borderRadius: '8px',
-            minHeight: '150px'
-          }}>
-            <h3>时间轴</h3>
-            <div style={{
-              border: '2px dashed #d9d9d9',
-              padding: '40px',
-              textAlign: 'center',
-              color: '#999'
-            }}>
-              时间轴编辑器（可使用 Fabric.js 或其他库实现）
-            </div>
           </div>
         </Content>
       </Layout>

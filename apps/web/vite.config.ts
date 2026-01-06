@@ -11,6 +11,7 @@ export default defineConfig({
     },
   },
   server: {
+    host: '0.0.0.0', // 监听所有地址，支持 localhost、127.0.0.1 和局域网访问
     port: 3000,
     proxy: {
       '/api': {

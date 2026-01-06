@@ -1,0 +1,40 @@
+
+.material-con{
+
+  .material-list{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    .material-list-item{
+      position: relative;
+      padding: 5px;
+      .ant-tag{
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: rgba(0, 0, 0, 0.5); // 半透明黑色背景
+        color: #fff; // 白色文字
+        border: none; // 移除边框
+        backdrop-filter: blur(4px); // 背景模糊效果（可选）
+      }
+      .material-list-item-img{
+        width: 140px;
+        height: 140px;
+        border-radius: 8px;
+        img{
+          width: 100%;
+          object-fit: cover;
+          height: 100%;
+          border-radius: 8px;
+        }
+      }
+      .material-list-item-name{
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-top: 10px;
+      }
+    }
+  }
+}
