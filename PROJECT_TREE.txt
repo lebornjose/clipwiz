@@ -1,0 +1,124 @@
+ClipWiz 项目结构树
+==================
+
+clipWiz/
+│
+├── 📄 配置文件
+│   ├── package.json                 # 根 package.json，定义 workspace 脚本
+│   ├── pnpm-workspace.yaml          # pnpm workspace 配置
+│   ├── tsconfig.json                # TypeScript 基础配置
+│   ├── .gitignore                   # Git 忽略规则
+│   ├── .editorconfig                # 编辑器配置
+│   └── .cursorignore                # Cursor 忽略规则
+│
+├── 📚 文档
+│   ├── README.md                    # 项目总览（主文档，含徽章）
+│   ├── GETTING_STARTED.md           # 快速开始指南
+│   ├── ARCHITECTURE.md              # 架构说明文档
+│   ├── PROJECT_SUMMARY.md           # 项目总结
+│   ├── DELIVERY.md                  # 项目交付文档
+│   ├── CONTRIBUTING.md              # 贡献指南
+│   ├── CHANGELOG.md                 # 更新日志
+│   └── LICENSE                      # MIT 许可证
+│
+├── 🔧 scripts/                      # 工具脚本目录
+│   ├── setup.sh                     # 项目初始化脚本
+│   ├── clean.sh                     # 清理脚本
+│   └── check-env.sh                 # 环境检查脚本 ✨
+│
+├── 🌐 apps/web/                     # Web 视频编辑器
+│   ├── package.json                 # Web 项目配置
+│   ├── tsconfig.json                # Web TypeScript 配置
+│   ├── tsconfig.node.json           # Node 环境 TS 配置
+│   ├── vite.config.ts               # Vite 构建配置（含代理）
+│   ├── index.html                   # HTML 入口
+│   ├── README.md                    # Web 项目文档
+│   │
+│   └── src/                         # 源代码
+│       ├── main.tsx                 # React 应用入口
+│       ├── App.tsx                  # 主应用组件（含 UI 布局）
+│       ├── App.css                  # 应用样式
+│       └── index.css                # 全局样式
+│
+├── 🖥️  apps/server/                 # 后端合成服务
+│   ├── package.json                 # Server 项目配置
+│   ├── tsconfig.json                # Server TypeScript 配置
+│   ├── .env                         # 环境变量配置 ✅
+│   ├── .env.example                 # 环境变量模板
+│   ├── README.md                    # Server 项目文档
+│   │
+│   └── src/                         # 源代码
+│       ├── index.ts                 # Express 服务器入口
+│       │
+│       ├── routes/                  # API 路由
+│       │   ├── upload.ts            # 文件上传路由
+│       │   ├── video.ts             # 视频处理路由
+│       │   └── job.ts               # 任务管理路由
+│       │
+│       ├── services/                # 业务逻辑
+│       │   ├── queue.ts             # Bull 任务队列
+│       │   └── videoProcessor.ts    # FFmpeg 视频处理器
+│       │
+│       └── middleware/              # 中间件
+│           └── errorHandler.ts      # 错误处理中间件
+│
+└── 📦 packages/shared/              # 共享代码库
+    ├── package.json                 # Shared 项目配置
+    ├── tsconfig.json                # Shared TypeScript 配置
+    ├── README.md                    # Shared 项目文档
+    │
+    └── src/                         # 源代码
+        ├── index.ts                 # 统一导出入口
+        ├── types.ts                 # TypeScript 类型定义
+        ├── utils.ts                 # 工具函数库
+        └── constants.ts             # 常量定义
+
+
+项目统计
+========
+- 总文件数: 59
+- 源代码文件: 22 (.ts/.tsx)
+- 文档文件: 10 (.md)
+- 配置文件: 10+
+- 子项目: 3 (web, server, shared)
+
+
+技术栈
+======
+前端: React 18 + TypeScript + Vite + Ant Design
+后端: Node.js + Express + TypeScript + FFmpeg + Bull + Redis
+工具: pnpm + ESLint
+
+
+核心功能
+========
+✅ 视频上传管理
+✅ 视频裁剪、合并
+✅ 添加水印
+✅ 视频转码
+✅ 任务队列系统
+✅ 进度追踪
+
+
+API 端点
+========
+POST   /api/upload              上传单个视频
+POST   /api/upload/multiple     上传多个视频
+GET    /api/video/info/:fileId  获取视频信息
+POST   /api/video/trim          裁剪视频
+POST   /api/video/merge         合并视频
+POST   /api/video/watermark     添加水印
+POST   /api/video/transcode     转码视频
+GET    /api/job/:jobId          获取任务状态
+GET    /api/job                 获取任务列表
+DELETE /api/job/:jobId          取消任务
+
+
+项目状态
+========
+🟢 Ready for Development
+✅ 基础框架完成
+✅ 依赖已安装
+✅ 文档完整
+⚠️  需要安装 Redis（可选，用于任务队列）
+
