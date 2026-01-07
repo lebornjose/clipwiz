@@ -1,0 +1,22 @@
+{
+  "name": "@clipwiz/video-render",
+  "version": "0.0.1",
+  "description": "ClipWiz Video Editor",
+  "author": "",
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "keywords": [],
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "peerDependencies": {
+    "eventemitter3": "^3.1.0"
+  },
+  "dependencies": {
+    "@van-gogh/video-render-editor-v2": "workspace:*"
+  }
+}
