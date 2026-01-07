@@ -3,6 +3,7 @@ import { Layout, Button, message } from 'antd'
 import { UploadOutlined, PlayCircleOutlined, ScissorOutlined, DownloadOutlined } from '@ant-design/icons'
 import type { UploadProps } from 'antd'
 import LeftCon from './components/leftCon'
+import TimeLine from './components/timeLine'
 import './App.css'
 
 const { Header, Content, Sider } = Layout
@@ -73,6 +74,7 @@ function App() {
           </div>
         </Content>
       </Layout>
+      <TimeLine />
     </Layout>
   )
 }

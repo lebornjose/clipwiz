@@ -1,6 +1,0 @@
-{
-  "extends": "@mogic",
-  "rules": {
-    "@typescript-eslint/no-floating-promises": "off"
-  }
-}
