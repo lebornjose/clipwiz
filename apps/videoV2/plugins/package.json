@@ -1,0 +1,31 @@
+{
+  "name": "@van-gogh/video-editor-plugins-v2",
+  "version": "0.0.1",
+  "description": "",
+  "author": "jose",
+  "license": "ISC",
+  "keywords": [],
+  "main": "./src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "peerDependencies": {
+    "@van-gogh/ui": "workspace:*",
+    "vue": "^3.2.47"
+  },
+  "dependencies": {
+    "@livingdocs/editable.js": "^3.1.7",
+    "@van-gogh/hooks": "workspace:*",
+    "@van-gogh/utils": "workspace:*",
+    "@van-gogh/video-editor": "workspace:*",
+    "@van-gogh/video-editor-shared": "workspace:*",
+    "@van-gogh/video-render": "workspace:*",
+    "@van-gogh/video-render-v2": "workspace:*",
+    "@van-gogh/video-editor-plugins": "workspace:*",
+    "eventemitter3": "^5.0.0"
+  },
+  "devDependencies": {
+    "@van-gogh/ui": "workspace:*",
+    "vue": "^3.2.47"
+  }
+}
