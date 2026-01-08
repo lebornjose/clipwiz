@@ -86,8 +86,8 @@ clipWiz/
 - **构建工具**: Vite 5
 - **UI 组件**: Ant Design
 - **状态管理**: Zustand (规划中)
-- **画布操作**: Fabric.js (规划中)
-- **视频播放**: Video.js (规划中)
+- **视频播放**: webgl
+- **视频轨道**: react-timeline-editor
 
 ### 后端
 - **运行时**: Node.js 18+
