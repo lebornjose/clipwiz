@@ -15,10 +15,19 @@ const TimeLine = () => {
           width: '100%',
           height: '600px',
         }}
+        scale={1}
+        scaleSplitCount={25} // 25 帧视频
         editorData={editorData}
         effects={mockEffect}
         onChange={(data) => {
           setEditorData(data as CustomTimelineAction[]);
+        }}
+        getActionRender={(action, row) => {
+          if(action.effectId === 'effect0') {
+            return <div>播放音效</div>
+          } else if(action.effectId === 'effect1') {
+            return <div>播放视频</div>
+          }
         }}
       />
     </div>
