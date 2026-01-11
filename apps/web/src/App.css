@@ -8,6 +8,14 @@ Header{
   align-items: center;
 }
 
+.video-player-container{
+  background-color: #000;
+  width: 640px;
+  height: 360px;
+  margin: 0 auto;
+  border-radius: 8px;
+}
+
 .app-layout{
   display: flex;
   flex-direction: row;

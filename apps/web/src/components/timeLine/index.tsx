@@ -24,9 +24,13 @@ const TimeLine = () => {
         }}
         getActionRender={(action, row) => {
           if(action.effectId === 'effect0') {
-            return <div>播放音效</div>
+            return (
+              <div className='effect-item-video'>播放视频</div>
+            )
           } else if(action.effectId === 'effect1') {
-            return <div>播放视频</div>
+            return (
+              <div className='effect-item-audio'>播放音效</div>
+            )
           }
         }}
       />
