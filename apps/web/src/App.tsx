@@ -4,6 +4,7 @@ import { UploadOutlined, PlayCircleOutlined, ScissorOutlined, DownloadOutlined }
 import type { UploadProps } from 'antd'
 import LeftCon from './components/leftCon'
 import TimeLine from './components/timeLine'
+import VideoPlayer from './components/videoPlayer'
 import './App.css'
 
 const { Header, Content, Sider } = Layout
@@ -50,29 +51,7 @@ function App() {
       <Layout className='app-layout'>
         <LeftCon />
 
-        <Content style={{ padding: '24px', background: '#f0f2f5' }}>
-          <div style={{
-            background: '#000',
-            minHeight: '400px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '8px'
-          }}>
-            {videoUrl ? (
-              <video
-                src={videoUrl}
-                controls
-                style={{ maxWidth: '100%', maxHeight: '400px' }}
-              />
-            ) : (
-              <div style={{ color: '#666', textAlign: 'center' }}>
-                <UploadOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
-                <p>请上传视频文件开始编辑</p>
-              </div>
-            )}
-          </div>
-        </Content>
+        <VideoPlayer />
       </Layout>
       <TimeLine />
     </Layout>
