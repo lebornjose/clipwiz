@@ -152,6 +152,16 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
+  packages/videoPlayer:
+    dependencies:
+      '@clipwiz/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
 packages:
 
   '@ant-design/colors@7.2.1':

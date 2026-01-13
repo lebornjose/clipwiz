@@ -8,6 +8,12 @@ build/
 out/
 .next/
 
+# TypeScript compiled files in src directories
+# Only allow .js in dist/ folders
+**/src/**/*.js
+**/src/**/*.js.map
+*.tsbuildinfo
+
 # Environment files
 .env
 .env.local
