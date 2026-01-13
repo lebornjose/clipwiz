@@ -11,6 +11,7 @@
     "build:web": "pnpm --filter @clipwiz/web build",
     "build:server": "pnpm --filter @clipwiz/server build",
     "clean": "pnpm -r clean && rm -rf node_modules",
+    "clean:compiled": "./scripts/clean-compiled.sh",
     "lint": "pnpm -r lint",
     "type-check": "pnpm -r type-check"
   },
