@@ -1,3 +1,4 @@
+import { MATERIAL_TYPE } from "./enum"
 
 
 export interface TrackItem {
@@ -7,6 +8,73 @@ export interface TrackItem {
   startTime: number // 开始时间(相对于整个视频的时间)
   endTime: number // 结束时间(相对于整个视频的时间)
   hide: boolean // 是否隐藏
+}
+
+export const STATE = Object.freeze({
+  PLAYING: 0,
+  PAUSED: 1,
+  STALLED: 2,
+  ENDED: 3,
+  BROKEN: 4,
+})
+
+export class DestinationNode {
+  // todo
+}
+export interface INode {
+  element: HTMLImageElement
+  id: string
+  trackId: string
+  title?: string
+  hide: boolean
+  fromTime: number
+  toTime?: number
+  startTime: number
+  stopTime: number
+  _currentTime: number
+  _elementType: string
+  _startTime: number
+  _stopTime: number
+  materialId: string
+  type: string
+  url?: string
+  useType?: string
+  format: string
+  duration: number
+  start: (startTime: number) => void
+  stop: (endTime: number) => void
+  // pipParams: IPipParams
+  // destination(): DestinationNode
+  registerCallback(type: string, func: Function): void
+  unregisterCallback(func: Function): void
+  connect(targetNode: DestinationNode): boolean
+  volume: number
+  playbackRate: number // 倍速
+  elementURL: string
+  total?: number
+  offset?: number
+  sourceOffset?: number
+  sound?: number
+  destroy: Function
+  imageData?: ImageData
+  transitionData: {
+    in: ImageData
+    out: ImageData
+  }
+}
+
+
+export interface IVideoNode extends INode {
+  playbackRate: number
+  sound: number
+  soundtrack: number
+  total: number
+  muted: boolean
+  metaData: IVideoTrackItem
+  addTransition: Function
+  removeTransition: Function
+  // commonEffects?: CommonEffects[]
+  _elementURL: string
 }
 
 
@@ -19,7 +87,7 @@ export interface Transform {
 
 export interface IVideoTrackItem extends TrackItem {
   segmentId?: string // 片段ID
-  format: 'video' | 'image'
+  format:  MATERIAL_TYPE.VIDEO | MATERIAL_TYPE.IMAGE
   title?: string // 素材名称
   duration: number // 视频时长
   fromTime: number // 起始时间(相对于素材的时间)
