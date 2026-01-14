@@ -1,4 +1,4 @@
-import { IAudioNode, IPhotoNode, IVideoNode } from "@van-gogh/video-render-constants";
+import { IAudioNode, IPhotoNode, IVideoNode } from "@clipwiz/shared";
 
 export type SourceElement =
     | HTMLCanvasElement

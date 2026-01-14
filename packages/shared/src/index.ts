@@ -9,3 +9,6 @@ export * from './constants'
 
 // 导出视频相关类型
 export * from './video'
+
+// 导出枚举
+export * from './enum'

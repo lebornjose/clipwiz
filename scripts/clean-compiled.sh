@@ -16,3 +16,5 @@ echo ""
 echo "提示：这些文件是 TypeScript 编译产物，不应该在源代码目录中。"
 echo "它们应该只存在于 dist/ 目录中。"
 
+
+
