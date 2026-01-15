@@ -1,11 +1,11 @@
-import type {IVideoTrackItem, IVideoNode, DestinationNode, STATE } from '@clipwiz/shared'
-import { MATERIAL_TYPE, TIME_CONFIG } from '@clipwiz/shared'
+import type {IVideoTrackItem, IVideoNode, DestinationNode } from '@clipwiz/shared'
+import { MATERIAL_TYPE, TIME_CONFIG, STATE } from '@clipwiz/shared'
 import { Editor } from '../index'
 import { convertEndTime } from '../utils'
 
 
-let videoWaiting = 0 // 上报视频因为加载导致的loading 时间
-let videoSeekTime = 0 //  上报视频seek到可播放的时间
+// let videoWaiting = 0 // 上报视频因为加载导致的loading 时间
+// let videoSeekTime = 0 //  上报视频seek到可播放的时间
 
 export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackItem) => {
   let videoNode: IVideoNode
@@ -29,9 +29,6 @@ export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackI
     // const stopTime:number = item.startTime + (item.duration / item.playRate)
     // 计算出视频可以播放出的总长度
     let videoTotal = (item.toTime - item.fromTime)
-    if (item.segmentEndTime) {
-      videoTotal = (item.segmentEndTime - item.fromTime)
-    }
     const endTime: number = Math.min(Math.ceil(videoTotal / item.playRate + item.startTime), item.endTime)
     const stopTime = convertEndTime(endTime, editor.totalTime)
     videoNode.stop(stopTime / TIME_CONFIG.MILL_TIME_CONVERSION)
@@ -48,29 +45,16 @@ export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackI
   videoNode.type = MATERIAL_TYPE.VIDEO
   videoNode.trackId = trackId
   videoNode.connect(editor.videoCtx.destination as DestinationNode)
+  // videoNode.registerCallback('waiting', () => {
+  //   if (editor.videoCtx.state !== STATE.PLAYING) {
+  //     return
+  //   }
 
-  videoNode.registerCallback('waiting', () => {
-    if (editor.videoCtx.state !== STATE.PLAYING) {
-      return
-    }
-    videoWaiting = performance.now()
-    editor.isWaiting = true
-    editor.videoCtx.pause()
-    // editor.setState({ loading: true })
-  })
-  videoNode.registerCallback('ended', () => {
-    if (editor.currentTime <= editor.videoCtx.duration) {
-      // 视频ended事件删除后，下一帧还没有马上渲染出来，放在下一帧隐藏
-      // TODO 如果有相交转场的话，则不能添加requestAnimationFrame， 因为在下一帧删除画面，因为有转场效果，导致这张画面会被展示出来，出现闪烁的问题
-      // if (videoNode?.pipParams?.transitionIn?.format === TRANSITION_TYPE.SUPERPOSE) {
-      //   editor.movie?.renderer?.displayLayer(videoNode.id, false)
-      // } else {
-      // requestAnimationFrame(() => {
-      //   editor.movie?.renderer?.displayLayer(videoNode.id, false)
-      // })
-      // }
-    }
-  })
+  //   // videoWaiting = performance.now()
+  //   editor.isWaiting = true
+  //   editor.videoCtx.pause()
+  //   // editor.setState({ loading: true })
+  // })
   videoNode.registerCallback('loaded', () => {
     if (editor.currentTime >= videoNode.startTime && editor.currentTime <= videoNode.stopTime) {
       if (editor.isWaiting) {

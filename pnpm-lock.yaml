@@ -84,6 +84,9 @@ importers:
       '@clipwiz/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@clipwiz/videoPlayer':
+        specifier: workspace:*
+        version: link:../../packages/videoPlayer
       antd:
         specifier: ^5.12.5
         version: 5.29.3(luxon@3.7.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
