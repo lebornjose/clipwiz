@@ -13,7 +13,7 @@ const TimeLine = () => {
         autoScroll={true}
         style={{
           width: '100%',
-          height: '600px',
+          height: '500px',
         }}
         scale={1}
         scaleSplitCount={25} // 25 帧视频
