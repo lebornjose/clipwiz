@@ -1,5 +1,5 @@
 import type {IVideoTrackItem, IVideoNode, DestinationNode } from '@clipwiz/shared'
-import { MATERIAL_TYPE, TIME_CONFIG, STATE } from '@clipwiz/shared'
+import { MATERIAL_TYPE, TIME_CONFIG } from '@clipwiz/shared'
 import { Editor } from '../index'
 import { convertEndTime } from '../utils'
 
@@ -56,7 +56,7 @@ export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackI
   //   // editor.setState({ loading: true })
   // })
   videoNode.registerCallback('loaded', () => {
-    if (editor.currentTime >= videoNode.startTime && editor.currentTime <= videoNode.stopTime) {
+    if (editor.videoCtx.currentTime >= videoNode.startTime && editor.videoCtx.currentTime <= videoNode.stopTime) {
       if (editor.isWaiting) {
         editor.isWaiting = false
         editor.setState({ loading: false })

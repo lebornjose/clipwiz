@@ -78,6 +78,8 @@ clipWiz/
 ├── pnpm-workspace.yaml   # Workspace 配置
 └── package.json
 ```
+## 截图
+[1.png]
 
 ## 🛠️ 技术栈
 

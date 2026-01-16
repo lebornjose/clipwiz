@@ -2,6 +2,7 @@
 import VideoContext from './videocontext.js'
 import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, STATE } from '@clipwiz/shared'
 import { addVideoNode } from './components/video'
+import { addBgm } from './components/audio'
 
 export interface IApplicationOptions {
   canvas: HTMLCanvasElement
@@ -15,7 +16,7 @@ export class Editor {
   public isWaiting: boolean // 是否在视频加载中，该状态不允许播放
   public totalTime: number // 总时长
   public videoTrack: ITrack[]
-  public currentTime: number // 当前时间
+  // public currentTime: number // 当前时间
   public setState: (state: object) => void
   public setProgress: (time: number) => void
   public addNodeFunc: {
@@ -27,11 +28,12 @@ export class Editor {
     this.isWaiting = false
     this.totalTime = options.trackInfo.duration
     this.videoTrack = options.trackInfo.tracks
-    this.currentTime = 0
+    // this.currentTime = 0
     this.setState = options.setState
     this.setProgress = options.setProgress
     this.addNodeFunc = {
-      [MATERIAL_TYPE.VIDEO]: addVideoNode
+      [MATERIAL_TYPE.VIDEO]: addVideoNode,
+      [MATERIAL_TYPE.BGM_AUDIO]: addBgm
     }
     console.log(this.videoCtx)
     this.init()
@@ -39,7 +41,6 @@ export class Editor {
 
     // 设置时间
     setProcess(val: number) {
-      debugger
       if (this.videoCtx.state === STATE.PLAYING) {
         // this.isPlayingWaiting = true
         this.videoCtx.pause()
@@ -78,6 +79,14 @@ export class Editor {
             }
           })
         }
+        if ([MATERIAL_TYPE.ORAL_AUDIO, MATERIAL_TYPE.BGM_AUDIO, MATERIAL_TYPE.VIDEO].includes(track.trackType as MATERIAL_TYPE)) {
+          track.children.forEach((child) => {
+            const c = child as IAudioTrackItem
+            if (c.volume === undefined) {
+              c.volume = c.muted ? 0 : 1 // 只有 volume 不存在的时候才设置默认值
+            }
+          })
+        }
         this.addNodeFunc[track.trackType](this, track.trackId, child)
       })
     }
@@ -89,7 +98,7 @@ export class Editor {
 
   start(){
     const toStart = async () => {
-      this.setProgress && this.setProgress(this.currentTime > this.videoCtx.duration ? this.videoCtx.duration : this.currentTime)
+      this.setProgress && this.setProgress(this.videoCtx.currentTime)
       // 因为在项目的开始，如果恰好遇到连续的2帧时间则会出现刚开始的出现黑屏
       if (this.videoCtx.state === STATE.PLAYING || this.videoCtx.state === STATE.STALLED) {
         requestAnimationFrame(toStart.bind(this))
@@ -104,9 +113,8 @@ export class Editor {
     }
     if (this.videoCtx.currentTime >= this.videoCtx.duration) {
       this.videoCtx.currentTime = 0
-      this.setProgress(0)
+      void this.setProgress(0)
     }
-    debugger
     this.videoCtx.play()
     this.start()
   }

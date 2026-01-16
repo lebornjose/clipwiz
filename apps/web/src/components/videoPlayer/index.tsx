@@ -42,11 +42,9 @@ const VideoPlayer = () => {
 
   // 播放/暂停
   const togglePlay = () => {
-    debugger
     if (!editorRef.current) return
 
     if (isPlaying) {
-      debugger
       editorRef.current.pause()
     } else {
       editorRef.current.play()
