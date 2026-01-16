@@ -77,6 +77,30 @@ export interface IVideoNode extends INode {
   _elementURL: string
 }
 
+export interface IAudioNode extends INode {
+  fadeIn: number
+  fadeOut: number
+  sound: number
+  volume: number
+  fadeTimer: NodeJS.Timeout | null
+  muted: boolean
+  playbackRate: number
+  fade: boolean
+  _startTime: number
+  _stopTime: number
+  endTime: number
+  startTime: number
+  duration: number
+  materialId: string
+  metaData: IAudioTrackItem
+  format: string
+  playRate?: number
+  audioSpeaker?: string
+  _attributes: {
+    volume: number
+  }
+}
+
 
 export interface Transform {
   translate: [number, number, number] // x, y ,z  例如：[0.5,0.5] 表示居中

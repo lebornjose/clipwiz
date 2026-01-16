@@ -171,7 +171,7 @@ declare class VideoContext {
   play(): void
   audio(url:string,fromTime:number,preload:number,options:{volume:number}): IAudioNode
   volume: number
-  _sourceNodes: []
+  _sourceNodes: any[]
   registerTimelineCallback(
     time: number,
     func: Function,
