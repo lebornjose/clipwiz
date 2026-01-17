@@ -1,5 +1,39 @@
 .time-line{
   width: 100%;
+  background-color: #191b1d;
+  display: flex;
+}
+.timeline-list{
+  width: 36px;
+  margin-top: 42px;
+  height: 100%;
+  // position: relative;
+  // left: 10px;
+  overflow: overlay;
+  .video-item{
+    height: 100px;
+  }
+  &-item {
+    color: #a8c1f8;
+    height: 32px;
+    padding: 2px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+
+    & .text {
+      color: #fff;
+      height: 28px;
+      width: 100%;
+      padding-left: 10px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      background-color: #333;
+    }
+  }
 }
 .effect-item-video{
   text-align: center;
