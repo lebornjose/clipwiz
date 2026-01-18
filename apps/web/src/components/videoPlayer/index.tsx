@@ -1,5 +1,5 @@
 import { Editor } from '@clipwiz/videoPlayer'
-import trackInfo from './mock'
+import trackInfo from '../../mock'
 import { useEffect, useRef, useState } from 'react'
 import VideoControls from './VideoControls'
 import './index.less'
