@@ -50,7 +50,6 @@ function App() {
 
       <Layout className='app-layout'>
         <LeftCon />
-
         <VideoPlayer />
       </Layout>
       <TimeLine />
