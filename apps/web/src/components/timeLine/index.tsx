@@ -1,18 +1,19 @@
 
 import { Timeline, TimelineRow, TimelineState } from '@xzdarcy/react-timeline-editor';
 import { VideoCameraOutlined, AudioOutlined } from '@ant-design/icons';
-import { MATERIAL_TYPE } from '@clipwiz/shared';
+import { MATERIAL_TYPE, IVideoTrackItem, IAudioTrackItem } from '@clipwiz/shared';
 import { convertTrackInfoToTimelineRow } from './convert';
 import './index.less';
 import { CustomTimelineAction } from './mock';
 import { mockData, mockEffect } from './mock';
 import { useRef, useState } from 'react';
 import trackInfo from '../../mock'
+import { VideoTrackImg } from './videoTrackImg';
 const TimeLine = () => {
   const timelineState = useRef<TimelineState | null>(null);
   const domRef = useRef<HTMLDivElement | null>(null);
   const listData = convertTrackInfoToTimelineRow(trackInfo);
-  const [editorData, setEditorData] = useState<TimelineRow[]>(listData);
+  const [editorData, setEditorData] = useState<CustomTimelineRow[]>(listData);
 
 
   return (
@@ -47,16 +48,19 @@ const TimeLine = () => {
         editorData={editorData}
         effects={mockEffect}
         onChange={(data) => {
-          setEditorData(data as CustomTimelineAction[]);
+          setEditorData(data as TimelineRow[]);
         }}
         getActionRender={(action, row) => {
+          const videoTrackItem = (action as CustomTimelineAction).data as IVideoTrackItem | IAudioTrackItem | null;
           if(action.effectId === MATERIAL_TYPE.VIDEO) {
             return (
-              <div className='effect-item-video'>播放视频</div>
+              <VideoTrackImg videoTrackItem={ videoTrackItem as unknown as IVideoTrackItem} />
             )
           } else if(action.effectId === MATERIAL_TYPE.BGM_AUDIO) {
             return (
-              <div className='effect-item-audio'>播放音效</div>
+              <div className='effect-item-audio'>{
+                videoTrackItem?.title
+              }</div>
             )
           }
         }}

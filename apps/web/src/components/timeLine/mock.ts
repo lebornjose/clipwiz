@@ -1,11 +1,16 @@
-import { TimelineRow, TimelineEffect } from '@xzdarcy/react-timeline-editor';
+import { TimelineRow, TimelineEffect, TimelineAction } from '@xzdarcy/react-timeline-editor';
+import { ITrack } from '@clipwiz/shared';
 
-interface CustomTimelineAction extends TimelineRow {
-  data: {
-    src: string;
-  };
+// 扩展 TimelineAction，在每个 action 中添加 data（可以是 null 或 IVideoTrackItem）
+interface CustomTimelineAction extends TimelineAction {
+  data: ITrack | null;
 }
-const mockData: CustomTimelineAction[] = [
+
+// 扩展 TimelineRow，使其 actions 使用自定义的 CustomTimelineAction
+interface CustomTimelineRow extends Omit<TimelineRow, 'actions'> {
+  actions: CustomTimelineAction[];
+}
+const mockData: CustomTimelineRow[] = [
   {
     id: '1',
     actions: [
@@ -15,13 +20,11 @@ const mockData: CustomTimelineAction[] = [
           start: 0,
           end: 10,
           selected: true,
-          movable: true
+          movable: true,
+          data: null  // ✅ 可以是 null
        }
     ],
     rowHeight: 100, // 自定义行高
-    data: {
-      src: 'xxxx',
-    }
   },
   {
     id: '2',
@@ -32,12 +35,10 @@ const mockData: CustomTimelineAction[] = [
           start: 3,
           end: 8,
           selected: true,
-          movable: true
+          movable: true,
+          data: null  // ✅ 也可以是具体的 IVideoTrackItem 对象
       }
     ],
-    data: {
-      src: 'xxxx',
-    }
   }
 ]
 
