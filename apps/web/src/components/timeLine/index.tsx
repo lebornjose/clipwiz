@@ -58,7 +58,9 @@ const TimeLine = () => {
             )
           } else if(action.effectId === MATERIAL_TYPE.BGM_AUDIO) {
             return (
-              <div className='effect-item-audio'>{
+              <div className='effect-item-audio'>
+                <AudioOutlined />
+                {
                 videoTrackItem?.title
               }</div>
             )
