@@ -171,8 +171,28 @@ export interface BgmAudioTrack {
   hide: boolean
 }
 
+export interface IPhotoTrackItem extends TrackItem {
+  format: 'png' | 'gif'
+  desc: string // 贴图描述
+  width: number // 贴图宽度
+  height: number // 贴图高度
+  transform?: Transform // 变换
+  duration: number // 素材时长
+  crop: {
+    x0: number
+    x1: number
+    y0: number
+    y1: number
+  }
+}
+export interface PhotoTrack {
+  trackType: 'photo' // 轨道类型
+  children: IPhotoTrackItem[] // 视频列表
+  trackId: string
+  hide: boolean
+}
 
-export type ITrack = (VideoTrack | BgmAudioTrack) // 轨道列表
+export type ITrack = (VideoTrack | BgmAudioTrack | PhotoTrack) // 轨道列表
 
 export interface ITrackInfo {
   width: number // 导出视频的宽度

@@ -1,4 +1,3 @@
-
 import { ITrackInfo, MATERIAL_TYPE } from '@clipwiz/shared'
 
 const trackInfo: ITrackInfo = {
@@ -6,6 +5,36 @@ const trackInfo: ITrackInfo = {
   height: 720,
   duration: 10000,
   tracks: [
+    {
+      hide: false,
+      trackId: "40128",
+      trackType: MATERIAL_TYPE.PHOTO,
+      children: [
+        {
+          id: "38",
+          url: "https://mogic-algo-data.oss-cn-hangzhou.aliyuncs.com/yuxiaopu/Dependencies/%E5%B0%8F%E7%B1%B3%E6%96%B0%E7%89%88%E7%AE%AD%E5%A4%B4.gif",
+          startTime: 0,
+          endTime: 10000,
+          hide: false,
+          format: "gif",
+          desc: "箭头",
+          width: 720, // ✅ 必需：贴图宽度
+          height: 1280, // ✅ 必需：贴图高度
+          duration: 10000,
+          crop: { // ✅ 必需：裁剪信息
+            x0: 0,
+            x1: 1,
+            y0: 0,
+            y1: 1,
+          },
+          transform: {
+            scale: [1, 1, 1],
+            rotate: [0, 0, 0],
+            translate: [0, 0, 0],
+          },
+        }
+      ]
+    },
     {
       hide: false,
       trackId: "40369",
