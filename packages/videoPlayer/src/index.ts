@@ -3,6 +3,7 @@ import VideoContext from './videocontext.js'
 import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, STATE } from '@clipwiz/shared'
 import { addVideoNode } from './components/video'
 import { addBgm } from './components/audio'
+import { addPhotoNode } from './components/photo'
 
 export interface IApplicationOptions {
   canvas: HTMLCanvasElement
@@ -33,7 +34,8 @@ export class Editor {
     this.setProgress = options.setProgress
     this.addNodeFunc = {
       [MATERIAL_TYPE.VIDEO]: addVideoNode,
-      [MATERIAL_TYPE.BGM_AUDIO]: addBgm
+      [MATERIAL_TYPE.BGM_AUDIO]: addBgm,
+      [MATERIAL_TYPE.PHOTO]: addPhotoNode
     }
     console.log(this.videoCtx)
     this.init()

@@ -1,6 +1,6 @@
 
 import { Timeline, TimelineRow, TimelineState } from '@xzdarcy/react-timeline-editor';
-import { VideoCameraOutlined, AudioOutlined } from '@ant-design/icons';
+import { VideoCameraOutlined, AudioOutlined, FileImageOutlined } from '@ant-design/icons';
 import { MATERIAL_TYPE, IVideoTrackItem, IAudioTrackItem } from '@clipwiz/shared';
 import { convertTrackInfoToTimelineRow } from './convert';
 import './index.less';
@@ -29,7 +29,7 @@ const TimeLine = () => {
         {
           trackInfo.tracks.map((item) => {
             return (
-              <div className={`timeline-list-item ${item.trackType === MATERIAL_TYPE.VIDEO ? 'video-item' : 'bgm-item'}`}>
+              <div key={item.trackId} className={`timeline-list-item ${item.trackType === MATERIAL_TYPE.VIDEO ? 'video-item' : 'bgm-item'}`}>
                 {item.trackType === MATERIAL_TYPE.VIDEO ? <VideoCameraOutlined /> : <AudioOutlined />}
               </div>
             )
@@ -54,15 +54,21 @@ const TimeLine = () => {
           const videoTrackItem = (action as CustomTimelineAction).data as IVideoTrackItem | IAudioTrackItem | null;
           if(action.effectId === MATERIAL_TYPE.VIDEO) {
             return (
-              <VideoTrackImg videoTrackItem={ videoTrackItem as unknown as IVideoTrackItem} />
+              <VideoTrackImg key={action.id} videoTrackItem={ videoTrackItem as unknown as IVideoTrackItem} />
             )
           } else if(action.effectId === MATERIAL_TYPE.BGM_AUDIO) {
             return (
-              <div className='effect-item-audio'>
+              <div key={action.id} className='effect-item-audio'>
                 <AudioOutlined />
                 {
                 videoTrackItem?.title
               }</div>
+            )
+          } else if(action.effectId === MATERIAL_TYPE.PHOTO) {
+            return (
+              <div key={action.id} className='effect-item-photo'>
+                <FileImageOutlined />
+              </div>
             )
           }
         }}
