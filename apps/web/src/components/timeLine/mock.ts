@@ -2,12 +2,12 @@ import { TimelineRow, TimelineEffect, TimelineAction } from '@xzdarcy/react-time
 import { ITrack } from '@clipwiz/shared';
 
 // 扩展 TimelineAction，在每个 action 中添加 data（可以是 null 或 IVideoTrackItem）
-interface CustomTimelineAction extends TimelineAction {
+export interface CustomTimelineAction extends TimelineAction {
   data: ITrack | null;
 }
 
 // 扩展 TimelineRow，使其 actions 使用自定义的 CustomTimelineAction
-interface CustomTimelineRow extends Omit<TimelineRow, 'actions'> {
+export interface CustomTimelineRow extends Omit<TimelineRow, 'actions'> {
   actions: CustomTimelineAction[];
 }
 const mockData: CustomTimelineRow[] = [
