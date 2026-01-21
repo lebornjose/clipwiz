@@ -1,14 +1,29 @@
 
-import { Timeline, TimelineRow, TimelineState } from '@xzdarcy/react-timeline-editor';
+import { Timeline, TimelineState } from '@xzdarcy/react-timeline-editor';
 import { VideoCameraOutlined, AudioOutlined, FileImageOutlined } from '@ant-design/icons';
-import { MATERIAL_TYPE, IVideoTrackItem, IAudioTrackItem } from '@clipwiz/shared';
+import { MATERIAL_TYPE, IVideoTrackItem, IAudioTrackItem, IPhotoTrackItem } from '@clipwiz/shared';
 import { convertTrackInfoToTimelineRow } from './convert';
 import './index.less';
-import { CustomTimelineAction } from './mock';
-import { mockData, mockEffect } from './mock';
+import { CustomTimelineAction, CustomTimelineRow } from './mock';
+import { mockEffect } from './mock';
 import { useRef, useState } from 'react';
 import trackInfo from '../../mock'
 import { VideoTrackImg } from './videoTrackImg';
+
+// 轨道类型到图标的映射
+const TRACK_TYPE_ICON_MAP: Record<string, React.ReactNode> = {
+  [MATERIAL_TYPE.VIDEO]: <VideoCameraOutlined />,
+  [MATERIAL_TYPE.BGM_AUDIO]: <AudioOutlined />,
+  [MATERIAL_TYPE.PHOTO]: <FileImageOutlined />,
+};
+
+// 轨道类型到样式类名的映射
+const TRACK_TYPE_CLASS_MAP: Record<string, string> = {
+  [MATERIAL_TYPE.VIDEO]: 'video-item',
+  [MATERIAL_TYPE.BGM_AUDIO]: 'bgm-item',
+  [MATERIAL_TYPE.PHOTO]: 'photo-item',
+} as const;
+
 const TimeLine = () => {
   const timelineState = useRef<TimelineState | null>(null);
   const domRef = useRef<HTMLDivElement | null>(null);
@@ -28,9 +43,13 @@ const TimeLine = () => {
       >
         {
           trackInfo.tracks.map((item) => {
+            const trackType = item.trackType as MATERIAL_TYPE;
             return (
-              <div key={item.trackId} className={`timeline-list-item ${item.trackType === MATERIAL_TYPE.VIDEO ? 'video-item' : 'bgm-item'}`}>
-                {item.trackType === MATERIAL_TYPE.VIDEO ? <VideoCameraOutlined /> : <AudioOutlined />}
+              <div
+                key={item.trackId}
+                className={`timeline-list-item ${TRACK_TYPE_CLASS_MAP[trackType as keyof typeof TRACK_TYPE_CLASS_MAP] || ''}`}
+              >
+                {TRACK_TYPE_ICON_MAP[trackType as keyof typeof TRACK_TYPE_ICON_MAP] || null}
               </div>
             )
           })
@@ -48,29 +67,32 @@ const TimeLine = () => {
         editorData={editorData}
         effects={mockEffect}
         onChange={(data) => {
-          setEditorData(data as TimelineRow[]);
+          setEditorData(data as CustomTimelineRow[]);
         }}
-        getActionRender={(action, row) => {
-          const videoTrackItem = (action as CustomTimelineAction).data as IVideoTrackItem | IAudioTrackItem | null;
-          if(action.effectId === MATERIAL_TYPE.VIDEO) {
-            return (
-              <VideoTrackImg key={action.id} videoTrackItem={ videoTrackItem as unknown as IVideoTrackItem} />
-            )
-          } else if(action.effectId === MATERIAL_TYPE.BGM_AUDIO) {
-            return (
+        getActionRender={(action) => {
+          const trackItem = (action as CustomTimelineAction).data as IVideoTrackItem | IAudioTrackItem | IPhotoTrackItem | null;
+          const effectId = action.effectId as string;
+
+          // 使用对象映射来渲染不同类型的轨道
+          const actionRenderers: Record<string, () => React.ReactNode> = {
+            [MATERIAL_TYPE.VIDEO]: () => (
+              <VideoTrackImg key={action.id} videoTrackItem={trackItem as IVideoTrackItem} />
+            ),
+            [MATERIAL_TYPE.BGM_AUDIO]: () => (
               <div key={action.id} className='effect-item-audio'>
                 <AudioOutlined />
-                {
-                videoTrackItem?.title
-              }</div>
-            )
-          } else if(action.effectId === MATERIAL_TYPE.PHOTO) {
-            return (
+                {(trackItem as IAudioTrackItem)?.title}
+              </div>
+            ),
+            [MATERIAL_TYPE.PHOTO]: () => (
               <div key={action.id} className='effect-item-photo'>
                 <FileImageOutlined />
+                {(trackItem as IPhotoTrackItem)?.desc || '图片'}
               </div>
-            )
-          }
+            ),
+          };
+
+          return actionRenderers[effectId]?.() || null;
         }}
       />
     </div>
