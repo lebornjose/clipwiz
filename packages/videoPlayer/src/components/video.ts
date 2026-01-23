@@ -35,7 +35,7 @@ export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackI
     videoNode.total = (endTime - item.startTime) / TIME_CONFIG.MILL_TIME_CONVERSION
     videoNode.muted = item.muted ?? true
   } else {
-    videoNode = editor.videoCtx.image(item.url)
+    videoNode = editor.videoCtx.image(item.url) as unknown as IVideoNode
     videoNode.start(item.startTime / TIME_CONFIG.MILL_TIME_CONVERSION)
     videoNode.stop(item.endTime / TIME_CONFIG.MILL_TIME_CONVERSION)
   }
