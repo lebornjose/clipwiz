@@ -77,6 +77,21 @@ export interface IVideoNode extends INode {
   _elementURL: string
 }
 
+export interface IPhotoNode extends INode {
+  url: string
+  format: MATERIAL_TYPE.GIF | MATERIAL_TYPE.IMAGE
+  duration: number
+  width: number
+  height: number
+  transform?: Transform
+  crop?: {
+    x0: number
+    x1: number
+    y0: number
+    y1: number
+  }
+}
+
 export interface IAudioNode extends INode {
   fadeIn: number
   fadeOut: number
@@ -172,7 +187,7 @@ export interface BgmAudioTrack {
 }
 
 export interface IPhotoTrackItem extends TrackItem {
-  format: 'png' | 'gif'
+  format: MATERIAL_TYPE.IMAGE | MATERIAL_TYPE.GIF
   desc: string // 贴图描述
   width: number // 贴图宽度
   height: number // 贴图高度
@@ -201,3 +216,5 @@ export interface ITrackInfo {
   fps?: number // 帧率
   tracks: ITrack[] // 轨道列表
 }
+
+export type ISourceNode = IVideoNode | IPhotoNode | IAudioNode

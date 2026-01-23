@@ -15,6 +15,7 @@ const trackInfo: ITrackInfo = {
           url: "https://mogic-algo-data.oss-cn-hangzhou.aliyuncs.com/yuxiaopu/Dependencies/%E5%B0%8F%E7%B1%B3%E6%96%B0%E7%89%88%E7%AE%AD%E5%A4%B4.gif",
           startTime: 0,
           endTime: 10000,
+          materialId: "38",
           hide: false,
           format: "gif",
           desc: "箭头",
