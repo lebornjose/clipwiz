@@ -12,11 +12,9 @@ export const addPhotoNode = (editor: Editor, trackId: string, item: IPhotoTrackI
     canvas.height = item.height
     canvas.style.width = item.width + 'px'
     canvas.style.height = item.height + 'px'
-   // 将图片画到这个canvas中
-   debugger
-    const ctx = canvas.getContext('2d')
-    ctx?.drawImage(editor.gifSources[`gifSources${item.materialId || item.id!}`].imageDecoder.tracks.selectedTrack.frame, 0, 0, item.width, item.height)
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     photoNode = editor.videoCtx.canvas(canvas);
+    photoNode.ctx = ctx;
     photoNode.url = item.url
   } else {
     photoNode = editor.videoCtx.image(item.url)

@@ -19,8 +19,8 @@ const trackInfo: ITrackInfo = {
           hide: false,
           format: "gif",
           desc: "箭头",
-          width: 720, // ✅ 必需：贴图宽度
-          height: 1280, // ✅ 必需：贴图高度
+          width: 1280, // ✅ 必需：贴图宽度
+          height: 720, // ✅ 必需：贴图高度
           duration: 10000,
           crop: { // ✅ 必需：裁剪信息
             x0: 0,

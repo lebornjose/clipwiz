@@ -82,8 +82,8 @@ const VideoPlayer = () => {
   const handleProgressChange = (value: number) => {
     if (!editorRef.current) return
     setCurrentTime(value)
-    // editorRef.current.seek(value)
-    editorRef.current.setProcess(value)
+    editorRef.current.seek(value)
+    // editorRef.current.setProcess(value)
   }
 
   // 全屏
