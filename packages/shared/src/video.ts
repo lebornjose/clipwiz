@@ -90,6 +90,7 @@ export interface IPhotoNode extends INode {
     y0: number
     y1: number
   }
+  ctx?: CanvasRenderingContext2D | null
 }
 
 export interface IAudioNode extends INode {

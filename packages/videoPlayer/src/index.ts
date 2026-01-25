@@ -4,6 +4,7 @@ import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, STATE, IPhotoTrackI
 import { addVideoNode } from './components/video'
 import { addBgm } from './components/audio'
 import { addPhotoNode } from './components/photo'
+import { getGifImage } from './components/getBufferImage'
 
 export interface IApplicationOptions {
   canvas: HTMLCanvasElement
@@ -23,6 +24,7 @@ export class Editor {
   // public currentTime: number // 当前时间
   public setState: (state: object) => void
   public setProgress: (time: number) => void
+  public gifCanvasEl: HTMLCanvasElement = document.createElement('canvas')
 
   public addNodeFunc: {
     [key: string]: Function
@@ -47,7 +49,7 @@ export class Editor {
     this.videoCtx = new VideoContext(options.canvas)
     this.isWaiting = false
     this.totalTime = options.trackInfo.duration
-    this.videoTrack = options.trackInfo.tracks
+    this.videoTrack = options.trackInfo.tracks.reverse()
 
     this.canvasHeight = options.trackInfo.height
     this.canvasWidth = options.trackInfo.width
@@ -130,29 +132,44 @@ export class Editor {
             }
           })
         }
-        this.addNodeFunc[track.trackType](this, track.trackId, child)
-
         if ((child as IPhotoTrackItem).format === MATERIAL_TYPE.GIF) {
           void this.loadPhoto(child as IPhotoTrackItem)
         }
+        this.addNodeFunc[track.trackType](this, track.trackId, child)
       })
     }
   }
 
   init() {
-    console.log(this.videoTrack)
     this.loadTrack()
   }
 
-  draw() {
+  async draw() {
+    const currentTime = this.videoCtx.currentTime
+    const sourceNodes = this.videoCtx._sourceNodes
+    const nodes = sourceNodes.filter((item) => {
+      return currentTime >= item.startTime && currentTime < item.stopTime && item._elementType !== 'audio' && item.type !== 'subtitle'
+    })
 
+    // 处理 GIF 动画帧更新
+    const gifUpdatePromises = nodes
+      .filter((item) => item.type === MATERIAL_TYPE.PHOTO && item.format === MATERIAL_TYPE.GIF)
+      .map(async (item) => {
+        const data = await getGifImage(this, item, this.gifCanvasEl)
+        if (data && item.ctx) {
+          item.ctx.putImageData(data, 0, 0)
+        }
+      })
+
+    // 等待所有 GIF 帧更新完成
+    await Promise.all(gifUpdatePromises)
   }
 
   start(){
     const toStart = async () => {
       this.setProgress && this.setProgress(this.videoCtx.currentTime)
       // 因为在项目的开始，如果恰好遇到连续的2帧时间则会出现刚开始的出现黑屏
-      this.draw()
+      await this.draw()
       if (this.videoCtx.state === STATE.PLAYING || this.videoCtx.state === STATE.STALLED) {
         requestAnimationFrame(toStart.bind(this))
       }
@@ -182,6 +199,7 @@ export class Editor {
   seek(time: number) {
     this.videoCtx.currentTime = time
     this.setProgress(time)
+    this.draw()
   }
 
   setVolume(volume: number) {
