@@ -7,6 +7,29 @@ const trackInfo: ITrackInfo = {
   tracks: [
     {
       hide: false,
+      trackId: "33434",
+      trackType: MATERIAL_TYPE.SUBTITLE,
+      children: [
+        {
+          id: "33434",
+          duration: 10000,
+          startTime: 0,
+          endTime: 10000,
+          text: "测试字幕",
+          format: MATERIAL_TYPE.SUBTITLE,
+          url: "https://mogic-algo-data.oss-cn-hangzhou.aliyuncs.com/yuxiaopu/Dependencies/%E5%B0%8F%E7%B1%B3%E7%99%BD%E5%AD%97%E9%BB%91%E6%8F%8F%E8%BE%B9.pag",
+          position: [360, 640 ],
+          fontFamily: "ZiZhiQuXiMaiTi",
+          strokeWidth: 6,
+          fontSize: 50,
+          strokeColor: [0,0,0],
+          color: [255, 255, 255],
+          hide: false,
+        }
+      ]
+    },
+    {
+      hide: false,
       trackId: "40128",
       trackType: MATERIAL_TYPE.PHOTO,
       children: [
@@ -17,7 +40,7 @@ const trackInfo: ITrackInfo = {
           endTime: 10000,
           materialId: "38",
           hide: false,
-          format: "gif",
+          format: MATERIAL_TYPE.GIF,
           desc: "箭头",
           width: 1280, // ✅ 必需：贴图宽度
           height: 720, // ✅ 必需：贴图高度

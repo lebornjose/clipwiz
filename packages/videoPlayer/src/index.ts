@@ -59,7 +59,8 @@ export class Editor {
     this.addNodeFunc = {
       [MATERIAL_TYPE.VIDEO]: addVideoNode,
       [MATERIAL_TYPE.BGM_AUDIO]: addBgm,
-      [MATERIAL_TYPE.PHOTO]: addPhotoNode
+      [MATERIAL_TYPE.PHOTO]: addPhotoNode,
+      [MATERIAL_TYPE.SUBTITLE]: () => {console.log('subtitle')}
     }
     this.init()
   }
