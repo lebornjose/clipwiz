@@ -27,4 +27,7 @@ export const addPhotoNode = (editor: Editor, trackId: string, item: IPhotoTrackI
   photoNode.start(item.startTime / TIME_CONFIG.MILL_TIME_CONVERSION)
   photoNode.stop(item.endTime / TIME_CONFIG.MILL_TIME_CONVERSION)
   photoNode.connect(editor.videoCtx.destination)
+  photoNode.registerCallback('loaded', () => {
+    editor.draw();
+  })
 }

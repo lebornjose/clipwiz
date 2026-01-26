@@ -4,7 +4,7 @@ import { MATERIAL_TYPE } from "./enum"
 export interface TrackItem {
   id: string // 唯一标识
   materialId?: string // 素材ID
-  url: string // 素材地址
+  url?: string // 素材地址（字幕等类型可能不需要）
   startTime: number // 开始时间(相对于整个视频的时间)
   endTime: number // 结束时间(相对于整个视频的时间)
   hide: boolean // 是否隐藏
@@ -158,7 +158,7 @@ export interface IVideoTrackItem extends TrackItem {
 }
 
 export interface VideoTrack {
-  trackType: string // 轨道类型
+  trackType: MATERIAL_TYPE.VIDEO // 轨道类型
   children: IVideoTrackItem[] // 视频列表
   trackId: string
   hide: boolean
@@ -181,7 +181,7 @@ export interface IAudioTrackItem extends TrackItem {
 }
 
 export interface BgmAudioTrack {
-  trackType: 'bgmAudio' // 轨道类型
+  trackType: MATERIAL_TYPE.BGM_AUDIO // 轨道类型
   children: IAudioTrackItem[] // 音频列表
   trackId: string
   hide: boolean
@@ -202,13 +202,31 @@ export interface IPhotoTrackItem extends TrackItem {
   }
 }
 export interface PhotoTrack {
-  trackType: 'photo' // 轨道类型
-  children: IPhotoTrackItem[] // 视频列表
+  trackType: MATERIAL_TYPE.PHOTO // 轨道类型
+  children: IPhotoTrackItem[] // 贴图列表
   trackId: string
   hide: boolean
 }
 
-export type ITrack = (VideoTrack | BgmAudioTrack | PhotoTrack) // 轨道列表
+export interface ISubtitleTrackItem extends TrackItem {
+  text: string // 字幕文本
+  format: MATERIAL_TYPE.SUBTITLE
+  position: [number, number] // 字幕位置
+  fontFamily: string // 字幕字体
+  strokeWidth: number // 字幕描边宽度
+  strokeColor: [number, number, number] // 字幕描边颜色
+  fontSize: number // 字幕字体大小
+  color: [number, number, number] // 字幕颜色
+  duration: number // 持续时间
+}
+export interface SubtitleTrack {
+  trackType: MATERIAL_TYPE.SUBTITLE // 轨道类型
+  children: ISubtitleTrackItem[] // 字幕列表
+  trackId: string
+  hide: boolean
+}
+
+export type ITrack = (VideoTrack | BgmAudioTrack | PhotoTrack | SubtitleTrack) // 轨道列表
 
 export interface ITrackInfo {
   width: number // 导出视频的宽度
