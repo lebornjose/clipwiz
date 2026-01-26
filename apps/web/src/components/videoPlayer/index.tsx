@@ -3,6 +3,7 @@ import trackInfo from '../../mock'
 import { useEffect, useRef, useState } from 'react'
 import VideoControls from './VideoControls'
 import './index.less'
+import { eventBus } from '../../utils'
 
 const VideoPlayer = () => {
   const editorRef = useRef<Editor | null>(null)
@@ -46,8 +47,10 @@ const VideoPlayer = () => {
 
     if (isPlaying) {
       editorRef.current.pause()
+      eventBus.emit('video:pause')
     } else {
       editorRef.current.play()
+      eventBus.emit('video:play')
     }
     setIsPlaying(!isPlaying)
   }

@@ -6,9 +6,10 @@ import { convertTrackInfoToTimelineRow } from './convert';
 import './index.less';
 import { CustomTimelineAction, CustomTimelineRow } from './mock';
 import { mockEffect } from './mock';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import trackInfo from '../../mock'
 import { VideoTrackImg } from './videoTrackImg';
+import { eventBus } from '../../utils';
 
 // 轨道类型到图标的映射
 const TRACK_TYPE_ICON_MAP: Record<string, React.ReactNode> = {
@@ -30,7 +31,15 @@ const TimeLine = () => {
   const listData = convertTrackInfoToTimelineRow(trackInfo);
   const [editorData, setEditorData] = useState<CustomTimelineRow[]>(listData);
 
-
+  useEffect(() => {
+    eventBus.on('video:pause', (time: number) => {
+      timelineState.current?.pause();
+    });
+    eventBus.on('video:play', (time: number) => {
+      timelineState.current?.setScrollTop(time);
+      timelineState.current?.play({ });
+    });
+  }, []);
   return (
     <div className="time-line">
       <div ref={domRef}
