@@ -15,9 +15,9 @@ export const addPhotoNode = (editor: Editor, trackId: string, item: IPhotoTrackI
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     photoNode = editor.videoCtx.canvas(canvas);
     photoNode.ctx = ctx;
-    photoNode.url = item.url
+    photoNode.url = item.url!
   } else {
-    photoNode = editor.videoCtx.image(item.url)
+    photoNode = editor.videoCtx.image(item.url!)
   }
   photoNode.id = item.id
   photoNode.trackId = trackId

@@ -5,6 +5,8 @@ import { addVideoNode } from './components/video'
 import { addBgm } from './components/audio'
 import { addPhotoNode } from './components/photo'
 import { getGifImage } from './components/getBufferImage'
+import Pag from './components/Pag.js'
+import { addSubtitleNode } from './components/subtitle.js'
 
 export interface IApplicationOptions {
   canvas: HTMLCanvasElement
@@ -25,6 +27,7 @@ export class Editor {
   public setState: (state: object) => void
   public setProgress: (time: number) => void
   public gifCanvasEl: HTMLCanvasElement = document.createElement('canvas')
+  public pag: Pag
 
   public addNodeFunc: {
     [key: string]: Function
@@ -56,11 +59,12 @@ export class Editor {
     // this.currentTime = 0
     this.setState = options.setState
     this.setProgress = options.setProgress
+    this.pag = new Pag();
     this.addNodeFunc = {
       [MATERIAL_TYPE.VIDEO]: addVideoNode,
       [MATERIAL_TYPE.BGM_AUDIO]: addBgm,
       [MATERIAL_TYPE.PHOTO]: addPhotoNode,
-      [MATERIAL_TYPE.SUBTITLE]: () => {console.log('subtitle')}
+      [MATERIAL_TYPE.SUBTITLE]: addSubtitleNode
     }
     this.init()
   }

@@ -17,7 +17,7 @@ export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackI
     // 这个bug 的起因是因为算法取出了完成的 pts_time 时间，某一帧的完整时间，因为后端因为在转化存储的流程中把小数都给丢了
     // 我也弄不明白为什么把丢的小数加上来成本就高了，高在哪里
     // 所有tl们集中讨论出的成本最小方案
-    videoNode = editor.videoCtx.video(item.url, (item.fromTime + 1) / 1000, 4, {
+    videoNode = editor.videoCtx.video(item.url!, (item.fromTime + 1) / 1000, 4, {
       volume: item.hide ? 0 : (item.volume || 0),
     })
     // TODO 如果为视频且为保留原生，则该视频volume 为0, 视频
@@ -35,7 +35,7 @@ export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackI
     videoNode.total = (endTime - item.startTime) / TIME_CONFIG.MILL_TIME_CONVERSION
     videoNode.muted = item.muted ?? true
   } else {
-    videoNode = editor.videoCtx.image(item.url) as unknown as IVideoNode
+    videoNode = editor.videoCtx.image(item.url!) as unknown as IVideoNode
     videoNode.start(item.startTime / TIME_CONFIG.MILL_TIME_CONVERSION)
     videoNode.stop(item.endTime / TIME_CONFIG.MILL_TIME_CONVERSION)
   }

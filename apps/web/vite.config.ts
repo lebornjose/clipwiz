@@ -20,5 +20,11 @@ export default defineConfig({
       },
     },
   },
+  // 优化 WASM 文件处理
+  optimizeDeps: {
+    exclude: ['libpag'],
+  },
+  // 配置资源处理
+  assetsInclude: ['**/*.wasm'],
 })
 
