@@ -90,8 +90,8 @@ clipWiz/
 - **状态管理**: Zustand (规划中)
 - **视频播放**: webgl
 - **视频轨道**: react-timeline-editor
-- **字幕花子**: paglib(https://github.com/Tencent/libpag/blob/main/web/README.zh_CN.md)
-
+- **字幕花子**: paglib(https://github.com/Tencent/libpag/blob/main/web/README.zh_CN.md  | https://pag.io/apis/web/modules/pag_text_layer.html)
+  
 ### 后端
 - **运行时**: Node.js 18+
 - **框架**: Express
