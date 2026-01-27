@@ -66,7 +66,7 @@ export const addAudio = (editor: Editor, trackId: string, item: IAudioTrackItem)
     return
   }
   const { prevNodeVolume } = getPervNextVolume(editor, item)
-  const audioNode = editor.videoCtx.audio(item.url, item.fromTime / 1000, 4, {
+  const audioNode = editor.videoCtx.audio(item.url!, item.fromTime / 1000, 4, {
     volume: item.fadeIn ? prevNodeVolume : (item.hide ? 0 : item.volume),
   })
   audioNode.id = item.id
