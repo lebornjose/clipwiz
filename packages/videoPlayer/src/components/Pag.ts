@@ -15,6 +15,7 @@ class PagNode {
     this.width = 1280
     this.height = 720
     this.pagCanvas = document.createElement('canvas')
+    this.pagCanvas.id = 'pag';
     this.pagUrl = url
     this.pagView = null
     this.pagFile = null
@@ -40,16 +41,13 @@ class PagNode {
 
       this.pagFile = await PAG.PAGFile.load(buffer);
 
-      const canvas = document.createElement('canvas')
-      canvas.width = this.pagFile.width();
-      canvas.height = this.pagFile.height();
-
-      this.pagView = await PAG.PAGView.init(this.pagFile, canvas);
+      this.pagView = await PAG.PAGView.init(this.pagFile, this.pagCanvas);
 
       // 初始化完成后查找文本图层
       this.findTextLayers(this.pagFile);
 
       this.isReady = true;
+      // document.body.append(canvas);
       console.log('PAG 初始化成功，找到文本图层数量:', this.textLayers.length);
     } catch (error) {
       console.error('PAG 初始化失败:', error);
