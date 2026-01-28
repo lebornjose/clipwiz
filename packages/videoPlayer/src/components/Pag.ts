@@ -15,6 +15,10 @@ class PagNode {
     this.width = 1280
     this.height = 720
     this.pagCanvas = document.createElement('canvas')
+    this.pagCanvas.width = this.width
+    this.pagCanvas.height = this.height
+    this.pagCanvas.style.width = this.width + 'px'
+    this.pagCanvas.style.height = this.height + 'px'
     this.pagCanvas.id = 'pag';
     this.pagUrl = url
     this.pagView = null
@@ -41,7 +45,11 @@ class PagNode {
 
       this.pagFile = await PAG.PAGFile.load(buffer);
 
+      this.pagCanvas.width = this.pagFile.width();
+      this.pagCanvas.height = this.pagFile.height();
+
       this.pagView = await PAG.PAGView.init(this.pagFile, this.pagCanvas);
+
 
       // 初始化完成后查找文本图层
       this.findTextLayers(this.pagFile);
