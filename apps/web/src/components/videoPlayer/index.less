@@ -1,55 +1,48 @@
 .video-player-container {
+  width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  // background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   padding: 20px;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 
   .video-wrapper {
     position: relative;
     width: 100%;
+    height: 100%;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
-    transition: transform 0.3s ease;
-
-    &:hover {
-      .video-controls {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    &:fullscreen {
-      border-radius: 0;
-      max-width: 100%;
-
-      .video-canvas {
-        width: 100vw;
-        height: 100vh;
-        object-fit: contain;
-      }
-    }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
   .video-canvas {
+    flex: 1;
     display: block;
-    width: 100%;
+    width: auto;
     height: auto;
+    max-width: 100%;
+    max-height: calc(100% - 100px); // 为控制条预留空间
+    object-fit: contain;
     background: #000;
+    
+    // 保持 16:9 宽高比的等比例缩放
+    aspect-ratio: 16 / 9;
   }
 
   .video-controls {
-    position: absolute;
+    position: relative;
     bottom: 0;
     left: 0;
     right: 0;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

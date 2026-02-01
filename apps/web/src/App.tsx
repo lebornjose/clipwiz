@@ -1,33 +1,82 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Layout, Button, message } from 'antd'
-import { UploadOutlined, PlayCircleOutlined, ScissorOutlined, DownloadOutlined } from '@ant-design/icons'
-import type { UploadProps } from 'antd'
+import { ScissorOutlined, DownloadOutlined } from '@ant-design/icons'
 import LeftCon from './components/leftCon'
 import TimeLine from './components/timeLine'
 import VideoPlayer from './components/videoPlayer'
 import './App.css'
 
-const { Header, Content, Sider } = Layout
+const { Header } = Layout
 
 function App() {
-  const [videoUrl, setVideoUrl] = useState<string>('')
+  const [timelineHeight, setTimelineHeight] = useState(300) // 默认时间轴高度
+  const [isDragging, setIsDragging] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const rafRef = useRef<number | null>(null)
 
-  const uploadProps: UploadProps = {
-    name: 'file',
-    action: '/api/upload',
-    accept: 'video/*',
-    onChange(info) {
-      if (info.file.status === 'done') {
-        message.success(`${info.file.name} 上传成功`)
-        setVideoUrl(info.file.response?.url || '')
-      } else if (info.file.status === 'error') {
-        message.error(`${info.file.name} 上传失败`)
-      }
-    },
+  // 处理拖动开始
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+    // 禁用文本选择
+    document.body.style.userSelect = 'none'
   }
 
+  // 处理拖动
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !containerRef.current) return
+
+      // 使用 requestAnimationFrame 优化性能
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+      }
+
+      rafRef.current = requestAnimationFrame(() => {
+        if (!containerRef.current) return
+
+        const containerRect = containerRef.current.getBoundingClientRect()
+        const bottomPosition = containerRect.bottom
+        const newHeight = bottomPosition - e.clientY
+        
+        // 限制最小和最大高度
+        const minHeight = 150
+        const maxHeight = containerRect.height - 300 // 预留至少 300px 给 VideoPlayer
+        
+        if (newHeight >= minHeight && newHeight <= maxHeight) {
+          setTimelineHeight(newHeight)
+        }
+      })
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+      // 恢复文本选择
+      document.body.style.userSelect = ''
+      // 清理 RAF
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+    }
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      // 清理 RAF
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [isDragging])
+
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh' }} ref={containerRef}>
       <Header style={{
         background: '#001529',
         color: '#fff',
@@ -48,11 +97,29 @@ function App() {
         </div>
       </Header>
 
-      <Layout className='app-layout'>
+      <Layout 
+        className={`app-layout ${isDragging ? 'dragging' : ''}`}
+        style={{ 
+          height: `calc(100vh - 64px - ${timelineHeight}px)`, // 减去 Header 高度和 TimeLine 高度
+          overflow: 'hidden'
+        }}
+      >
         <LeftCon />
         <VideoPlayer />
       </Layout>
-      <TimeLine />
+
+      {/* 可拖动的分隔条 */}
+      <div
+        className={`timeline-resizer ${isDragging ? 'dragging' : ''}`}
+        onMouseDown={handleMouseDown}
+      >
+        <div className="resizer-handle" />
+      </div>
+
+      {/* TimeLine 区域 */}
+      <div style={{ height: `${timelineHeight}px`, overflow: 'hidden' }}>
+        <TimeLine />
+      </div>
     </Layout>
   )
 }

@@ -7,7 +7,24 @@ const trackInfo: ITrackInfo = {
   tracks: [
     {
       hide: false,
-      trackId: "33434",
+      trackId: "398434",
+      trackType: MATERIAL_TYPE.TEXT,
+      children: [
+        {
+          id: "1769928697263",
+          duration: 1000,
+          startTime: 0,
+          endTime: 1000,
+          text: "爱的唯物主义",
+          format: MATERIAL_TYPE.TEXT,
+          hide: false,
+          url: "https://mogic-effect-test.oss-cn-hangzhou.aliyuncs.com/batch_fusion_demo/material/ou_355f85214d4976c3da7d96a8536f31a5/%E8%8A%B1%E5%AD%97pag/%E7%88%B1%E7%9A%84%E5%94%AF%E7%89%A9%E4%B8%BB%E4%B9%89pag.pag",
+        }
+      ]
+    },
+    {
+      hide: false,
+      trackId: "393234",
       trackType: MATERIAL_TYPE.SUBTITLE,
       children: [
         {

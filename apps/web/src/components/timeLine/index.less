@@ -1,13 +1,16 @@
 .time-line{
   width: 100%;
+  height: 100%;
   background-color: #191b1d;
   display: flex;
+  overflow: hidden;
 }
 .timeline-list{
   width: 36px;
   margin-top: 42px;
-  height: 100%;
-  overflow: overlay;
+  height: calc(100% - 42px);
+  overflow-y: auto;
+  overflow-x: hidden;
   .video-item{
     height: 100px;
   }
@@ -62,6 +65,15 @@
 .effect-item-subtitle{
   color: #fff;
   background-color: #f39c12; /* 橙黄色 - 代表字幕，醒目且易识别 */
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.effect-item-text{
+  color: #fff;
+  background-color: #3498db; /* 蓝色 - 代表文本 */
   padding: 4px 8px;
   border-radius: 4px;
   display: flex;

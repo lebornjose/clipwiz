@@ -64,7 +64,8 @@ export class Editor {
       [MATERIAL_TYPE.VIDEO]: addVideoNode,
       [MATERIAL_TYPE.BGM_AUDIO]: addBgm,
       [MATERIAL_TYPE.PHOTO]: addPhotoNode,
-      [MATERIAL_TYPE.SUBTITLE]: addSubtitleNode
+      [MATERIAL_TYPE.SUBTITLE]: addSubtitleNode,
+      [MATERIAL_TYPE.TEXT]: () => { },
     }
     this.init()
   }

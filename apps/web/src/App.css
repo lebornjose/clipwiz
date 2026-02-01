@@ -14,3 +14,49 @@ Header{
   padding: 24px;
   justify-content: space-between;
 }
+
+/* 禁用拖动时的过渡，避免闪烁 */
+.app-layout.dragging {
+  transition: none !important;
+}
+
+.app-layout.dragging * {
+  transition: none !important;
+}
+
+/* 可拖动的分隔条 */
+.timeline-resizer {
+  height: 8px;
+  background: #f0f0f0;
+  cursor: ns-resize;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.timeline-resizer:hover {
+  background: #d9d9d9;
+}
+
+.timeline-resizer.dragging {
+  background: #1890ff;
+}
+
+.resizer-handle {
+  width: 60px;
+  height: 4px;
+  background: #bfbfbf;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.timeline-resizer:hover .resizer-handle {
+  background: #8c8c8c;
+}
+
+.timeline-resizer.dragging .resizer-handle {
+  background: #fff;
+}

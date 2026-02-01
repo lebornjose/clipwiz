@@ -1,7 +1,7 @@
 
 import { Timeline, TimelineState } from '@xzdarcy/react-timeline-editor';
-import { VideoCameraOutlined, AudioOutlined, FileImageOutlined, FileTextOutlined } from '@ant-design/icons';
-import { MATERIAL_TYPE, IVideoTrackItem, IAudioTrackItem, IPhotoTrackItem, ISubtitleTrackItem } from '@clipwiz/shared';
+import { VideoCameraOutlined, AudioOutlined, FileImageOutlined, FileTextOutlined, FontSizeOutlined } from '@ant-design/icons';
+import { MATERIAL_TYPE, IVideoTrackItem, IAudioTrackItem, IPhotoTrackItem, ISubtitleTrackItem, ITextTrackItem } from '@clipwiz/shared';
 import { convertTrackInfoToTimelineRow } from './convert';
 import './index.less';
 import { CustomTimelineAction, CustomTimelineRow } from './mock';
@@ -17,6 +17,7 @@ const TRACK_TYPE_ICON_MAP: Record<string, React.ReactNode> = {
   [MATERIAL_TYPE.BGM_AUDIO]: <AudioOutlined />,
   [MATERIAL_TYPE.PHOTO]: <FileImageOutlined />,
   [MATERIAL_TYPE.SUBTITLE]: <FileTextOutlined />,
+  [MATERIAL_TYPE.TEXT]: <FontSizeOutlined />,
 };
 
 // 轨道类型到样式类名的映射
@@ -25,6 +26,7 @@ const TRACK_TYPE_CLASS_MAP: Record<string, string> = {
   [MATERIAL_TYPE.BGM_AUDIO]: 'bgm-item',
   [MATERIAL_TYPE.PHOTO]: 'photo-item',
   [MATERIAL_TYPE.SUBTITLE]: 'subtitle-item',
+  [MATERIAL_TYPE.TEXT]: 'text-item',
 } as const;
 
 const TimeLine = () => {
@@ -105,6 +107,12 @@ const TimeLine = () => {
               <div key={action.id} className='effect-item-subtitle'>
                 <FileTextOutlined />
                 {(trackItem as unknown as ISubtitleTrackItem)?.text || '字幕'}
+              </div>
+            ),
+            [MATERIAL_TYPE.TEXT]: () => (
+              <div key={action.id} className='effect-item-text'>
+                <FontSizeOutlined />
+                {(trackItem as unknown as ITextTrackItem)?.text || '文本'}
               </div>
             ),
           };
