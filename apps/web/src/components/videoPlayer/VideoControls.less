@@ -114,7 +114,7 @@
     }
   }
   
-  // 音量控制
+  // 音量控制 - 始终显示滑块
   .volume-control {
     display: flex;
     align-items: center;
@@ -125,11 +125,6 @@
     
     &:hover {
       background: rgba(255, 255, 255, 0.05);
-      
-      .volume-slider-container {
-        opacity: 1;
-        width: 80px;
-      }
     }
     
     .volume-btn {
@@ -137,9 +132,9 @@
     }
     
     .volume-slider-container {
-      width: 0;
-      opacity: 0;
-      overflow: hidden;
+      width: 80px;
+      opacity: 1;
+      overflow: visible;
       transition: all 0.3s ease;
       
       .volume-slider {
@@ -167,15 +162,6 @@
           }
         }
       }
-    }
-  }
-  
-  // 全屏按钮
-  .fullscreen-btn {
-    opacity: 0.8;
-    
-    &:hover {
-      opacity: 1;
     }
   }
 }

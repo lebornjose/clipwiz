@@ -219,6 +219,12 @@ export interface ISubtitleTrackItem extends TrackItem {
   color: [number, number, number] // 字幕颜色
   duration: number // 持续时间
 }
+
+export interface ITextTrackItem extends TrackItem {
+  text: string // 文本
+  format: MATERIAL_TYPE.TEXT
+  duration: number // 持续时间
+}
 export interface SubtitleTrack {
   trackType: MATERIAL_TYPE.SUBTITLE // 轨道类型
   children: ISubtitleTrackItem[] // 字幕列表
@@ -226,7 +232,14 @@ export interface SubtitleTrack {
   hide: boolean
 }
 
-export type ITrack = (VideoTrack | BgmAudioTrack | PhotoTrack | SubtitleTrack) // 轨道列表
+export interface TextTrack {
+  trackType: MATERIAL_TYPE.TEXT // 轨道类型
+  children: ITextTrackItem[] // 文本列表
+  trackId: string
+  hide: boolean
+}
+
+export type ITrack = (VideoTrack | BgmAudioTrack | PhotoTrack | SubtitleTrack | TextTrack) // 轨道列表
 
 export interface ITrackInfo {
   width: number // 导出视频的宽度

@@ -4,7 +4,6 @@ import {
   PauseCircleFilled,
   SoundFilled,
   SoundOutlined,
-  ExpandOutlined,
 } from '@ant-design/icons'
 import './VideoControls.less'
 
@@ -18,7 +17,6 @@ interface VideoControlsProps {
   onProgressChange: (value: number) => void
   onVolumeChange: (value: number) => void
   onToggleMute: () => void
-  onFullscreen?: () => void
 }
 
 const VideoControls = ({
@@ -31,13 +29,17 @@ const VideoControls = ({
   onProgressChange,
   onVolumeChange,
   onToggleMute,
-  onFullscreen,
 }: VideoControlsProps) => {
-  // 格式化时间 (秒 -> MM:SS)
+  // 格式化时间 (秒 -> MM:SS:FF) - 按照25帧率
   const formatTime = (seconds: number) => {
+    const FPS = 25 // 帧率
+
     const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    const remainingSeconds = seconds % 60
+    const secs = Math.floor(remainingSeconds)
+    const frames = Math.floor((remainingSeconds - secs) * FPS)
+
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${frames.toString().padStart(2, '0')}`
   }
 
   return (
@@ -110,16 +112,6 @@ const VideoControls = ({
               />
             </div>
           </div>
-
-          {/* 全屏按钮 */}
-          {onFullscreen && (
-            <Button
-              type='text'
-              className='control-btn fullscreen-btn'
-              icon={<ExpandOutlined style={{ fontSize: 18 }} />}
-              onClick={onFullscreen}
-            />
-          )}
         </div>
       </div>
     </div>

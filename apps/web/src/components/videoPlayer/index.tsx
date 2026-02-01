@@ -89,22 +89,10 @@ const VideoPlayer = () => {
     // editorRef.current.setProcess(value)
   }
 
-  // 全屏
-  const handleFullscreen = () => {
-    const container = document.querySelector('.video-player-container') as HTMLElement
-    if (!container) return
-
-    if (!document.fullscreenElement) {
-      container.requestFullscreen()
-    } else {
-      document.exitFullscreen()
-    }
-  }
-
   return (
     <div className='video-player-container'>
       <div className='video-wrapper'>
-        <canvas ref={canvasRef} className='video-canvas' width={1280} height={720} style={{ width: '852px', height: '480px' }}></canvas>
+        <canvas ref={canvasRef} className='video-canvas' width={1280} height={720}></canvas>
 
         <VideoControls
           isPlaying={isPlaying}
@@ -116,7 +104,6 @@ const VideoPlayer = () => {
           onProgressChange={handleProgressChange}
           onVolumeChange={handleVolumeChange}
           onToggleMute={toggleMute}
-          onFullscreen={handleFullscreen}
         />
       </div>
     </div>
