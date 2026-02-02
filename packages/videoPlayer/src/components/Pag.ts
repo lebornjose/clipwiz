@@ -1,7 +1,7 @@
 import { PAGInit } from 'libpag';
-
 const url = 'https://mogic-algo-data.oss-cn-hangzhou.aliyuncs.com/yuxiaopu/Dependencies/%E5%B0%8F%E7%B1%B3%E7%99%BD%E5%AD%97%E9%BB%91%E6%8F%8F%E8%BE%B9.pag';
 class PagNode {
+  PAG: any | null
   pagCanvas: HTMLCanvasElement
   width: number
   height: number
@@ -25,13 +25,14 @@ class PagNode {
     this.pagFile = null
     this.textLayers = []
     this.isReady = false
+    this.PAG = null
     this.init()
   }
 
   async init() {
     try {
       // 配置 WASM 文件路径
-      const PAG = await PAGInit({
+      this.PAG = await PAGInit({
         locateFile: (file: string) => {
           // 假设 libpag.wasm 在 public 目录下
           if (file.endsWith('.wasm')) {
@@ -43,12 +44,12 @@ class PagNode {
 
       const buffer = await fetch(url).then((response) => response.arrayBuffer());
 
-      this.pagFile = await PAG.PAGFile.load(buffer);
+      this.pagFile = await this.PAG.PAGFile.load(buffer);
 
       this.pagCanvas.width = this.pagFile.width();
       this.pagCanvas.height = this.pagFile.height();
 
-      this.pagView = await PAG.PAGView.init(this.pagFile, this.pagCanvas);
+      this.pagView = await this.PAG.PAGView.init(this.pagFile, this.pagCanvas);
 
 
       // 初始化完成后查找文本图层

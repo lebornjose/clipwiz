@@ -7,6 +7,7 @@ import { addPhotoNode } from './components/photo'
 import { getGifImage } from './components/getBufferImage'
 import Pag from './components/Pag.js'
 import { addSubtitleNode } from './components/subtitle.js'
+import { addTextNode } from './components/text.js'
 
 export interface IApplicationOptions {
   canvas: HTMLCanvasElement
@@ -65,7 +66,7 @@ export class Editor {
       [MATERIAL_TYPE.BGM_AUDIO]: addBgm,
       [MATERIAL_TYPE.PHOTO]: addPhotoNode,
       [MATERIAL_TYPE.SUBTITLE]: addSubtitleNode,
-      [MATERIAL_TYPE.TEXT]: () => { },
+      [MATERIAL_TYPE.TEXT]: addTextNode,
     }
     this.init()
   }

@@ -14,7 +14,7 @@ const trackInfo: ITrackInfo = {
           id: "1769928697263",
           duration: 1000,
           startTime: 0,
-          endTime: 1000,
+          endTime: 3000,
           text: "爱的唯物主义",
           format: MATERIAL_TYPE.TEXT,
           hide: false,
