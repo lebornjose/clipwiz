@@ -12,6 +12,7 @@ export enum MATERIAL_TYPE {
   SOUND_AUDIO = 'soundAudio', // 音效
   GIF = 'gif', // 贴图类型，gif
   BACKGROUND = 'background', // 背景
+  FILTER = 'filter', // 滤镜轨道
 }
 
 

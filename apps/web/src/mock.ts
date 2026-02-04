@@ -1,10 +1,27 @@
-import { ITrackInfo, MATERIAL_TYPE } from '@clipwiz/shared'
+import { ITrackInfo, MATERIAL_TYPE, IFilterTrackItem } from '@clipwiz/shared'
 
 const trackInfo: ITrackInfo = {
   width: 1280,
   height: 720,
   duration: 10000,
   tracks: [
+    {
+      hide: false,
+      trackId: "398434",
+      trackType: MATERIAL_TYPE.FILTER,
+      children: [
+        {
+          id: "1769928697263",
+          duration: 1000,
+          startTime: 0,
+          endTime: 3000,
+          name: "滤镜1",
+          code: "filter",
+          hide: false,
+          format: MATERIAL_TYPE.FILTER,
+        } as IFilterTrackItem
+      ]
+    },
     {
       hide: false,
       trackId: "398434",

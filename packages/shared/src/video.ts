@@ -187,6 +187,12 @@ export interface BgmAudioTrack {
   hide: boolean
 }
 
+export interface IFilterTrackItem extends TrackItem {
+  format: MATERIAL_TYPE.FILTER
+  name: string
+  code: string
+}
+
 export interface IPhotoTrackItem extends TrackItem {
   format: MATERIAL_TYPE.IMAGE | MATERIAL_TYPE.GIF
   desc: string // 贴图描述
@@ -238,8 +244,15 @@ export interface TextTrack {
   trackId: string
   hide: boolean
 }
+// 滤镜轨道
+export interface FilterTrack {
+  trackType: MATERIAL_TYPE.FILTER
+  children: IFilterTrackItem[]
+  trackId: string
+  hide: boolean
+}
 
-export type ITrack = (VideoTrack | BgmAudioTrack | PhotoTrack | SubtitleTrack | TextTrack) // 轨道列表
+export type ITrack = (VideoTrack | BgmAudioTrack | PhotoTrack | SubtitleTrack | TextTrack | FilterTrack) // 轨道列表
 
 export interface ITrackInfo {
   width: number // 导出视频的宽度
