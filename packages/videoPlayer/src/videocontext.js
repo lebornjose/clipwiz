@@ -1,621 +1,191 @@
-const oe = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, se = `precision mediump float;
-uniform sampler2D u_image;
-uniform float scaleX;
-uniform float scaleY;
-varying vec2 v_texCoord;
-varying float v_progress;
-void main(){
-    vec2 pos = vec2(v_texCoord[0]*1.0/scaleX - (1.0/scaleX/2.0 -0.5), v_texCoord[1]*1.0/scaleY - (1.0/scaleY/2.0 -0.5));
-    vec4 color = texture2D(u_image, pos);
-    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){
-        color = vec4(0.0,0.0,0.0,0.0);
-    }
-    gl_FragColor = color;
-}
-`;
-let ae = {
+const vertexShader$l = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$l = "precision mediump float;\nuniform sampler2D u_image;\nuniform float scaleX;\nuniform float scaleY;\nvarying vec2 v_texCoord;\nvarying float v_progress;\nvoid main(){\n    vec2 pos = vec2(v_texCoord[0]*1.0/scaleX - (1.0/scaleX/2.0 -0.5), v_texCoord[1]*1.0/scaleY - (1.0/scaleY/2.0 -0.5));\n    vec4 color = texture2D(u_image, pos);\n    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
+let aaf_video_scale = {
   title: "AAF Video Scale Effect",
   description: "A scale effect based on the AAF spec.",
-  vertexShader: oe,
-  fragmentShader: se,
+  vertexShader: vertexShader$l,
+  fragmentShader: fragmentShader$l,
   properties: {
     scaleX: { type: "uniform", value: 1 },
     scaleY: { type: "uniform", value: 1 }
   },
   inputs: ["u_image"]
 };
-const le = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, ue = `precision mediump float;
-uniform sampler2D u_image_a;
-uniform sampler2D u_image_b;
-uniform float mix;
-varying vec2 v_texCoord;
-varying float v_mix;
-void main(){
-    vec4 color_a = texture2D(u_image_a, v_texCoord);
-    vec4 color_b = texture2D(u_image_b, v_texCoord);
-    color_a[0] *= (1.0 - mix);
-    color_a[1] *= (1.0 - mix);
-    color_a[2] *= (1.0 - mix);
-    color_a[3] *= (1.0 - mix);
-    color_b[0] *= mix;
-    color_b[1] *= mix;
-    color_b[2] *= mix;
-    color_b[3] *= mix;
-    gl_FragColor = color_a + color_b;
-}
-`;
-let _e = {
+const vertexShader$k = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$k = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    color_a[0] *= (1.0 - mix);\n    color_a[1] *= (1.0 - mix);\n    color_a[2] *= (1.0 - mix);\n    color_a[3] *= (1.0 - mix);\n    color_b[0] *= mix;\n    color_b[1] *= mix;\n    color_b[2] *= mix;\n    color_b[3] *= mix;\n    gl_FragColor = color_a + color_b;\n}\n";
+let crossfade = {
   title: "Cross-Fade",
   description: "A cross-fade effect. Typically used as a transistion.",
-  vertexShader: le,
-  fragmentShader: ue,
+  vertexShader: vertexShader$k,
+  fragmentShader: fragmentShader$k,
   properties: {
     mix: { type: "uniform", value: 0 }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const de = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, ce = `precision mediump float;
-uniform sampler2D u_image_a;
-uniform sampler2D u_image_b;
-uniform float mix;
-varying vec2 v_texCoord;
-varying float v_mix;
-void main(){
-    vec4 color_a = texture2D(u_image_a, v_texCoord);
-    vec4 color_b = texture2D(u_image_b, v_texCoord);
-    if (v_texCoord[0] > mix){
-        gl_FragColor = color_a;
-    } else {
-        gl_FragColor = color_b;
-    }
-}
-`;
-let he = {
+const vertexShader$j = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$j = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (v_texCoord[0] > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
+let horizontal_wipe = {
   title: "Horizontal Wipe",
   description: "A horizontal wipe effect. Typically used as a transistion.",
-  vertexShader: de,
-  fragmentShader: ce,
+  vertexShader: vertexShader$j,
+  fragmentShader: fragmentShader$j,
   properties: {
     mix: { type: "uniform", value: 0 }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const pe = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, me = `precision mediump float;
-uniform sampler2D u_image_a;
-uniform sampler2D u_image_b;
-uniform float mix;
-varying vec2 v_texCoord;
-varying float v_mix;
-void main(){
-    vec4 color_a = texture2D(u_image_a, v_texCoord);
-    vec4 color_b = texture2D(u_image_b, v_texCoord);
-    if (v_texCoord[1] > mix){
-        gl_FragColor = color_a;
-    } else {
-        gl_FragColor = color_b;
-    }
-}
-`;
-let fe = {
+const vertexShader$i = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$i = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (v_texCoord[1] > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
+let verticalWipe = {
   title: "vertical Wipe",
   description: "A vertical wipe effect. Typically used as a transistion.",
-  vertexShader: pe,
-  fragmentShader: me,
+  vertexShader: vertexShader$i,
+  fragmentShader: fragmentShader$i,
   properties: {
     mix: { type: "uniform", value: 0 }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const ve = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, ge = `precision mediump float;
-uniform sampler2D u_image_a;
-uniform sampler2D u_image_b;
-uniform float mix;
-varying vec2 v_texCoord;
-varying float v_mix;
-float rand(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}
-void main(){
-    vec4 color_a = texture2D(u_image_a, v_texCoord);
-    vec4 color_b = texture2D(u_image_b, v_texCoord);
-    if (clamp(rand(v_texCoord),  0.01, 1.001) > mix){
-        gl_FragColor = color_a;
-    } else {
-        gl_FragColor = color_b;
-    }
-}
-`;
-let xe = {
+const vertexShader$h = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$h = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nfloat rand(vec2 co){\n    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);\n}\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (clamp(rand(v_texCoord),  0.01, 1.001) > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
+let randomDissolve = {
   title: "Random Dissolve",
   description: "A random dissolve effect. Typically used as a transistion.",
-  vertexShader: ve,
-  fragmentShader: ge,
+  vertexShader: vertexShader$h,
+  fragmentShader: fragmentShader$h,
   properties: {
     mix: { type: "uniform", value: 0 }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const be = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, Te = `precision mediump float;
-uniform sampler2D u_image_a;
-uniform sampler2D u_image_b;
-uniform float mix;
-uniform vec4 color;
-varying vec2 v_texCoord;
-varying float v_mix;
-void main(){
-    vec4 color_a = texture2D(u_image_a, v_texCoord);
-    vec4 color_b = texture2D(u_image_b, v_texCoord);
-    float mix_amount = (mix *2.0) - 1.0;
-    if(mix_amount < 0.0){
-        gl_FragColor = abs(mix_amount) * color_a + (1.0 - abs(mix_amount)) * color;
-    } else {
-        gl_FragColor = mix_amount * color_b + (1.0 - mix_amount) * color;
-    }
-}
-`;
-let ye = {
+const vertexShader$g = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$g = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nuniform vec4 color;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    float mix_amount = (mix *2.0) - 1.0;\n    if(mix_amount < 0.0){\n        gl_FragColor = abs(mix_amount) * color_a + (1.0 - abs(mix_amount)) * color;\n    } else {\n        gl_FragColor = mix_amount * color_b + (1.0 - mix_amount) * color;\n    }\n}\n";
+let toColorAndBackFade = {
   title: "To Color And Back Fade",
   description: "A fade to black and back effect. Setting mix to 0.5 is a fully solid color frame. Typically used as a transistion.",
-  vertexShader: be,
-  fragmentShader: Te,
+  vertexShader: vertexShader$g,
+  fragmentShader: fragmentShader$g,
   properties: {
     mix: { type: "uniform", value: 0 },
     color: { type: "uniform", value: [0, 0, 0, 0] }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const Ce = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, Ee = `precision mediump float;
-uniform sampler2D u_image_a;
-uniform sampler2D u_image_b;
-uniform float mix;
-varying vec2 v_texCoord;
-varying float v_mix;
-float sign (vec2 p1, vec2 p2, vec2 p3){
-    return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1]);
-}
-bool pointInTriangle(vec2 pt, vec2 v1, vec2 v2, vec2 v3){
-    bool b1, b2, b3;
-    b1 = sign(pt, v1, v2) < 0.0;
-    b2 = sign(pt, v2, v3) < 0.0;
-    b3 = sign(pt, v3, v1) < 0.0;
-    return ((b1 == b2) && (b2 == b3));
-}
-vec2 rotatePointAboutPoint(vec2 point, vec2 pivot, float angle){
-    float s = sin(angle);
-    float c = cos(angle);
-    float x = point[0] - pivot[0];
-    float y = point[1] - pivot[1];
-    float new_x = x * c - y * s;
-    float new_y = x * s + y * c;
-    return vec2(new_x + pivot[0], new_y+pivot[1]);
-}
-
-void main(){
-    vec4 color_a = texture2D(u_image_b, v_texCoord);
-    vec4 color_b = texture2D(u_image_a, v_texCoord);
-    vec2 t0_p0,t0_p1,t0_p2,t1_p0,t1_p1,t1_p2,t2_p0,t2_p1,t2_p2,t3_p0,t3_p1,t3_p2;
-    vec2 t4_p0,t4_p1,t4_p2,t5_p0,t5_p1,t5_p2,t6_p0,t6_p1,t6_p2,t7_p0,t7_p1,t7_p2;
-
-
-    t0_p0 = vec2(0.0, 0.25) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);
-    t0_p1 = vec2(0.0, -0.25) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);
-    t0_p2 = vec2(1.0, 0.0) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);
-
-    t1_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854);
-    t1_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854);
-    t1_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854);
-
-    t2_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 2.0);
-    t2_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 2.0);
-    t2_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 2.0);
-
-    t3_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 3.0);
-    t3_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 3.0);
-    t3_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 3.0);
-
-    t4_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 4.0);
-    t4_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 4.0);
-    t4_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 4.0);
-
-    t5_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 5.0);
-    t5_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 5.0);
-    t5_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 5.0);
-
-    t6_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 6.0);
-    t6_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 6.0);
-    t6_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 6.0);
-
-    t7_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 7.0);
-    t7_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 7.0);
-    t7_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 7.0);
-
-    if(mix > 0.99){
-        gl_FragColor = color_a;
-        return;
-    }
-    if(mix < 0.01){
-        gl_FragColor = color_b;
-        return;
-    }
-    if(pointInTriangle(v_texCoord, t0_p0, t0_p1, t0_p2) || pointInTriangle(v_texCoord, t1_p0, t1_p1, t1_p2) || pointInTriangle(v_texCoord, t2_p0, t2_p1, t2_p2) || pointInTriangle(v_texCoord, t3_p0, t3_p1, t3_p2) || pointInTriangle(v_texCoord, t4_p0, t4_p1, t4_p2) || pointInTriangle(v_texCoord, t5_p0, t5_p1, t5_p2) || pointInTriangle(v_texCoord, t6_p0, t6_p1, t6_p2) || pointInTriangle(v_texCoord, t7_p0, t7_p1, t7_p2)){
-        gl_FragColor = color_a;
-    } else {
-        gl_FragColor = color_b;
-    }
-}
-`;
-let Ae = {
+const vertexShader$f = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$f = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nfloat sign (vec2 p1, vec2 p2, vec2 p3){\n    return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1]);\n}\nbool pointInTriangle(vec2 pt, vec2 v1, vec2 v2, vec2 v3){\n    bool b1, b2, b3;\n    b1 = sign(pt, v1, v2) < 0.0;\n    b2 = sign(pt, v2, v3) < 0.0;\n    b3 = sign(pt, v3, v1) < 0.0;\n    return ((b1 == b2) && (b2 == b3));\n}\nvec2 rotatePointAboutPoint(vec2 point, vec2 pivot, float angle){\n    float s = sin(angle);\n    float c = cos(angle);\n    float x = point[0] - pivot[0];\n    float y = point[1] - pivot[1];\n    float new_x = x * c - y * s;\n    float new_y = x * s + y * c;\n    return vec2(new_x + pivot[0], new_y+pivot[1]);\n}\n\nvoid main(){\n    vec4 color_a = texture2D(u_image_b, v_texCoord);\n    vec4 color_b = texture2D(u_image_a, v_texCoord);\n    vec2 t0_p0,t0_p1,t0_p2,t1_p0,t1_p1,t1_p2,t2_p0,t2_p1,t2_p2,t3_p0,t3_p1,t3_p2;\n    vec2 t4_p0,t4_p1,t4_p2,t5_p0,t5_p1,t5_p2,t6_p0,t6_p1,t6_p2,t7_p0,t7_p1,t7_p2;\n\n\n    t0_p0 = vec2(0.0, 0.25) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);\n    t0_p1 = vec2(0.0, -0.25) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);\n    t0_p2 = vec2(1.0, 0.0) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);\n\n    t1_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854);\n    t1_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854);\n    t1_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854);\n\n    t2_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 2.0);\n    t2_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 2.0);\n    t2_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 2.0);\n\n    t3_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 3.0);\n    t3_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 3.0);\n    t3_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 3.0);\n\n    t4_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 4.0);\n    t4_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 4.0);\n    t4_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 4.0);\n\n    t5_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 5.0);\n    t5_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 5.0);\n    t5_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 5.0);\n\n    t6_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 6.0);\n    t6_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 6.0);\n    t6_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 6.0);\n\n    t7_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 7.0);\n    t7_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 7.0);\n    t7_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 7.0);\n\n    if(mix > 0.99){\n        gl_FragColor = color_a;\n        return;\n    }\n    if(mix < 0.01){\n        gl_FragColor = color_b;\n        return;\n    }\n    if(pointInTriangle(v_texCoord, t0_p0, t0_p1, t0_p2) || pointInTriangle(v_texCoord, t1_p0, t1_p1, t1_p2) || pointInTriangle(v_texCoord, t2_p0, t2_p1, t2_p2) || pointInTriangle(v_texCoord, t3_p0, t3_p1, t3_p2) || pointInTriangle(v_texCoord, t4_p0, t4_p1, t4_p2) || pointInTriangle(v_texCoord, t5_p0, t5_p1, t5_p2) || pointInTriangle(v_texCoord, t6_p0, t6_p1, t6_p2) || pointInTriangle(v_texCoord, t7_p0, t7_p1, t7_p2)){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
+let starWipe = {
   title: "Star Wipe Fade",
   description: "A classic star wipe transistion. Typically used as a transistion.",
-  vertexShader: Ce,
-  fragmentShader: Ee,
+  vertexShader: vertexShader$f,
+  fragmentShader: fragmentShader$f,
   properties: {
     mix: { type: "uniform", value: 1 }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const Se = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, Ne = `precision mediump float;
-uniform sampler2D u_image;
-uniform float a;
-varying vec2 v_texCoord;
-varying float v_mix;
-void main(){
-    vec4 color = texture2D(u_image, v_texCoord);
-    gl_FragColor = color;
-}
-`;
-let Fe = {
+const vertexShader$e = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$e = "precision mediump float;\nuniform sampler2D u_image;\nuniform float a;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    gl_FragColor = color;\n}\n";
+let combine = {
   title: "Combine",
   description: "A basic effect which renders the input to the output, Typically used as a combine node for layering up media with alpha transparency.",
-  vertexShader: Se,
-  fragmentShader: Ne,
+  vertexShader: vertexShader$e,
+  fragmentShader: fragmentShader$e,
   properties: {
     a: { type: "uniform", value: 0 }
   },
   inputs: ["u_image"]
 };
-const Re = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, De = `precision mediump float;
-uniform sampler2D u_image;
-uniform float a;
-uniform vec3 colorAlphaThreshold;
-varying vec2 v_texCoord;
-varying float v_mix;
-void main(){
-    vec4 color = texture2D(u_image, v_texCoord);
-    if (color[0] > colorAlphaThreshold[0] && color[1]> colorAlphaThreshold[1] && color[2]> colorAlphaThreshold[2]){
-        color = vec4(0.0,0.0,0.0,0.0);
-    }
-    gl_FragColor = color;
-}
-`;
-let Pe = {
+const vertexShader$d = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$d = "precision mediump float;\nuniform sampler2D u_image;\nuniform float a;\nuniform vec3 colorAlphaThreshold;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    if (color[0] > colorAlphaThreshold[0] && color[1]> colorAlphaThreshold[1] && color[2]> colorAlphaThreshold[2]){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
+let colorThreshold = {
   title: "Color Threshold",
   description: "Turns all pixels with a greater value than the specified threshold transparent.",
-  vertexShader: Re,
-  fragmentShader: De,
+  vertexShader: vertexShader$d,
+  fragmentShader: fragmentShader$d,
   properties: {
     a: { type: "uniform", value: 0 },
     colorAlphaThreshold: { type: "uniform", value: [0, 0.55, 0] }
   },
   inputs: ["u_image"]
 };
-const ke = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, Ie = `precision mediump float;
-uniform sampler2D u_image;
-uniform vec3 inputMix;
-uniform vec3 outputMix;
-varying vec2 v_texCoord;
-varying float v_mix;
-void main(){
-    vec4 color = texture2D(u_image, v_texCoord);
-    float mono = color[0]*inputMix[0] + color[1]*inputMix[1] + color[2]*inputMix[2];
-    color[0] = mono * outputMix[0];
-    color[1] = mono * outputMix[1];
-    color[2] = mono * outputMix[2];
-    gl_FragColor = color;
-}
-`;
-let we = {
+const vertexShader$c = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$c = "precision mediump float;\nuniform sampler2D u_image;\nuniform vec3 inputMix;\nuniform vec3 outputMix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    float mono = color[0]*inputMix[0] + color[1]*inputMix[1] + color[2]*inputMix[2];\n    color[0] = mono * outputMix[0];\n    color[1] = mono * outputMix[1];\n    color[2] = mono * outputMix[2];\n    gl_FragColor = color;\n}\n";
+let monochrome = {
   title: "Monochrome",
   description: "Change images to a single chroma (e.g can be used to make a black & white filter). Input color mix and output color mix can be adjusted.",
-  vertexShader: ke,
-  fragmentShader: Ie,
+  vertexShader: vertexShader$c,
+  fragmentShader: fragmentShader$c,
   properties: {
     inputMix: { type: "uniform", value: [0.4, 0.6, 0.2] },
     outputMix: { type: "uniform", value: [1, 1, 1] }
   },
   inputs: ["u_image"]
 };
-const Ue = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-uniform float blurAmount;
-varying vec2 v_texCoord;
-varying vec2 v_blurTexCoords[14];
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-    v_blurTexCoords[ 0] = v_texCoord + vec2(-0.028 * blurAmount, 0.0);
-    v_blurTexCoords[ 1] = v_texCoord + vec2(-0.024 * blurAmount, 0.0);
-    v_blurTexCoords[ 2] = v_texCoord + vec2(-0.020 * blurAmount, 0.0);
-    v_blurTexCoords[ 3] = v_texCoord + vec2(-0.016 * blurAmount, 0.0);
-    v_blurTexCoords[ 4] = v_texCoord + vec2(-0.012 * blurAmount, 0.0);
-    v_blurTexCoords[ 5] = v_texCoord + vec2(-0.008 * blurAmount, 0.0);
-    v_blurTexCoords[ 6] = v_texCoord + vec2(-0.004 * blurAmount, 0.0);
-    v_blurTexCoords[ 7] = v_texCoord + vec2( 0.004 * blurAmount, 0.0);
-    v_blurTexCoords[ 8] = v_texCoord + vec2( 0.008 * blurAmount, 0.0);
-    v_blurTexCoords[ 9] = v_texCoord + vec2( 0.012 * blurAmount, 0.0);
-    v_blurTexCoords[10] = v_texCoord + vec2( 0.016 * blurAmount, 0.0);
-    v_blurTexCoords[11] = v_texCoord + vec2( 0.020 * blurAmount, 0.0);
-    v_blurTexCoords[12] = v_texCoord + vec2( 0.024 * blurAmount, 0.0);
-    v_blurTexCoords[13] = v_texCoord + vec2( 0.028 * blurAmount, 0.0);
-}
-`, Oe = `precision mediump float;
-uniform sampler2D u_image;
-varying vec2 v_texCoord;
-varying vec2 v_blurTexCoords[14];
-void main(){
-    gl_FragColor = vec4(0.0);
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 0])*0.0044299121055113265;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 1])*0.00895781211794;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 2])*0.0215963866053;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 3])*0.0443683338718;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 4])*0.0776744219933;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 5])*0.115876621105;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 6])*0.147308056121;
-    gl_FragColor += texture2D(u_image, v_texCoord         )*0.159576912161;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 7])*0.147308056121;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 8])*0.115876621105;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 9])*0.0776744219933;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[10])*0.0443683338718;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[11])*0.0215963866053;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[12])*0.00895781211794;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[13])*0.0044299121055113265;
-}
-`;
-let Le = {
+const vertexShader$b = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nuniform float blurAmount;\nvarying vec2 v_texCoord;\nvarying vec2 v_blurTexCoords[14];\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n    v_blurTexCoords[ 0] = v_texCoord + vec2(-0.028 * blurAmount, 0.0);\n    v_blurTexCoords[ 1] = v_texCoord + vec2(-0.024 * blurAmount, 0.0);\n    v_blurTexCoords[ 2] = v_texCoord + vec2(-0.020 * blurAmount, 0.0);\n    v_blurTexCoords[ 3] = v_texCoord + vec2(-0.016 * blurAmount, 0.0);\n    v_blurTexCoords[ 4] = v_texCoord + vec2(-0.012 * blurAmount, 0.0);\n    v_blurTexCoords[ 5] = v_texCoord + vec2(-0.008 * blurAmount, 0.0);\n    v_blurTexCoords[ 6] = v_texCoord + vec2(-0.004 * blurAmount, 0.0);\n    v_blurTexCoords[ 7] = v_texCoord + vec2( 0.004 * blurAmount, 0.0);\n    v_blurTexCoords[ 8] = v_texCoord + vec2( 0.008 * blurAmount, 0.0);\n    v_blurTexCoords[ 9] = v_texCoord + vec2( 0.012 * blurAmount, 0.0);\n    v_blurTexCoords[10] = v_texCoord + vec2( 0.016 * blurAmount, 0.0);\n    v_blurTexCoords[11] = v_texCoord + vec2( 0.020 * blurAmount, 0.0);\n    v_blurTexCoords[12] = v_texCoord + vec2( 0.024 * blurAmount, 0.0);\n    v_blurTexCoords[13] = v_texCoord + vec2( 0.028 * blurAmount, 0.0);\n}\n";
+const fragmentShader$b = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvarying vec2 v_blurTexCoords[14];\nvoid main(){\n    gl_FragColor = vec4(0.0);\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 0])*0.0044299121055113265;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 1])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 2])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 3])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 4])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 5])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 6])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_texCoord         )*0.159576912161;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 7])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 8])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 9])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[10])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[11])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[12])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[13])*0.0044299121055113265;\n}\n";
+let horizontal_blur = {
   title: "Horizontal Blur",
   description: "A horizontal blur effect. Adpated from http://xissburg.com/faster-gaussian-blur-in-glsl/",
-  vertexShader: Ue,
-  fragmentShader: Oe,
+  vertexShader: vertexShader$b,
+  fragmentShader: fragmentShader$b,
   properties: {
     blurAmount: { type: "uniform", value: 1 }
   },
   inputs: ["u_image"]
 };
-const Me = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-uniform float blurAmount;
-varying vec2 v_blurTexCoords[14];
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-    v_blurTexCoords[ 0] = v_texCoord + vec2(0.0,-0.028 * blurAmount);
-    v_blurTexCoords[ 1] = v_texCoord + vec2(0.0,-0.024 * blurAmount);
-    v_blurTexCoords[ 2] = v_texCoord + vec2(0.0,-0.020 * blurAmount);
-    v_blurTexCoords[ 3] = v_texCoord + vec2(0.0,-0.016 * blurAmount);
-    v_blurTexCoords[ 4] = v_texCoord + vec2(0.0,-0.012 * blurAmount);
-    v_blurTexCoords[ 5] = v_texCoord + vec2(0.0,-0.008 * blurAmount);
-    v_blurTexCoords[ 6] = v_texCoord + vec2(0.0,-0.004 * blurAmount);
-    v_blurTexCoords[ 7] = v_texCoord + vec2(0.0, 0.004 * blurAmount);
-    v_blurTexCoords[ 8] = v_texCoord + vec2(0.0, 0.008 * blurAmount);
-    v_blurTexCoords[ 9] = v_texCoord + vec2(0.0, 0.012 * blurAmount);
-    v_blurTexCoords[10] = v_texCoord + vec2(0.0, 0.016 * blurAmount);
-    v_blurTexCoords[11] = v_texCoord + vec2(0.0, 0.020 * blurAmount);
-    v_blurTexCoords[12] = v_texCoord + vec2(0.0, 0.024 * blurAmount);
-    v_blurTexCoords[13] = v_texCoord + vec2(0.0, 0.028 * blurAmount);
-}
-`, Ge = `precision mediump float;
-uniform sampler2D u_image;
-varying vec2 v_texCoord;
-varying vec2 v_blurTexCoords[14];
-void main(){
-    gl_FragColor = vec4(0.0);
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 0])*0.0044299121055113265;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 1])*0.00895781211794;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 2])*0.0215963866053;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 3])*0.0443683338718;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 4])*0.0776744219933;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 5])*0.115876621105;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 6])*0.147308056121;
-    gl_FragColor += texture2D(u_image, v_texCoord         )*0.159576912161;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 7])*0.147308056121;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 8])*0.115876621105;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 9])*0.0776744219933;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[10])*0.0443683338718;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[11])*0.0215963866053;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[12])*0.00895781211794;
-    gl_FragColor += texture2D(u_image, v_blurTexCoords[13])*0.0044299121055113265;
-}
-`;
-let Be = {
+const vertexShader$a = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nuniform float blurAmount;\nvarying vec2 v_blurTexCoords[14];\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n    v_blurTexCoords[ 0] = v_texCoord + vec2(0.0,-0.028 * blurAmount);\n    v_blurTexCoords[ 1] = v_texCoord + vec2(0.0,-0.024 * blurAmount);\n    v_blurTexCoords[ 2] = v_texCoord + vec2(0.0,-0.020 * blurAmount);\n    v_blurTexCoords[ 3] = v_texCoord + vec2(0.0,-0.016 * blurAmount);\n    v_blurTexCoords[ 4] = v_texCoord + vec2(0.0,-0.012 * blurAmount);\n    v_blurTexCoords[ 5] = v_texCoord + vec2(0.0,-0.008 * blurAmount);\n    v_blurTexCoords[ 6] = v_texCoord + vec2(0.0,-0.004 * blurAmount);\n    v_blurTexCoords[ 7] = v_texCoord + vec2(0.0, 0.004 * blurAmount);\n    v_blurTexCoords[ 8] = v_texCoord + vec2(0.0, 0.008 * blurAmount);\n    v_blurTexCoords[ 9] = v_texCoord + vec2(0.0, 0.012 * blurAmount);\n    v_blurTexCoords[10] = v_texCoord + vec2(0.0, 0.016 * blurAmount);\n    v_blurTexCoords[11] = v_texCoord + vec2(0.0, 0.020 * blurAmount);\n    v_blurTexCoords[12] = v_texCoord + vec2(0.0, 0.024 * blurAmount);\n    v_blurTexCoords[13] = v_texCoord + vec2(0.0, 0.028 * blurAmount);\n}\n";
+const fragmentShader$a = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvarying vec2 v_blurTexCoords[14];\nvoid main(){\n    gl_FragColor = vec4(0.0);\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 0])*0.0044299121055113265;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 1])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 2])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 3])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 4])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 5])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 6])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_texCoord         )*0.159576912161;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 7])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 8])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 9])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[10])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[11])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[12])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[13])*0.0044299121055113265;\n}\n";
+let verticalBlur = {
   title: "Vertical Blur",
   description: "A vertical blur effect. Adpated from http://xissburg.com/faster-gaussian-blur-in-glsl/",
-  vertexShader: Me,
-  fragmentShader: Ge,
+  vertexShader: vertexShader$a,
+  fragmentShader: fragmentShader$a,
   properties: {
     blurAmount: { type: "uniform", value: 1 }
   },
   inputs: ["u_image"]
 };
-const $e = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, We = `precision mediump float;
-uniform sampler2D u_image;
-varying vec2 v_texCoord;
-void main(){
-    vec2 coord = vec2(1.0 - v_texCoord[0] ,v_texCoord[1]);
-    vec4 color = texture2D(u_image, coord);
-    gl_FragColor = color;
-}
-`;
-let Ve = {
+const vertexShader$9 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$9 = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvoid main(){\n    vec2 coord = vec2(1.0 - v_texCoord[0] ,v_texCoord[1]);\n    vec4 color = texture2D(u_image, coord);\n    gl_FragColor = color;\n}\n";
+let aaf_video_flop = {
   title: "AAF Video Flop Effect",
   description: "A flop effect based on the AAF spec. Mirrors the image in the y-axis",
-  vertexShader: $e,
-  fragmentShader: We,
+  vertexShader: vertexShader$9,
+  fragmentShader: fragmentShader$9,
   properties: {},
   inputs: ["u_image"]
 };
-const Xe = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, Ye = `precision mediump float;
-uniform sampler2D u_image;
-varying vec2 v_texCoord;
-void main(){
-    vec2 coord = vec2(v_texCoord[0] ,1.0 - v_texCoord[1]);
-    vec4 color = texture2D(u_image, coord);
-    gl_FragColor = color;
-}
-`;
-let He = {
+const vertexShader$8 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$8 = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvoid main(){\n    vec2 coord = vec2(v_texCoord[0] ,1.0 - v_texCoord[1]);\n    vec4 color = texture2D(u_image, coord);\n    gl_FragColor = color;\n}\n";
+let aaf_video_flip = {
   title: "AAF Video Flip Effect",
   description: "A flip effect based on the AAF spec. Mirrors the image in the x-axis",
-  vertexShader: Xe,
-  fragmentShader: Ye,
+  vertexShader: vertexShader$8,
+  fragmentShader: fragmentShader$8,
   properties: {},
   inputs: ["u_image"]
 };
-const ze = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, je = `precision mediump float;
-uniform sampler2D u_image;
-uniform float positionOffsetX;
-uniform float positionOffsetY;
-varying vec2 v_texCoord;
-varying float v_progress;
-void main(){
-    vec2 pos = vec2(v_texCoord[0] - positionOffsetX/2.0, v_texCoord[1] -  positionOffsetY/2.0);
-    vec4 color = texture2D(u_image, pos);
-    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){
-        color = vec4(0.0,0.0,0.0,0.0);
-    }
-    gl_FragColor = color;
-}
-`;
-let qe = {
+const vertexShader$7 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$7 = "precision mediump float;\nuniform sampler2D u_image;\nuniform float positionOffsetX;\nuniform float positionOffsetY;\nvarying vec2 v_texCoord;\nvarying float v_progress;\nvoid main(){\n    vec2 pos = vec2(v_texCoord[0] - positionOffsetX/2.0, v_texCoord[1] -  positionOffsetY/2.0);\n    vec4 color = texture2D(u_image, pos);\n    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
+let aaf_video_position = {
   title: "AAF Video Position Effect",
   description: "A position effect based on the AAF spec.",
-  vertexShader: ze,
-  fragmentShader: je,
+  vertexShader: vertexShader$7,
+  fragmentShader: fragmentShader$7,
   properties: {
     positionOffsetX: { type: "uniform", value: 0 },
     positionOffsetY: { type: "uniform", value: 0 }
   },
   inputs: ["u_image"]
 };
-const Ke = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, Ze = `precision mediump float;
-uniform sampler2D u_image;
-uniform float cropLeft;
-uniform float cropRight;
-uniform float cropTop;
-uniform float cropBottom;
-varying vec2 v_texCoord;
-void main(){
-    vec4 color = texture2D(u_image, v_texCoord);
-    if (v_texCoord[0] < (cropLeft+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);
-    if (v_texCoord[0] > (cropRight+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);
-    if (v_texCoord[1] < (-cropBottom+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);
-    if (v_texCoord[1] > (-cropTop+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);
-    gl_FragColor = color;
-}
-`;
-let Je = {
+const vertexShader$6 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$6 = "precision mediump float;\nuniform sampler2D u_image;\nuniform float cropLeft;\nuniform float cropRight;\nuniform float cropTop;\nuniform float cropBottom;\nvarying vec2 v_texCoord;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    if (v_texCoord[0] < (cropLeft+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    if (v_texCoord[0] > (cropRight+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    if (v_texCoord[1] < (-cropBottom+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    if (v_texCoord[1] > (-cropTop+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    gl_FragColor = color;\n}\n";
+let aaf_video_crop = {
   title: "AAF Video Crop Effect",
   description: "A crop effect based on the AAF spec.",
-  vertexShader: Ke,
-  fragmentShader: Ze,
+  vertexShader: vertexShader$6,
+  fragmentShader: fragmentShader$6,
   properties: {
     cropLeft: { type: "uniform", value: -1 },
     cropRight: { type: "uniform", value: 1 },
@@ -624,172 +194,62 @@ let Je = {
   },
   inputs: ["u_image"]
 };
-const Qe = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, et = `precision mediump float;
-uniform sampler2D u_image_a;
-uniform sampler2D u_image_b;
-uniform float mix;
-uniform float currentTime;
-varying vec2 v_texCoord;
-varying float v_mix;
-float rand(vec2 co, float currentTime){
-    return fract(sin(dot(co.xy,vec2(12.9898,78.233))+currentTime) * 43758.5453);
-}
-void main(){
-    vec4 color_a = texture2D(u_image_a, v_texCoord);
-    vec4 color_b = texture2D(u_image_b, v_texCoord);
-    if (clamp(rand(v_texCoord, currentTime),  0.01, 1.001) > mix){
-        gl_FragColor = color_a;
-    } else {
-        gl_FragColor = color_b;
-    }
-}
-`;
-let tt = {
+const vertexShader$5 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$5 = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nuniform float currentTime;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nfloat rand(vec2 co, float currentTime){\n    return fract(sin(dot(co.xy,vec2(12.9898,78.233))+currentTime) * 43758.5453);\n}\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (clamp(rand(v_texCoord, currentTime),  0.01, 1.001) > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
+let staticDissolve = {
   title: "Static Dissolve",
   description: "A static dissolve effect. Typically used as a transistion.",
-  vertexShader: Qe,
-  fragmentShader: et,
+  vertexShader: vertexShader$5,
+  fragmentShader: fragmentShader$5,
   properties: {
     mix: { type: "uniform", value: 0 }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const it = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, rt = `precision mediump float;
-uniform sampler2D u_image;
-uniform float currentTime;
-uniform float amount;
-varying vec2 v_texCoord;
-uniform vec3 weight;
-float rand(vec2 co, float currentTime){
-    return fract(sin(dot(co.xy,vec2(12.9898,78.233))+currentTime) * 43758.5453);
-}
-void main(){
-    vec4 color = texture2D(u_image, v_texCoord);
-    color[0] = color[0] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[0] * amount;
-    color[1] = color[1] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[1] * amount;
-    color[2] = color[2] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[2] *amount;
-    gl_FragColor = color;
-}
-`;
-let nt = {
+const vertexShader$4 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$4 = "precision mediump float;\nuniform sampler2D u_image;\nuniform float currentTime;\nuniform float amount;\nvarying vec2 v_texCoord;\nuniform vec3 weight;\nfloat rand(vec2 co, float currentTime){\n    return fract(sin(dot(co.xy,vec2(12.9898,78.233))+currentTime) * 43758.5453);\n}\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    color[0] = color[0] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[0] * amount;\n    color[1] = color[1] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[1] * amount;\n    color[2] = color[2] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[2] *amount;\n    gl_FragColor = color;\n}\n";
+let staticEffect = {
   title: "Static",
   description: "A static effect to add pseudo random noise to a video",
-  vertexShader: it,
-  fragmentShader: rt,
+  vertexShader: vertexShader$4,
+  fragmentShader: fragmentShader$4,
   properties: {
     weight: { type: "uniform", value: [1, 1, 1] },
     amount: { type: "uniform", value: 1 }
   },
   inputs: ["u_image"]
 };
-const ot = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, st = `precision mediump float;
-uniform sampler2D u_image_a;
-uniform sampler2D u_image_b;
-uniform float mix;
-varying vec2 v_texCoord;
-varying float v_mix;
-void main(){
-    float wobble = 1.0 - abs((mix*2.0)-1.0);
-    vec2 pos = vec2(v_texCoord[0] + ((sin(v_texCoord[1]*(10.0*wobble*3.14) + wobble*10.0)/13.0)), v_texCoord[1]);
-    vec4 color_a = texture2D(u_image_a, pos);
-    vec4 color_b = texture2D(u_image_b, pos);
-    color_a[0] *= (1.0 - mix);
-    color_a[1] *= (1.0 - mix);
-    color_a[2] *= (1.0 - mix);
-    color_a[3] *= (1.0 - mix);
-    color_b[0] *= mix;
-    color_b[1] *= mix;
-    color_b[2] *= mix;
-    color_b[3] *= mix;
-    gl_FragColor = color_a + color_b;
-}
-`;
-let at = {
+const vertexShader$3 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$3 = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    float wobble = 1.0 - abs((mix*2.0)-1.0);\n    vec2 pos = vec2(v_texCoord[0] + ((sin(v_texCoord[1]*(10.0*wobble*3.14) + wobble*10.0)/13.0)), v_texCoord[1]);\n    vec4 color_a = texture2D(u_image_a, pos);\n    vec4 color_b = texture2D(u_image_b, pos);\n    color_a[0] *= (1.0 - mix);\n    color_a[1] *= (1.0 - mix);\n    color_a[2] *= (1.0 - mix);\n    color_a[3] *= (1.0 - mix);\n    color_b[0] *= mix;\n    color_b[1] *= mix;\n    color_b[2] *= mix;\n    color_b[3] *= mix;\n    gl_FragColor = color_a + color_b;\n}\n";
+let dreamfade = {
   title: "Dream-Fade",
   description: "A wobbly dream effect. Typically used as a transistion.",
-  vertexShader: ot,
-  fragmentShader: st,
+  vertexShader: vertexShader$3,
+  fragmentShader: fragmentShader$3,
   properties: {
     mix: { type: "uniform", value: 0 }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const lt = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, ut = `precision mediump float;
-uniform sampler2D u_image;
-uniform float opacity;
-varying vec2 v_texCoord;
-varying float v_opacity;
-void main(){
-    vec4 color = texture2D(u_image, v_texCoord);
-    color[3] *= opacity;
-    gl_FragColor = color;
-}
-`, _t = {
+const vertexShader$2 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$2 = "precision mediump float;\nuniform sampler2D u_image;\nuniform float opacity;\nvarying vec2 v_texCoord;\nvarying float v_opacity;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    color[3] *= opacity;\n    gl_FragColor = color;\n}\n";
+const opacity = {
   title: "Opacity",
   description: "Sets the opacity of an input.",
-  vertexShader: lt,
-  fragmentShader: ut,
+  vertexShader: vertexShader$2,
+  fragmentShader: fragmentShader$2,
   properties: {
     opacity: { type: "uniform", value: 0.7 }
   },
   inputs: ["u_image"]
-}, dt = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, ct = `precision mediump float;
-uniform sampler2D u_image;
-uniform float x;
-uniform float y;
-uniform float width;
-uniform float height;
-varying vec2 v_texCoord;
-varying float v_progress;
-void main(){
-    vec2 pos = (((v_texCoord)*vec2(width, height)) + vec2(0, 1.0-height)) +vec2(x,-y);
-    vec4 color = texture2D(u_image, pos);
-    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){
-        color = vec4(0.0,0.0,0.0,0.0);
-    }
-    gl_FragColor = color;
-}
-`;
-let ht = {
+};
+const vertexShader$1 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$1 = "precision mediump float;\nuniform sampler2D u_image;\nuniform float x;\nuniform float y;\nuniform float width;\nuniform float height;\nvarying vec2 v_texCoord;\nvarying float v_progress;\nvoid main(){\n    vec2 pos = (((v_texCoord)*vec2(width, height)) + vec2(0, 1.0-height)) +vec2(x,-y);\n    vec4 color = texture2D(u_image, pos);\n    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
+let crop = {
   title: "Primer Simple Crop",
   description: "A simple crop processors for primer",
-  vertexShader: dt,
-  fragmentShader: ct,
+  vertexShader: vertexShader$1,
+  fragmentShader: fragmentShader$1,
   properties: {
     x: { type: "uniform", value: 0 },
     y: { type: "uniform", value: 0 },
@@ -797,36 +257,44 @@ let ht = {
     height: { type: "uniform", value: 1 }
   },
   inputs: ["u_image"]
-}, $ = {
-  AAF_VIDEO_SCALE: ae,
-  CROSSFADE: _e,
-  DREAMFADE: at,
-  HORIZONTAL_WIPE: he,
-  VERTICAL_WIPE: fe,
-  RANDOM_DISSOLVE: xe,
-  STATIC_DISSOLVE: tt,
-  STATIC_EFFECT: nt,
-  TO_COLOR_AND_BACK: ye,
-  STAR_WIPE: Ae,
-  COMBINE: Fe,
-  COLORTHRESHOLD: Pe,
-  MONOCHROME: we,
-  HORIZONTAL_BLUR: Le,
-  VERTICAL_BLUR: Be,
-  AAF_VIDEO_CROP: Je,
-  AAF_VIDEO_POSITION: qe,
-  AAF_VIDEO_FLIP: He,
-  AAF_VIDEO_FLOP: Ve,
-  OPACITY: _t,
-  CROP: ht
 };
-const pt = "GraphNode";
-class W {
+let DEFINITIONS = {
+  AAF_VIDEO_SCALE: aaf_video_scale,
+  CROSSFADE: crossfade,
+  DREAMFADE: dreamfade,
+  HORIZONTAL_WIPE: horizontal_wipe,
+  VERTICAL_WIPE: verticalWipe,
+  RANDOM_DISSOLVE: randomDissolve,
+  STATIC_DISSOLVE: staticDissolve,
+  STATIC_EFFECT: staticEffect,
+  TO_COLOR_AND_BACK: toColorAndBackFade,
+  STAR_WIPE: starWipe,
+  COMBINE: combine,
+  COLORTHRESHOLD: colorThreshold,
+  MONOCHROME: monochrome,
+  HORIZONTAL_BLUR: horizontal_blur,
+  VERTICAL_BLUR: verticalBlur,
+  AAF_VIDEO_CROP: aaf_video_crop,
+  AAF_VIDEO_POSITION: aaf_video_position,
+  AAF_VIDEO_FLIP: aaf_video_flip,
+  AAF_VIDEO_FLOP: aaf_video_flop,
+  OPACITY: opacity,
+  CROP: crop
+};
+const TYPE$b = "GraphNode";
+class GraphNode {
   /**
    * Base class from which all processing and source nodes are derrived.
    */
-  constructor(e, t, i, n = !1) {
-    this._renderGraph = t, this._limitConnections = n, this._inputNames = i, this._destroyed = !1, this._gl = e, this._renderGraph = t, this._rendered = !1, this._displayName = pt;
+  constructor(gl, renderGraph, inputNames, limitConnections = false) {
+    this._renderGraph = renderGraph;
+    this._limitConnections = limitConnections;
+    this._inputNames = inputNames;
+    this._destroyed = false;
+    this._gl = gl;
+    this._renderGraph = renderGraph;
+    this._rendered = false;
+    this._displayName = TYPE$b;
   }
   /**
    * Get a string representation of the class name.
@@ -850,7 +318,9 @@ class W {
    * @return {number} The number of connections which can be made to this node.
    */
   get maximumConnections() {
-    return this._limitConnections === !1 ? 1 / 0 : this._inputNames.length;
+    if (this._limitConnections === false)
+      return Infinity;
+    return this._inputNames.length;
   }
   /**
    * Get an array of all the nodes which connect to this node.
@@ -858,10 +328,11 @@ class W {
    * @return {GraphNode[]} An array of nodes which connect to this node.
    */
   get inputs() {
-    let e = this._renderGraph.getInputsForNode(this);
-    return e = e.filter(function(t) {
-      return t !== void 0;
-    }), e;
+    let result = this._renderGraph.getInputsForNode(this);
+    result = result.filter(function(n) {
+      return n !== void 0;
+    });
+    return result;
   }
   /**
    * Get an array of all the nodes which this node outputs to.
@@ -886,8 +357,8 @@ class W {
    * @param {(number| String)} [targetPort] - the port on the targetNode to connect to, this can be an index, a string identifier, or undefined (in which case the next available port will be connected to).
    *
    */
-  connect(e, t) {
-    return this._renderGraph.registerConnection(this, e, t);
+  connect(targetNode, targetPort) {
+    return this._renderGraph.registerConnection(this, targetNode, targetPort);
   }
   /**
    * Disconnect this node from the targetNode. If targetNode is undefind remove all out-bound connections.
@@ -895,24 +366,28 @@ class W {
    * @param {GraphNode} [targetNode] - the node to disconnect from. If undefined, disconnect from all nodes.
    *
    */
-  disconnect(e) {
-    if (e === void 0) {
-      let t = this._renderGraph.getOutputsForNode(this);
-      return t.forEach((i) => this._renderGraph.unregisterConnection(this, i)), t.length > 0;
+  disconnect(targetNode) {
+    if (targetNode === void 0) {
+      let toRemove = this._renderGraph.getOutputsForNode(this);
+      toRemove.forEach((target) => this._renderGraph.unregisterConnection(this, target));
+      if (toRemove.length > 0)
+        return true;
+      return false;
     }
-    return this._renderGraph.unregisterConnection(this, e);
+    return this._renderGraph.unregisterConnection(this, targetNode);
   }
   /**
    * Destory this node, removing it from the graph.
    */
   destroy() {
     this.disconnect();
-    for (let e of this.inputs)
-      e.disconnect(this);
-    this._destroyed = !0;
+    for (let input of this.inputs) {
+      input.disconnect(this);
+    }
+    this._destroyed = true;
   }
 }
-let l = {
+let STATE$1 = {
   waiting: 0,
   sequenced: 1,
   playing: 2,
@@ -920,24 +395,45 @@ let l = {
   ended: 4,
   error: 5
 };
-const mt = "SourceNode";
-class C extends W {
+const TYPE$a = "SourceNode";
+class SourceNode extends GraphNode {
   /**
    * Initialise an instance of a SourceNode.
    * This is the base class for other Nodes which generate media to be passed into the processing pipeline.
    */
-  constructor(e, t, i, n) {
-    super(t, i, [], !0), this._element = void 0, this._elementURL = void 0, this._isResponsibleForElementLifeCycle = !0, typeof e == "string" || window.MediaStream !== void 0 && e instanceof MediaStream ? this._elementURL = e : (this._element = e, this._isResponsibleForElementLifeCycle = !1), this._state = l.waiting, this._currentTime = n, this._startTime = NaN, this._stopTime = 1 / 0, this._ready = !1, this._loadCalled = !1, this._stretchPaused = !1, this._texture = y(t), t.texImage2D(
-      t.TEXTURE_2D,
+  constructor(src, gl, renderGraph, currentTime) {
+    super(gl, renderGraph, [], true);
+    this._element = void 0;
+    this._elementURL = void 0;
+    this._isResponsibleForElementLifeCycle = true;
+    if (typeof src === "string" || window.MediaStream !== void 0 && src instanceof MediaStream) {
+      this._elementURL = src;
+    } else {
+      this._element = src;
+      this._isResponsibleForElementLifeCycle = false;
+    }
+    this._state = STATE$1.waiting;
+    this._currentTime = currentTime;
+    this._startTime = NaN;
+    this._stopTime = Infinity;
+    this._ready = false;
+    this._loadCalled = false;
+    this._stretchPaused = false;
+    this._texture = createElementTexture(gl);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
       0,
-      t.RGBA,
+      gl.RGBA,
       1,
       1,
       0,
-      t.RGBA,
-      t.UNSIGNED_BYTE,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
       new Uint8Array([0, 0, 0, 0])
-    ), this._callbacks = [], this._renderPaused = !1, this._displayName = mt;
+    );
+    this._callbacks = [];
+    this._renderPaused = false;
+    this._displayName = TYPE$a;
   }
   get state() {
     return this._state;
@@ -979,20 +475,27 @@ class C extends W {
    *
    */
   get duration() {
-    if (!isNaN(this._startTime))
-      return this._stopTime === 1 / 0 ? 1 / 0 : this._stopTime - this._startTime;
+    if (isNaN(this._startTime))
+      return void 0;
+    if (this._stopTime === Infinity)
+      return Infinity;
+    return this._stopTime - this._startTime;
   }
-  set stretchPaused(e) {
-    this._stretchPaused = e;
+  set stretchPaused(stretchPaused) {
+    this._stretchPaused = stretchPaused;
   }
   get stretchPaused() {
     return this._stretchPaused;
   }
   _load() {
-    this._loadCalled || (this._triggerCallbacks("load"), this._loadCalled = !0);
+    if (!this._loadCalled) {
+      this._triggerCallbacks("load");
+      this._loadCalled = true;
+    }
   }
   _unload() {
-    this._triggerCallbacks("destroy"), this._loadCalled = !1;
+    this._triggerCallbacks("destroy");
+    this._loadCalled = false;
   }
   /**
    * Register callbacks against one of these events: "load", "destroy", "seek", "pause", "play", "ended", "durationchange", "loaded", "error"
@@ -1009,8 +512,8 @@ class C extends W {
    * videoNode.registerCallback("ended", function(){"video has eneded"});
    *
    */
-  registerCallback(e, t) {
-    this._callbacks.push({ type: e, func: t });
+  registerCallback(type, func) {
+    this._callbacks.push({ type, func });
   }
   /**
    * Remove callback.
@@ -1027,18 +530,30 @@ class C extends W {
    * videoNode.unregisterCallback(); //remove all of the three callbacks.
    *
    */
-  unregisterCallback(e) {
-    let t = [];
-    for (let i of this._callbacks)
-      (e === void 0 || i.func === e) && t.push(i);
-    for (let i of t) {
-      let n = this._callbacks.indexOf(i);
-      this._callbacks.splice(n, 1);
+  unregisterCallback(func) {
+    let toRemove = [];
+    for (let callback of this._callbacks) {
+      if (func === void 0) {
+        toRemove.push(callback);
+      } else if (callback.func === func) {
+        toRemove.push(callback);
+      }
+    }
+    for (let callback of toRemove) {
+      let index = this._callbacks.indexOf(callback);
+      this._callbacks.splice(index, 1);
     }
   }
-  _triggerCallbacks(e, t) {
-    for (let i of this._callbacks)
-      i.type === e && (t !== void 0 ? i.func(this, t) : i.func(this));
+  _triggerCallbacks(type, data) {
+    for (let callback of this._callbacks) {
+      if (callback.type === type) {
+        if (data !== void 0) {
+          callback.func(this, data);
+        } else {
+          callback.func(this);
+        }
+      }
+    }
   }
   /**
    * Start playback at VideoContext.currentTime plus passed time. If passed time is negative, will play as soon as possible.
@@ -1047,8 +562,14 @@ class C extends W {
    * @return {boolean} Will return true is seqeuncing has succeded, or false if it is already sequenced.
    */
   // TODO 这里面添加元素的时候，会添加上当前的currentTime， 这里已经去掉了
-  start(e) {
-    return this._state !== l.waiting ? (console.debug("SourceNode is has already been sequenced. Can't sequence twice."), !1) : (this._startTime = e, this._state = l.sequenced, !0);
+  start(time) {
+    if (this._state !== STATE$1.waiting) {
+      console.debug("SourceNode is has already been sequenced. Can't sequence twice.");
+      return false;
+    }
+    this._startTime = time;
+    this._state = STATE$1.sequenced;
+    return true;
   }
   /**
    * Start playback at an absolute time ont the VideoContext's timeline.
@@ -1056,14 +577,20 @@ class C extends W {
    * @param {number} time - the time on the VideoContexts timeline to start playing.
    * @return {boolean} Will return true is seqeuncing has succeded, or false if it is already sequenced.
    */
-  startAt(e) {
-    return this._state !== l.waiting ? (console.debug("SourceNode is has already been sequenced. Can't sequence twice."), !1) : (this._startTime = e, this._state = l.sequenced, !0);
+  startAt(time) {
+    if (this._state !== STATE$1.waiting) {
+      console.debug("SourceNode is has already been sequenced. Can't sequence twice.");
+      return false;
+    }
+    this._startTime = time;
+    this._state = STATE$1.sequenced;
+    return true;
   }
   get startTime() {
     return this._startTime;
   }
-  set startTime(e) {
-    this._startTime = e;
+  set startTime(time) {
+    this._startTime = time;
   }
   /**
    * Stop playback at VideoContext.currentTime plus passed time. If passed time is negative, will play as soon as possible.
@@ -1072,8 +599,22 @@ class C extends W {
    * @return {boolean} Will return true is seqeuncing has succeded, or false if the playback has already ended or if start hasn't been called yet, or if time is less than the start time.
    */
   // TODO 这里面添加元素的时候，会添加上当前的currentTime， 这里已经去掉了
-  stop(e) {
-    return this._state === l.ended ? (console.debug("SourceNode has already ended. Cannot call stop."), !1) : this._state === l.waiting ? (console.debug("SourceNode must have start called before stop is called"), !1) : this._currentTime + e <= this._startTime ? (console.debug("SourceNode must have a stop time after it's start time, not before."), !1) : (this._stopTime = e, this._stretchPaused = !1, this._triggerCallbacks("durationchange", this.duration), !0);
+  stop(time) {
+    if (this._state === STATE$1.ended) {
+      console.debug("SourceNode has already ended. Cannot call stop.");
+      return false;
+    } else if (this._state === STATE$1.waiting) {
+      console.debug("SourceNode must have start called before stop is called");
+      return false;
+    }
+    if (this._currentTime + time <= this._startTime) {
+      console.debug("SourceNode must have a stop time after it's start time, not before.");
+      return false;
+    }
+    this._stopTime = time;
+    this._stretchPaused = false;
+    this._triggerCallbacks("durationchange", this.duration);
+    return true;
   }
   /**
    * Stop playback at an absolute time ont the VideoContext's timeline.
@@ -1081,58 +622,168 @@ class C extends W {
    * @param {number} time - the time on the VideoContexts timeline to stop playing.
    * @return {boolean} Will return true is seqeuncing has succeded, or false if the playback has already ended or if start hasn't been called yet, or if time is less than the start time.
    */
-  stopAt(e) {
-    return this._state === l.ended ? (console.debug("SourceNode has already ended. Cannot call stop."), !1) : this._state === l.waiting ? (console.debug("SourceNode must have start called before stop is called"), !1) : e <= this._startTime ? (console.debug("SourceNode must have a stop time after it's start time, not before."), !1) : (this._stopTime = e, this._stretchPaused = !1, this._triggerCallbacks("durationchange", this.duration), !0);
+  stopAt(time) {
+    if (this._state === STATE$1.ended) {
+      console.debug("SourceNode has already ended. Cannot call stop.");
+      return false;
+    } else if (this._state === STATE$1.waiting) {
+      console.debug("SourceNode must have start called before stop is called");
+      return false;
+    }
+    if (time <= this._startTime) {
+      console.debug("SourceNode must have a stop time after it's start time, not before.");
+      return false;
+    }
+    this._stopTime = time;
+    this._stretchPaused = false;
+    this._triggerCallbacks("durationchange", this.duration);
+    return true;
   }
   get stopTime() {
     return this._stopTime;
   }
-  set stopTime(e) {
-    this._stopTime = e;
+  set stopTime(time) {
+    this._stopTime = time;
   }
-  _seek(e) {
-    this._renderPaused = !1, this._triggerCallbacks("seek", e), this._state !== l.waiting && (e < this._startTime && (this._state = l.sequenced), e >= this._startTime && this._state !== l.paused && (this._state = l.playing), e >= this._stopTime && (this._triggerCallbacks("ended"), this._state = l.ended), this._currentTime = e);
+  _seek(time) {
+    this._renderPaused = false;
+    this._triggerCallbacks("seek", time);
+    if (this._state === STATE$1.waiting)
+      return;
+    if (time < this._startTime) {
+      this._state = STATE$1.sequenced;
+    }
+    if (time >= this._startTime && this._state !== STATE$1.paused) {
+      this._state = STATE$1.playing;
+    }
+    if (time >= this._stopTime) {
+      this._triggerCallbacks("ended");
+      this._state = STATE$1.ended;
+    }
+    this._currentTime = time;
   }
   _pause() {
-    (this._state === l.playing || this._currentTime === 0 && this._startTime === 0) && (this._triggerCallbacks("pause"), this._state = l.paused, this._renderPaused = !1);
+    if (this._state === STATE$1.playing || this._currentTime === 0 && this._startTime === 0) {
+      this._triggerCallbacks("pause");
+      this._state = STATE$1.paused;
+      this._renderPaused = false;
+    }
   }
   _play() {
-    (this._state === l.paused || this._state === l.playing) && (this._triggerCallbacks("play"), this._state = l.playing);
+    if (this._state === STATE$1.paused || this._state === STATE$1.playing) {
+      this._triggerCallbacks("play");
+      this._state = STATE$1.playing;
+    }
   }
   _isReady() {
-    return this._buffering ? !1 : this._state === l.playing || this._state === l.paused || this._state === l.error ? this._ready : !0;
+    if (this._buffering) {
+      return false;
+    }
+    if (this._state === STATE$1.playing || this._state === STATE$1.paused || this._state === STATE$1.error) {
+      return this._ready;
+    }
+    return true;
   }
-  _update(e, t = !0) {
-    this._rendered = !0;
-    let i = e - this._currentTime;
-    return this._currentTime = e, this._state === l.waiting || this._state === l.ended || this._state === l.error ? !1 : (this._triggerCallbacks("render", e), e < this._startTime && (L(this._gl, this._texture), this._state = l.sequenced), e >= this._startTime && this._state !== l.paused && this._state !== l.error && (this._state !== l.playing && this._triggerCallbacks("play"), this._state = l.playing), e > this._stopTime && (e <= this.duration && L(this._gl, this._texture), this._triggerCallbacks("ended"), this._state = l.ended), this._element === void 0 || this._ready === !1 || (!this._renderPaused && this._state === l.paused && (t && R(this._gl, this._texture, this._element), this._renderPaused = !0), this._state === l.playing && (t && R(this._gl, this._texture, this._element), this._stretchPaused && (this._stopTime += i))), !0);
+  _update(currentTime, triggerTextureUpdate = true) {
+    this._rendered = true;
+    let timeDelta = currentTime - this._currentTime;
+    this._currentTime = currentTime;
+    if (this._state === STATE$1.waiting || this._state === STATE$1.ended || this._state === STATE$1.error)
+      return false;
+    this._triggerCallbacks("render", currentTime);
+    if (currentTime < this._startTime) {
+      clearTexture(this._gl, this._texture);
+      this._state = STATE$1.sequenced;
+    }
+    if (currentTime >= this._startTime && this._state !== STATE$1.paused && this._state !== STATE$1.error) {
+      if (this._state !== STATE$1.playing)
+        this._triggerCallbacks("play");
+      this._state = STATE$1.playing;
+    }
+    if (currentTime > this._stopTime) {
+      clearTexture(this._gl, this._texture);
+      this._triggerCallbacks("ended");
+      this._state = STATE$1.ended;
+    }
+    if (this._element === void 0 || this._ready === false)
+      return true;
+    if (!this._renderPaused && this._state === STATE$1.paused) {
+      if (triggerTextureUpdate) {
+        updateTexture(this._gl, this._texture, this._element);
+      }
+      this._renderPaused = true;
+    }
+    if (this._state === STATE$1.playing) {
+      if (triggerTextureUpdate)
+        updateTexture(this._gl, this._texture, this._element);
+      if (this._stretchPaused) {
+        this._stopTime += timeDelta;
+      }
+    }
+    return true;
   }
   /**
    * Clear any timeline state the node currently has, this puts the node in the "waiting" state, as if neither start nor stop had been called.
    */
   clearTimelineState() {
-    this._startTime = NaN, this._stopTime = 1 / 0, this._state = l.waiting;
+    this._startTime = NaN;
+    this._stopTime = Infinity;
+    this._state = STATE$1.waiting;
   }
   /**
    * Destroy and clean-up the node.
    */
   destroy() {
-    this._unload(), super.destroy(), this.unregisterCallback(), delete this._element, this._elementURL = void 0, this._state = l.waiting, this._currentTime = 0, this._startTime = NaN, this._stopTime = 1 / 0, this._ready = !1, this._loadCalled = !1, this._gl.deleteTexture(this._texture), this._texture = void 0;
+    this._unload();
+    super.destroy();
+    this.unregisterCallback();
+    delete this._element;
+    this._elementURL = void 0;
+    this._state = STATE$1.waiting;
+    this._currentTime = 0;
+    this._startTime = NaN;
+    this._stopTime = Infinity;
+    this._ready = false;
+    this._loadCalled = false;
+    this._gl.deleteTexture(this._texture);
+    this._texture = void 0;
   }
 }
-class P extends C {
+class MediaNode extends SourceNode {
   /**
    * Initialise an instance of a MediaNode.
    * This should not be called directly, but extended by other Node Types which use a `HTMLMediaElement`.
    */
-  constructor(e, t, i, n, s = 1, o = 0, _ = 4, u = void 0, a = {}) {
-    super(e, t, i, n), this._preloadTime = _, this._sourceOffset = o, this._globalPlaybackRate = s, this._mediaElementCache = u, this._playbackRate = 1, this._playbackRateUpdated = !0, this._attributes = Object.assign({ volume: 1 }, a), this._loopElement = !1, this._isElementPlaying = !1, this._attributes.loop && (this._loopElement = this._attributes.loop);
+  constructor(src, gl, renderGraph, currentTime, globalPlaybackRate = 1, sourceOffset = 0, preloadTime = 4, mediaElementCache = void 0, attributes = {}) {
+    super(src, gl, renderGraph, currentTime);
+    this._preloadTime = preloadTime;
+    this._sourceOffset = sourceOffset;
+    this._globalPlaybackRate = globalPlaybackRate;
+    this._mediaElementCache = mediaElementCache;
+    this._playbackRate = 1;
+    this._playbackRateUpdated = true;
+    this._attributes = Object.assign({ volume: 1 }, attributes);
+    this._loopElement = false;
+    this._isElementPlaying = false;
+    if (this._attributes.loop) {
+      this._loopElement = this._attributes.loop;
+    }
   }
-  set playbackRate(e) {
-    this._playbackRate = e, this._playbackRateUpdated = !0;
+  set playbackRate(playbackRate) {
+    this._playbackRate = playbackRate;
+    this._playbackRateUpdated = true;
   }
-  set stretchPaused(e) {
-    super.stretchPaused = e, this._element && (this._stretchPaused ? this._element.pause() : this._state === l.playing && this._element.play());
+  set stretchPaused(stretchPaused) {
+    super.stretchPaused = stretchPaused;
+    if (this._element) {
+      if (this._stretchPaused) {
+        this._element.pause();
+      } else {
+        if (this._state === STATE$1.playing) {
+          this._element.play();
+        }
+      }
+    }
   }
   get stretchPaused() {
     return this._stretchPaused;
@@ -1148,42 +799,75 @@ class P extends C {
    * @summary - Check if the element is waiting on the network to continue playback
    */
   get _buffering() {
-    return this._element ? this._element.readyState < HTMLMediaElement.HAVE_FUTURE_DATA : !1;
+    if (this._element) {
+      return this._element.readyState < HTMLMediaElement.HAVE_FUTURE_DATA;
+    }
+    return false;
   }
-  set volume(e) {
-    this._attributes.volume = e, this._element !== void 0 && (this._element.volume = this._attributes.volume);
+  set volume(volume) {
+    this._attributes.volume = volume;
+    if (this._element !== void 0)
+      this._element.volume = this._attributes.volume;
   }
-  set sourceOffset(e) {
-    this._sourceOffset = e, this._seek(this._currentTime);
+  set sourceOffset(time) {
+    this._sourceOffset = time;
+    this._seek(this._currentTime);
   }
-  set offset(e) {
-    this._sourceOffset = e;
+  set offset(time) {
+    this._sourceOffset = time;
   }
-  set elementURL(e) {
-    this._elementURL = e, this._unload();
+  set elementURL(url) {
+    this._elementURL = url;
+    this._unload();
   }
   _triggerLoad() {
     if (this._isResponsibleForElementLifeCycle) {
-      if (this._mediaElementCache ? this._element = this._mediaElementCache.getElementAndLinkToNode(this) : (this._element = document.createElement(this._elementType), this._element.setAttribute("crossorigin", "anonymous"), this._element.setAttribute("webkit-playsinline", ""), this._element.setAttribute("playsinline", ""), this._playbackRateUpdated = !0), this._element.volume = this._attributes.volume || 0, window.MediaStream !== void 0 && this._elementURL instanceof MediaStream)
+      if (this._mediaElementCache) {
+        this._element = this._mediaElementCache.getElementAndLinkToNode(this);
+      } else {
+        this._element = document.createElement(this._elementType);
+        this._element.setAttribute("crossorigin", "anonymous");
+        this._element.setAttribute("webkit-playsinline", "");
+        this._element.setAttribute("playsinline", "");
+        this._playbackRateUpdated = true;
+      }
+      this._element.volume = this._attributes.volume || 0;
+      if (window.MediaStream !== void 0 && this._elementURL instanceof MediaStream) {
         this._element.srcObject = this._elementURL;
-      else if (this._element.src = this._elementURL, this._sourceOffset === 0 && this._elementType === "video") {
-        const e = this._element;
-        let t = () => {
-          e.currentTime = 0, e.removeEventListener("loadedmetadata", t);
-        };
-        e.addEventListener("loadedmetadata", t);
+      } else {
+        this._element.src = this._elementURL;
+        if (this._sourceOffset === 0 && this._elementType === "video") {
+          const videoEl = this._element;
+          let setFirstVideoTime = () => {
+            videoEl.currentTime = 0;
+            videoEl.removeEventListener("loadedmetadata", setFirstVideoTime);
+          };
+          videoEl.addEventListener("loadedmetadata", setFirstVideoTime);
+        }
       }
     }
     if (this._element) {
-      for (let t in this._attributes)
-        this._element[t] = this._attributes[t];
-      let e = 0;
-      this._currentTime > this._startTime && (e = this._currentTime - this._startTime), this._element.currentTime = this._sourceOffset + e, this._element.onerror = () => {
-        this._element !== void 0 && (console.debug("Error with element", this._element), this._state = l.error, this._ready = !0, this._triggerCallbacks("error"));
+      for (let key in this._attributes) {
+        this._element[key] = this._attributes[key];
+      }
+      let currentTimeOffset = 0;
+      if (this._currentTime > this._startTime)
+        currentTimeOffset = this._currentTime - this._startTime;
+      this._element.currentTime = this._sourceOffset + currentTimeOffset;
+      this._element.onerror = () => {
+        if (this._element === void 0)
+          return;
+        console.debug("Error with element", this._element);
+        this._state = STATE$1.error;
+        this._ready = true;
+        this._triggerCallbacks("error");
       };
-    } else
-      this._state = l.error, this._ready = !0, this._triggerCallbacks("error");
-    this._loadTriggered = !0;
+    } else {
+      this._state = STATE$1.error;
+      this._ready = true;
+      this._triggerCallbacks("error");
+    }
+    this._loadTriggered = true;
   }
   /**
    * _load has two functions:
@@ -1198,205 +882,386 @@ class P extends C {
    *
    */
   _load() {
-    super._load(), this._loadTriggered || this._triggerLoad(), this._element !== void 0 && (this._element.readyState > 3 && !this._element.seeking ? (this._loopElement === !1 && (this._stopTime === 1 / 0 || this._stopTime == null) && (this._stopTime = this._startTime + this._element.duration, this._triggerCallbacks("durationchange", this.duration)), this._ready !== !0 && (this._triggerCallbacks("loaded"), this._playbackRateUpdated = !0), this._ready = !0) : this._state !== l.error && (this._ready = !1, this._state === l.playing && this._currentTime >= this._startTime && this._currentTime <= this._stopTime && this._triggerCallbacks("waiting")));
+    super._load();
+    if (!this._loadTriggered) {
+      this._triggerLoad();
+    }
+    const shouldPollForElementReadyState = this._element !== void 0;
+    if (shouldPollForElementReadyState) {
+      if (this._element.readyState > 3 && !this._element.seeking) {
+        if (this._loopElement === false) {
+          if (this._stopTime === Infinity || this._stopTime == void 0) {
+            this._stopTime = this._startTime + this._element.duration;
+            this._triggerCallbacks("durationchange", this.duration);
+          }
+        }
+        if (this._ready !== true) {
+          this._triggerCallbacks("loaded");
+          this._playbackRateUpdated = true;
+        }
+        this._ready = true;
+      } else {
+        if (this._state !== STATE$1.error) {
+          this._ready = false;
+          if (this._state === STATE$1.playing && (this._currentTime >= this._startTime && this._currentTime <= this._stopTime)) {
+            this._triggerCallbacks("waiting");
+          }
+        }
+      }
+    }
   }
   _unload() {
-    if (super._unload(), this._isResponsibleForElementLifeCycle && this._element !== void 0) {
-      this._element.removeAttribute("src"), this._element.srcObject = void 0, this._element.load();
-      for (let e in this._attributes)
-        this._element.removeAttribute(e);
-      this._mediaElementCache && this._mediaElementCache.unlinkNodeFromElement(this._element), this._element = void 0, this._mediaElementCache || delete this._element;
+    super._unload();
+    if (this._isResponsibleForElementLifeCycle && this._element !== void 0) {
+      this._element.removeAttribute("src");
+      this._element.srcObject = void 0;
+      this._element.load();
+      for (let key in this._attributes) {
+        this._element.removeAttribute(key);
+      }
+      if (this._mediaElementCache)
+        this._mediaElementCache.unlinkNodeFromElement(this._element);
+      this._element = void 0;
+      if (!this._mediaElementCache)
+        delete this._element;
     }
-    this._ready = !1, this._isElementPlaying = !1, this._loadTriggered = !1;
+    this._ready = false;
+    this._isElementPlaying = false;
+    this._loadTriggered = false;
   }
-  _seek(e) {
-    if (super._seek(e), this.state === l.playing || this.state === l.paused) {
-      this._element === void 0 && this._load();
-      let t = (this._currentTime - this._startTime) * this.playbackRate + this._sourceOffset;
-      this._element.currentTime = t, this._ready = !1;
+  _seek(time) {
+    super._seek(time);
+    if (this.state === STATE$1.playing || this.state === STATE$1.paused) {
+      if (this._element === void 0)
+        this._load();
+      let relativeTime = (this._currentTime - this._startTime) * this.playbackRate + this._sourceOffset;
+      this._element.currentTime = relativeTime;
+      this._ready = false;
     }
-    (this._state === l.sequenced || this._state === l.ended) && this._element !== void 0 && this._unload();
+    if ((this._state === STATE$1.sequenced || this._state === STATE$1.ended) && this._element !== void 0) {
+      this._unload();
+    }
   }
-  _update(e, t = !0) {
-    if (super._update(e, t), this._element !== void 0 && this._element.ended && (this._state = l.ended, this._triggerCallbacks("ended")), this._startTime - this._currentTime <= this._preloadTime && this._state !== l.waiting && this._state !== l.ended && this._load(), this._state === l.playing)
-      return this._playbackRateUpdated && (this._element.playbackRate = this._globalPlaybackRate * this._playbackRate, this._playbackRateUpdated = !1), this._isElementPlaying || (this._element.play(), this._stretchPaused && this._element.pause(), this._isElementPlaying = !0), !0;
-    if (this._state === l.paused)
-      return this._element.pause(), this._isElementPlaying = !1, !0;
-    if (this._state === l.ended && this._element !== void 0)
-      return this._element.pause(), this._isElementPlaying && this._unload(), !1;
+  _update(currentTime, triggerTextureUpdate = true) {
+    super._update(currentTime, triggerTextureUpdate);
+    if (this._element !== void 0) {
+      if (this._element.ended) {
+        this._state = STATE$1.ended;
+        this._triggerCallbacks("ended");
+      }
+    }
+    if (this._startTime - this._currentTime <= this._preloadTime && this._state !== STATE$1.waiting && this._state !== STATE$1.ended)
+      this._load();
+    if (this._state === STATE$1.playing) {
+      if (this._playbackRateUpdated) {
+        this._element.playbackRate = this._globalPlaybackRate * this._playbackRate;
+        this._playbackRateUpdated = false;
+      }
+      if (!this._isElementPlaying) {
+        this._element.play();
+        if (this._stretchPaused) {
+          this._element.pause();
+        }
+        this._isElementPlaying = true;
+      }
+      return true;
+    } else if (this._state === STATE$1.paused) {
+      this._element.pause();
+      this._isElementPlaying = false;
+      return true;
+    } else if (this._state === STATE$1.ended && this._element !== void 0) {
+      this._element.pause();
+      if (this._isElementPlaying) {
+        this._unload();
+      }
+      return false;
+    }
   }
   clearTimelineState() {
-    super.clearTimelineState(), this._element !== void 0 && (this._element.pause(), this._isElementPlaying = !1), this._unload();
+    super.clearTimelineState();
+    if (this._element !== void 0) {
+      this._element.pause();
+      this._isElementPlaying = false;
+    }
+    this._unload();
   }
   destroy() {
-    this._element && this._element.pause(), super.destroy();
+    if (this._element)
+      this._element.pause();
+    super.destroy();
   }
 }
-const S = "VideoNode";
-class F extends P {
+const TYPE$9 = "VideoNode";
+class VideoNode extends MediaNode {
   /**
    * Initialise an instance of a VideoNode.
    * This should not be called directly, but created through a call to videoContext.createVideoNode();
    */
   constructor() {
-    super(...arguments), this._displayName = S, this._elementType = "video";
+    super(...arguments);
+    this._displayName = TYPE$9;
+    this._elementType = "video";
   }
 }
-const V = "CanvasNode";
-class X extends C {
+const TYPE$8 = "CanvasNode";
+class CanvasNode extends SourceNode {
   /**
    * Initialise an instance of a CanvasNode.
    * This should not be called directly, but created through a call to videoContext.createCanvasNode();
    */
-  constructor(e, t, i, n, s = 4) {
-    super(e, t, i, n), this._preloadTime = s, this._displayName = V;
+  constructor(canvas, gl, renderGraph, currentTime, preloadTime = 4) {
+    super(canvas, gl, renderGraph, currentTime);
+    this._preloadTime = preloadTime;
+    this._displayName = TYPE$8;
   }
   _load() {
-    super._load(), this._ready = !0, this._triggerCallbacks("loaded");
+    super._load();
+    this._ready = true;
+    this._triggerCallbacks("loaded");
   }
   _unload() {
-    super._unload(), this._ready = !1;
+    super._unload();
+    this._ready = false;
   }
-  _seek(e) {
-    super._seek(e), (this.state === l.playing || this.state === l.paused) && (this._element === void 0 && this._load(), this._ready = !1), (this._state === l.sequenced || this._state === l.ended) && this._element !== void 0 && this._unload();
+  _seek(time) {
+    super._seek(time);
+    if (this.state === STATE$1.playing || this.state === STATE$1.paused) {
+      if (this._element === void 0)
+        this._load();
+      this._ready = false;
+    }
+    if ((this._state === STATE$1.sequenced || this._state === STATE$1.ended) && this._element !== void 0) {
+      this._unload();
+    }
   }
-  _update(e) {
-    if (super._update(e), this._startTime - this._currentTime <= this._preloadTime && this._state !== l.waiting && this._state !== l.ended && this._load(), this._state === l.playing)
-      return !0;
-    if (this._state === l.paused)
-      return !0;
-    if (this._state === l.ended && this._element !== void 0)
-      return this._unload(), !1;
+  _update(currentTime) {
+    super._update(currentTime);
+    if (this._startTime - this._currentTime <= this._preloadTime && this._state !== STATE$1.waiting && this._state !== STATE$1.ended)
+      this._load();
+    if (this._state === STATE$1.playing) {
+      return true;
+    } else if (this._state === STATE$1.paused) {
+      return true;
+    } else if (this._state === STATE$1.ended && this._element !== void 0) {
+      this._unload();
+      return false;
+    }
   }
 }
-const Y = "CanvasNode";
-class H extends C {
+const TYPE$7 = "CanvasNode";
+class ImageNode extends SourceNode {
   /**
    * Initialise an instance of an ImageNode.
    * This should not be called directly, but created through a call to videoContext.createImageNode();
    */
-  constructor(e, t, i, n, s = 4, o = {}) {
-    super(e, t, i, n), this._preloadTime = s, this._attributes = o, this._textureUploaded = !1, this._displayName = Y;
+  constructor(src, gl, renderGraph, currentTime, preloadTime = 4, attributes = {}) {
+    super(src, gl, renderGraph, currentTime);
+    this._preloadTime = preloadTime;
+    this._attributes = attributes;
+    this._textureUploaded = false;
+    this._displayName = TYPE$7;
   }
   get elementURL() {
     return this._elementURL;
   }
-  set elementURL(e) {
-    this._elementURL = e, this._unload();
+  set elementURL(url) {
+    this._elementURL = url;
+    this._unload();
   }
   _load() {
     if (this._image !== void 0) {
-      for (var e in this._attributes)
-        this._image[e] = this._attributes[e];
+      for (var key in this._attributes) {
+        this._image[key] = this._attributes[key];
+      }
       return;
     }
     if (this._isResponsibleForElementLifeCycle) {
-      super._load(), this._image = new Image(), this._image.setAttribute("crossorigin", "anonymous"), this._image.onload = () => {
-        this._ready = !0, this._element = this._image, this._triggerCallbacks("loaded");
-      }, this._image.src = this._elementURL, this._image.onerror = () => {
+      super._load();
+      this._image = new Image();
+      this._image.setAttribute("crossorigin", "anonymous");
+      this._image.onload = () => {
+        this._ready = true;
+        this._element = this._image;
+        this._triggerCallbacks("loaded");
+      };
+      this._image.src = this._elementURL;
+      this._image.onerror = () => {
         console.error("ImageNode failed to load. url:", this._elementURL);
       };
-      for (let t in this._attributes)
-        this._image[t] = this._attributes[t];
+      for (let key2 in this._attributes) {
+        this._image[key2] = this._attributes[key2];
+      }
     }
     this._image.onerror = () => {
-      console.debug("Error with element", this._image), this._state = l.error, this._ready = !0, this._triggerCallbacks("error");
+      console.debug("Error with element", this._image);
+      this._state = STATE$1.error;
+      this._ready = true;
+      this._triggerCallbacks("error");
     };
   }
   _unload() {
-    super._unload(), this._isResponsibleForElementLifeCycle && (this._image !== void 0 && (this._image.src = "", this._image.onerror = void 0, this._image = void 0, delete this._image), this._element instanceof window.ImageBitmap && this._element.close()), this._ready = !1;
+    super._unload();
+    if (this._isResponsibleForElementLifeCycle) {
+      if (this._image !== void 0) {
+        this._image.src = "";
+        this._image.onerror = void 0;
+        this._image = void 0;
+        delete this._image;
+      }
+      if (this._element instanceof window.ImageBitmap) {
+        this._element.close();
+      }
+    }
+    this._ready = false;
   }
-  _seek(e) {
-    super._seek(e), (this.state === l.playing || this.state === l.paused) && this._image === void 0 && this._load(), (this._state === l.sequenced || this._state === l.ended) && this._element !== void 0 && this._unload();
+  _seek(time) {
+    super._seek(time);
+    if (this.state === STATE$1.playing || this.state === STATE$1.paused) {
+      if (this._image === void 0)
+        this._load();
+    }
+    if ((this._state === STATE$1.sequenced || this._state === STATE$1.ended) && this._element !== void 0) {
+      this._unload();
+    }
   }
-  _update(e) {
-    if (this._textureUploaded ? super._update(e, !1) : super._update(e), this._startTime - this._currentTime <= this._preloadTime && this._state !== l.waiting && this._state !== l.ended && this._load(), this._state === l.playing)
-      return !0;
-    if (this._state === l.paused)
-      return !0;
-    if (this._state === l.ended && this._image !== void 0)
-      return this._unload(), !1;
+  _update(currentTime) {
+    if (this._textureUploaded) {
+      super._update(currentTime, false);
+    } else {
+      super._update(currentTime);
+    }
+    if (this._startTime - this._currentTime <= this._preloadTime && this._state !== STATE$1.waiting && this._state !== STATE$1.ended)
+      this._load();
+    if (this._state === STATE$1.playing) {
+      return true;
+    } else if (this._state === STATE$1.paused) {
+      return true;
+    } else if (this._state === STATE$1.ended && this._image !== void 0) {
+      this._unload();
+      return false;
+    }
   }
 }
-function w(r) {
-  this.message = r, this.name = "ConnectionException";
+function ConnectException(message) {
+  this.message = message;
+  this.name = "ConnectionException";
 }
-function U(r) {
-  this.message = r, this.name = "RenderException";
+function RenderException(message) {
+  this.message = message;
+  this.name = "RenderException";
 }
-const ft = "ProcessingNode";
-class k extends W {
+const TYPE$6 = "ProcessingNode";
+class ProcessingNode extends GraphNode {
   /**
    * Initialise an instance of a ProcessingNode.
    *
    * This class is not used directly, but is extended to create CompositingNodes, TransitionNodes, and EffectNodes.
    */
-  constructor(e, t, i, n, s) {
-    super(e, t, n, s), this._vertexShader = O(e, i.vertexShader, e.VERTEX_SHADER), this._fragmentShader = O(e, i.fragmentShader, e.FRAGMENT_SHADER), this._definition = i, this._properties = {};
-    for (let a in i.properties) {
-      let d = i.properties[a].value;
-      Object.prototype.toString.call(d) === "[object Array]" && (d = i.properties[a].value.slice());
-      let p = i.properties[a].type;
-      this._properties[a] = {
-        type: p,
-        value: d
+  constructor(gl, renderGraph, definition, inputNames, limitConnections) {
+    super(gl, renderGraph, inputNames, limitConnections);
+    this._vertexShader = compileShader(gl, definition.vertexShader, gl.VERTEX_SHADER);
+    this._fragmentShader = compileShader(gl, definition.fragmentShader, gl.FRAGMENT_SHADER);
+    this._definition = definition;
+    this._properties = {};
+    for (let propertyName in definition.properties) {
+      let propertyValue = definition.properties[propertyName].value;
+      if (Object.prototype.toString.call(propertyValue) === "[object Array]") {
+        propertyValue = definition.properties[propertyName].value.slice();
+      }
+      let propertyType = definition.properties[propertyName].type;
+      this._properties[propertyName] = {
+        type: propertyType,
+        value: propertyValue
       };
     }
-    this._shaderInputsTextureUnitMapping = [], this._maxTextureUnits = e.getParameter(e.MAX_TEXTURE_IMAGE_UNITS), this._boundTextureUnits = 0, this._texture = y(e), e.texImage2D(
-      e.TEXTURE_2D,
+    this._shaderInputsTextureUnitMapping = [];
+    this._maxTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+    this._boundTextureUnits = 0;
+    this._texture = createElementTexture(gl);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
       0,
-      e.RGBA,
-      e.canvas.width,
-      e.canvas.height,
+      gl.RGBA,
+      gl.canvas.width,
+      gl.canvas.height,
       0,
-      e.RGBA,
-      e.UNSIGNED_BYTE,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
       null
-    ), this._program = Ct(e, this._vertexShader, this._fragmentShader), this._framebuffer = e.createFramebuffer(), e.bindFramebuffer(e.FRAMEBUFFER, this._framebuffer), e.framebufferTexture2D(
-      e.FRAMEBUFFER,
-      e.COLOR_ATTACHMENT0,
-      e.TEXTURE_2D,
+    );
+    this._program = createShaderProgram(gl, this._vertexShader, this._fragmentShader);
+    this._framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebuffer);
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
       this._texture,
       0
-    ), e.bindFramebuffer(e.FRAMEBUFFER, null);
-    for (let a in this._properties)
-      Object.defineProperty(this, a, {
+    );
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    for (let propertyName in this._properties) {
+      Object.defineProperty(this, propertyName, {
         get: function() {
-          return this._properties[a].value;
+          return this._properties[propertyName].value;
         },
-        set: function(d) {
-          this._properties[a].value = d;
+        set: function(passedValue) {
+          this._properties[propertyName].value = passedValue;
         }
       });
-    for (let a in this._properties)
-      if (this._properties[a].value instanceof Image && (this._properties[a].texture = y(e), this._properties[a].textureUnit = e.TEXTURE0 + this._boundTextureUnits, this._properties[a].textureUnitIndex = this._boundTextureUnits, this._boundTextureUnits += 1, this._boundTextureUnits > this._maxTextureUnits))
-        throw new U(
-          "Trying to bind more than available textures units to shader"
-        );
-    for (let a of i.inputs)
-      if (this._shaderInputsTextureUnitMapping.push({
-        name: a,
-        textureUnit: e.TEXTURE0 + this._boundTextureUnits,
+    }
+    for (let propertyName in this._properties) {
+      let propertyValue = this._properties[propertyName].value;
+      if (propertyValue instanceof Image) {
+        this._properties[propertyName].texture = createElementTexture(gl);
+        this._properties[propertyName].textureUnit = gl.TEXTURE0 + this._boundTextureUnits;
+        this._properties[propertyName].textureUnitIndex = this._boundTextureUnits;
+        this._boundTextureUnits += 1;
+        if (this._boundTextureUnits > this._maxTextureUnits) {
+          throw new RenderException(
+            "Trying to bind more than available textures units to shader"
+          );
+        }
+      }
+    }
+    for (let inputName of definition.inputs) {
+      this._shaderInputsTextureUnitMapping.push({
+        name: inputName,
+        textureUnit: gl.TEXTURE0 + this._boundTextureUnits,
         textureUnitIndex: this._boundTextureUnits,
-        location: e.getUniformLocation(this._program, a)
-      }), this._boundTextureUnits += 1, this._boundTextureUnits > this._maxTextureUnits)
-        throw new U(
+        location: gl.getUniformLocation(this._program, inputName)
+      });
+      this._boundTextureUnits += 1;
+      if (this._boundTextureUnits > this._maxTextureUnits) {
+        throw new RenderException(
           "Trying to bind more than available textures units to shader"
         );
-    for (let a in this._properties)
-      this._properties[a].type === "uniform" && (this._properties[a].location = this._gl.getUniformLocation(
-        this._program,
-        a
-      ));
-    this._currentTimeLocation = this._gl.getUniformLocation(this._program, "currentTime"), this._currentTime = 0;
-    let o = e.getAttribLocation(this._program, "a_position"), _ = e.createBuffer();
-    e.bindBuffer(e.ARRAY_BUFFER, _), e.enableVertexAttribArray(o), e.vertexAttribPointer(o, 2, e.FLOAT, !1, 0, 0), e.bufferData(
-      e.ARRAY_BUFFER,
+      }
+    }
+    for (let propertyName in this._properties) {
+      if (this._properties[propertyName].type === "uniform") {
+        this._properties[propertyName].location = this._gl.getUniformLocation(
+          this._program,
+          propertyName
+        );
+      }
+    }
+    this._currentTimeLocation = this._gl.getUniformLocation(this._program, "currentTime");
+    this._currentTime = 0;
+    let positionLocation = gl.getAttribLocation(this._program, "a_position");
+    let buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
       new Float32Array([1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0]),
-      e.STATIC_DRAW
+      gl.STATIC_DRAW
     );
-    let u = e.getAttribLocation(this._program, "a_texCoord");
-    e.enableVertexAttribArray(u), e.vertexAttribPointer(u, 2, e.FLOAT, !1, 0, 0), this._displayName = ft;
+    let texCoordLocation = gl.getAttribLocation(this._program, "a_texCoord");
+    gl.enableVertexAttribArray(texCoordLocation);
+    gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+    this._displayName = TYPE$6;
   }
   /**
    * Sets the passed processing node property to the passed value.
@@ -1408,8 +1273,8 @@ class k extends W {
    * var monoNode = ctx.effect(VideoContext.DEFINITIONS.MONOCHROME);
    * monoNode.setProperty("inputMix", [1.0,0.0,0.0]); //Just use red channel
    */
-  setProperty(e, t) {
-    this._properties[e].value = t;
+  setProperty(name, value) {
+    this._properties[name].value = value;
   }
   /**
    * Sets the passed processing node property to the passed value.
@@ -1421,64 +1286,85 @@ class k extends W {
    * console.log(monoNode.getProperty("inputMix")); //Will output [0.4,0.6,0.2], the default value from the effect definition.
    *
    */
-  getProperty(e) {
-    return this._properties[e].value;
+  getProperty(name) {
+    return this._properties[name].value;
   }
   /**
    * Destroy and clean-up the node.
    */
   destroy() {
     super.destroy();
-    for (let e in this._properties)
-      this._properties[e].value instanceof Image && (this._gl.deleteTexture(this._properties[e].texture), this._texture = void 0);
-    this._gl.deleteTexture(this._texture), this._texture = void 0, this._gl.detachShader(this._program, this._vertexShader), this._gl.detachShader(this._program, this._fragmentShader), this._gl.deleteShader(this._vertexShader), this._gl.deleteShader(this._fragmentShader), this._gl.deleteProgram(this._program), this._gl.deleteFramebuffer(this._framebuffer);
+    for (let propertyName in this._properties) {
+      let propertyValue = this._properties[propertyName].value;
+      if (propertyValue instanceof Image) {
+        this._gl.deleteTexture(this._properties[propertyName].texture);
+        this._texture = void 0;
+      }
+    }
+    this._gl.deleteTexture(this._texture);
+    this._texture = void 0;
+    this._gl.detachShader(this._program, this._vertexShader);
+    this._gl.detachShader(this._program, this._fragmentShader);
+    this._gl.deleteShader(this._vertexShader);
+    this._gl.deleteShader(this._fragmentShader);
+    this._gl.deleteProgram(this._program);
+    this._gl.deleteFramebuffer(this._framebuffer);
   }
-  _update(e) {
-    this._currentTime = e;
+  _update(currentTime) {
+    this._currentTime = currentTime;
   }
-  _seek(e) {
-    this._currentTime = e;
+  _seek(currentTime) {
+    this._currentTime = currentTime;
   }
   _render() {
-    this._rendered = !0;
-    let e = this._gl;
-    e.viewport(0, 0, e.canvas.width, e.canvas.height), e.useProgram(this._program), e.uniform1f(this._currentTimeLocation, parseFloat(this._currentTime));
-    for (let t in this._properties) {
-      let i = this._properties[t].value, n = this._properties[t].type, s = this._properties[t].location;
-      if (n === "uniform")
-        if (typeof i == "number")
-          e.uniform1f(s, i);
-        else if (Object.prototype.toString.call(i) === "[object Array]")
-          i.length === 1 ? e.uniform1fv(s, i) : i.length === 2 ? e.uniform2fv(s, i) : i.length === 3 ? e.uniform3fv(s, i) : i.length === 4 ? e.uniform4fv(s, i) : console.debug(
+    this._rendered = true;
+    let gl = this._gl;
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.useProgram(this._program);
+    gl.uniform1f(this._currentTimeLocation, parseFloat(this._currentTime));
+    for (let propertyName in this._properties) {
+      let propertyValue = this._properties[propertyName].value;
+      let propertyType = this._properties[propertyName].type;
+      let propertyLocation = this._properties[propertyName].location;
+      if (propertyType !== "uniform")
+        continue;
+      if (typeof propertyValue === "number") {
+        gl.uniform1f(propertyLocation, propertyValue);
+      } else if (Object.prototype.toString.call(propertyValue) === "[object Array]") {
+        if (propertyValue.length === 1) {
+          gl.uniform1fv(propertyLocation, propertyValue);
+        } else if (propertyValue.length === 2) {
+          gl.uniform2fv(propertyLocation, propertyValue);
+        } else if (propertyValue.length === 3) {
+          gl.uniform3fv(propertyLocation, propertyValue);
+        } else if (propertyValue.length === 4) {
+          gl.uniform4fv(propertyLocation, propertyValue);
+        } else {
+          console.debug(
             "Shader parameter",
-            t,
+            propertyName,
             "is too long an array:",
-            i
+            propertyValue
           );
-        else if (i instanceof Image) {
-          let o = this._properties[t].texture, _ = this._properties[t].textureUnit, u = this._properties[t].textureUnit;
-          R(e, o, i), e.activeTexture(_), e.uniform1i(s, u), e.bindTexture(e.TEXTURE_2D, o);
-        } else
-          e.uniformMatrix3fv(s, !1, i);
+        }
+      } else if (propertyValue instanceof Image) {
+        let texture = this._properties[propertyName].texture;
+        let textureUnit = this._properties[propertyName].textureUnit;
+        let textureUnitIndex = this._properties[propertyName].textureUnit;
+        updateTexture(gl, texture, propertyValue);
+        gl.activeTexture(textureUnit);
+        gl.uniform1i(propertyLocation, textureUnitIndex);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+      } else {
+        gl.uniformMatrix3fv(propertyLocation, false, propertyValue);
+      }
     }
   }
 }
-const vt = `precision mediump float;
-uniform sampler2D u_image;
-varying vec2 v_texCoord;
-varying float v_progress;
-void main(){
-    gl_FragColor = texture2D(u_image, v_texCoord);
-}
-`, gt = `attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);
-    v_texCoord = a_texCoord;
-}
-`, z = "DestinationNode";
-class xt extends k {
+const fragmentShader = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvarying float v_progress;\nvoid main(){\n    gl_FragColor = texture2D(u_image, v_texCoord);\n}\n";
+const vertexShader = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const TYPE$5 = "DestinationNode";
+class DestinationNode extends ProcessingNode {
   /**
    * Initialise an instance of a DestinationNode.
    *
@@ -1486,87 +1372,124 @@ class xt extends k {
    *
    * You should not instantiate this directly.
    */
-  constructor(e, t) {
-    let i = {
-      fragmentShader: vt,
-      vertexShader: gt,
+  constructor(gl, renderGraph) {
+    let definition = {
+      fragmentShader,
+      vertexShader,
       properties: {},
       inputs: ["u_image"]
     };
-    super(e, t, i, i.inputs, !1), this._displayName = z;
+    super(gl, renderGraph, definition, definition.inputs, false);
+    this._displayName = TYPE$5;
   }
   _render() {
-    let e = this._gl;
-    e.bindFramebuffer(e.FRAMEBUFFER, null), e.blendFunc(e.SRC_ALPHA, e.ONE_MINUS_SRC_ALPHA), e.enable(e.BLEND), e.clearColor(0, 0, 0, 0), e.clear(e.COLOR_BUFFER_BIT), this.inputs.forEach((t) => {
+    let gl = this._gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enable(gl.BLEND);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    this.inputs.forEach((node) => {
       super._render();
-      var i = t._texture;
-      for (let n of this._shaderInputsTextureUnitMapping)
-        e.activeTexture(n.textureUnit), e.uniform1i(n.location, n.textureUnitIndex), e.bindTexture(e.TEXTURE_2D, i);
-      e.drawArrays(e.TRIANGLES, 0, 6);
+      var texture = node._texture;
+      for (let mapping of this._shaderInputsTextureUnitMapping) {
+        gl.activeTexture(mapping.textureUnit);
+        gl.uniform1i(mapping.location, mapping.textureUnitIndex);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+      }
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
     });
   }
 }
-const bt = "EffectNode";
-class j extends k {
+const TYPE$4 = "EffectNode";
+class EffectNode extends ProcessingNode {
   /**
    * Initialise an instance of an EffectNode. You should not instantiate this directly, but use VideoContest.createEffectNode().
    */
-  constructor(e, t, i) {
-    let n = y(e);
-    e.texImage2D(
-      e.TEXTURE_2D,
+  constructor(gl, renderGraph, definition) {
+    let placeholderTexture = createElementTexture(gl);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
       0,
-      e.RGBA,
+      gl.RGBA,
       1,
       1,
       0,
-      e.RGBA,
-      e.UNSIGNED_BYTE,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
       new Uint8Array([0, 0, 0, 0])
-    ), super(e, t, i, i.inputs, !0), this._placeholderTexture = n, this._displayName = bt;
+    );
+    super(gl, renderGraph, definition, definition.inputs, true);
+    this._placeholderTexture = placeholderTexture;
+    this._displayName = TYPE$4;
   }
   _render() {
-    let e = this._gl;
-    e.bindFramebuffer(e.FRAMEBUFFER, this._framebuffer), e.framebufferTexture2D(
-      e.FRAMEBUFFER,
-      e.COLOR_ATTACHMENT0,
-      e.TEXTURE_2D,
+    let gl = this._gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebuffer);
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
       this._texture,
       0
-    ), e.clearColor(0, 0, 0, 0), e.clear(e.COLOR_BUFFER_BIT), e.blendFunc(e.ONE, e.ZERO), super._render();
-    let t = this._renderGraph.getInputsForNode(this);
+    );
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.blendFunc(gl.ONE, gl.ZERO);
+    super._render();
+    let inputs = this._renderGraph.getInputsForNode(this);
     for (var i = 0; i < this._shaderInputsTextureUnitMapping.length; i++) {
-      let n = this._placeholderTexture, s = this._shaderInputsTextureUnitMapping[i].textureUnit;
-      i < t.length && t[i] !== void 0 && (n = t[i]._texture), e.activeTexture(s), e.uniform1i(
+      let inputTexture = this._placeholderTexture;
+      let textureUnit = this._shaderInputsTextureUnitMapping[i].textureUnit;
+      if (i < inputs.length && inputs[i] !== void 0) {
+        inputTexture = inputs[i]._texture;
+      }
+      gl.activeTexture(textureUnit);
+      gl.uniform1i(
         this._shaderInputsTextureUnitMapping[i].location,
         this._shaderInputsTextureUnitMapping[i].textureUnitIndex
-      ), e.bindTexture(e.TEXTURE_2D, n);
+      );
+      gl.bindTexture(gl.TEXTURE_2D, inputTexture);
     }
-    e.drawArrays(e.TRIANGLES, 0, 6), e.bindFramebuffer(e.FRAMEBUFFER, null);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 }
-const I = "TransitionNode";
-class Tt extends j {
+const TYPE$3 = "TransitionNode";
+class TransitionNode extends EffectNode {
   /**
    * Initialise an instance of a TransitionNode. You should not instantiate this directly, but use VideoContest.createTransitonNode().
    */
-  constructor(e, t, i) {
-    super(e, t, i), this._transitions = {}, this._initialPropertyValues = {};
-    for (let n in this._properties)
-      this._initialPropertyValues[n] = this._properties[n].value;
-    this._displayName = I;
+  constructor(gl, renderGraph, definition) {
+    super(gl, renderGraph, definition);
+    this._transitions = {};
+    this._initialPropertyValues = {};
+    for (let propertyName in this._properties) {
+      this._initialPropertyValues[propertyName] = this._properties[propertyName].value;
+    }
+    this._displayName = TYPE$3;
   }
-  _doesTransitionFitOnTimeline(e) {
-    if (this._transitions[e.property] === void 0)
-      return !0;
-    for (let t of this._transitions[e.property])
-      if (e.start > t.start && e.start < t.end || e.end > t.start && e.end < t.end || t.start > e.start && t.start < e.end || t.end > e.start && t.end < e.end)
-        return !1;
-    return !0;
+  _doesTransitionFitOnTimeline(testTransition) {
+    if (this._transitions[testTransition.property] === void 0)
+      return true;
+    for (let transition of this._transitions[testTransition.property]) {
+      if (testTransition.start > transition.start && testTransition.start < transition.end)
+        return false;
+      if (testTransition.end > transition.start && testTransition.end < transition.end)
+        return false;
+      if (transition.start > testTransition.start && transition.start < testTransition.end)
+        return false;
+      if (transition.end > testTransition.start && transition.end < testTransition.end)
+        return false;
+    }
+    return true;
   }
-  _insertTransitionInTimeline(e) {
-    this._transitions[e.property] === void 0 && (this._transitions[e.property] = []), this._transitions[e.property].push(e), this._transitions[e.property].sort(function(t, i) {
-      return t.start - i.start;
+  _insertTransitionInTimeline(transition) {
+    if (this._transitions[transition.property] === void 0)
+      this._transitions[transition.property] = [];
+    this._transitions[transition.property].push(transition);
+    this._transitions[transition.property].sort(function(a, b) {
+      return a.start - b.start;
     });
   }
   /**
@@ -1580,15 +1503,18 @@ class Tt extends j {
    *
    * @return {Boolean} returns True if a transition is successfully added, false otherwise.
    */
-  transition(e, t, i, n, s = "mix") {
-    let o = {
-      start: e + this._currentTime,
-      end: t + this._currentTime,
-      current: i,
-      target: n,
-      property: s
+  transition(startTime, endTime, currentValue, targetValue, propertyName = "mix") {
+    let transition = {
+      start: startTime + this._currentTime,
+      end: endTime + this._currentTime,
+      current: currentValue,
+      target: targetValue,
+      property: propertyName
     };
-    return this._doesTransitionFitOnTimeline(o) ? (this._insertTransitionInTimeline(o), !0) : !1;
+    if (!this._doesTransitionFitOnTimeline(transition))
+      return false;
+    this._insertTransitionInTimeline(transition);
+    return true;
   }
   /**
    * Create a transition on the timeline at an absolute time.
@@ -1601,23 +1527,30 @@ class Tt extends j {
    *
    * @return {Boolean} returns True if a transition is successfully added, false otherwise.
    */
-  transitionAt(e, t, i, n, s = "mix") {
-    let o = {
-      start: e,
-      end: t,
-      current: i,
-      target: n,
-      property: s
+  transitionAt(startTime, endTime, currentValue, targetValue, propertyName = "mix") {
+    let transition = {
+      start: startTime,
+      end: endTime,
+      current: currentValue,
+      target: targetValue,
+      property: propertyName
     };
-    return this._doesTransitionFitOnTimeline(o) ? (this._insertTransitionInTimeline(o), !0) : !1;
+    if (!this._doesTransitionFitOnTimeline(transition))
+      return false;
+    this._insertTransitionInTimeline(transition);
+    return true;
   }
   /**
    * Clear all transistions on the passed property. If no property is defined clear all transitions on the node.
    *
    * @param {String} propertyName - The name of the property to clear transitions on, if undefined clear all transitions on the node.
    */
-  clearTransitions(e) {
-    e === void 0 ? this._transitions = {} : this._transitions[e] = [];
+  clearTransitions(propertyName) {
+    if (propertyName === void 0) {
+      this._transitions = {};
+    } else {
+      this._transitions[propertyName] = [];
+    }
   }
   /**
    * Clear a transistion on the passed property that the specified time lies within.
@@ -1627,83 +1560,113 @@ class Tt extends j {
    *
    * @return {Boolean} returns True if a transition is removed, false otherwise.
    */
-  clearTransition(e, t) {
-    let i;
-    for (var n = 0; n < this._transitions[e].length; n++) {
-      let s = this._transitions[e][n];
-      t > s.start && t < s.end && (i = n);
+  clearTransition(propertyName, time) {
+    let transitionIndex = void 0;
+    for (var i = 0; i < this._transitions[propertyName].length; i++) {
+      let transition = this._transitions[propertyName][i];
+      if (time > transition.start && time < transition.end) {
+        transitionIndex = i;
+      }
     }
-    return i !== void 0 ? (this._transitions[e].splice(i, 1), !0) : !1;
+    if (transitionIndex !== void 0) {
+      this._transitions[propertyName].splice(transitionIndex, 1);
+      return true;
+    }
+    return false;
   }
-  _update(e) {
-    super._update(e);
-    for (let i in this._transitions) {
-      let n = this[i];
-      this._transitions[i].length > 0 && (n = this._transitions[i][0].current);
-      let s = !1;
-      for (var t = 0; t < this._transitions[i].length; t++) {
-        let o = this._transitions[i][t];
-        if (e > o.end) {
-          n = o.target;
+  _update(currentTime) {
+    super._update(currentTime);
+    for (let propertyName in this._transitions) {
+      let value = this[propertyName];
+      if (this._transitions[propertyName].length > 0) {
+        value = this._transitions[propertyName][0].current;
+      }
+      let transitionActive = false;
+      for (var i = 0; i < this._transitions[propertyName].length; i++) {
+        let transition = this._transitions[propertyName][i];
+        if (currentTime > transition.end) {
+          value = transition.target;
           continue;
         }
-        if (e > o.start && e < o.end) {
-          let _ = o.target - o.current, u = (this._currentTime - o.start) / (o.end - o.start);
-          s = !0, this[i] = o.current + _ * u;
+        if (currentTime > transition.start && currentTime < transition.end) {
+          let difference = transition.target - transition.current;
+          let progress = (this._currentTime - transition.start) / (transition.end - transition.start);
+          transitionActive = true;
+          this[propertyName] = transition.current + difference * progress;
           break;
         }
       }
-      s || (this[i] = n);
+      if (!transitionActive)
+        this[propertyName] = value;
     }
   }
 }
-const q = "CompositingNode";
-class yt extends k {
+const TYPE$2 = "CompositingNode";
+class CompositingNode extends ProcessingNode {
   /**
    * Initialise an instance of a Compositing Node. You should not instantiate this directly, but use VideoContest.createCompositingNode().
    */
-  constructor(e, t, i) {
-    let n = y(e);
-    e.texImage2D(
-      e.TEXTURE_2D,
+  constructor(gl, renderGraph, definition) {
+    let placeholderTexture = createElementTexture(gl);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
       0,
-      e.RGBA,
+      gl.RGBA,
       1,
       1,
       0,
-      e.RGBA,
-      e.UNSIGNED_BYTE,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
       new Uint8Array([0, 0, 0, 0])
-    ), super(e, t, i, i.inputs, !1), this._placeholderTexture = n, this._displayName = q;
+    );
+    super(gl, renderGraph, definition, definition.inputs, false);
+    this._placeholderTexture = placeholderTexture;
+    this._displayName = TYPE$2;
   }
   _render() {
-    let e = this._gl;
-    e.bindFramebuffer(e.FRAMEBUFFER, this._framebuffer), e.framebufferTexture2D(
-      e.FRAMEBUFFER,
-      e.COLOR_ATTACHMENT0,
-      e.TEXTURE_2D,
+    let gl = this._gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebuffer);
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
       this._texture,
       0
-    ), e.clearColor(0, 0, 0, 0), e.clear(e.COLOR_BUFFER_BIT), e.blendFuncSeparate(e.SRC_ALPHA, e.ONE_MINUS_SRC_ALPHA, e.ONE, e.ONE_MINUS_SRC_ALPHA), this.inputs.forEach((t) => {
-      if (t !== void 0) {
-        super._render();
-        var i = t._texture;
-        for (let n of this._shaderInputsTextureUnitMapping)
-          e.activeTexture(n.textureUnit), e.uniform1i(n.location, n.textureUnitIndex), e.bindTexture(e.TEXTURE_2D, i);
-        e.drawArrays(e.TRIANGLES, 0, 6);
+    );
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    this.inputs.forEach((node) => {
+      if (node === void 0)
+        return;
+      super._render();
+      var texture = node._texture;
+      for (let mapping of this._shaderInputsTextureUnitMapping) {
+        gl.activeTexture(mapping.textureUnit);
+        gl.uniform1i(mapping.location, mapping.textureUnitIndex);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
       }
-    }), e.bindFramebuffer(e.FRAMEBUFFER, null);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    });
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 }
-function O(r, e, t) {
-  let i = r.createShader(t);
-  if (r.shaderSource(i, e), r.compileShader(i), !r.getShaderParameter(i, r.COMPILE_STATUS))
-    throw "could not compile shader:" + r.getShaderInfoLog(i);
-  return i;
+function compileShader(gl, shaderSource, shaderType) {
+  let shader = gl.createShader(shaderType);
+  gl.shaderSource(shader, shaderSource);
+  gl.compileShader(shader);
+  let success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+  if (!success) {
+    throw "could not compile shader:" + gl.getShaderInfoLog(shader);
+  }
+  return shader;
 }
-function Ct(r, e, t) {
-  let i = r.createProgram();
-  if (r.attachShader(i, e), r.attachShader(i, t), r.linkProgram(i), !r.getProgramParameter(i, r.LINK_STATUS))
+function createShaderProgram(gl, vertexShader2, fragmentShader2) {
+  let program = gl.createProgram();
+  gl.attachShader(program, vertexShader2);
+  gl.attachShader(program, fragmentShader2);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
     throw {
       error: 4,
       msg: "Can't link shader program for track",
@@ -1711,30 +1674,47 @@ function Ct(r, e, t) {
         return this.msg;
       }
     };
-  return i;
+  }
+  return program;
 }
-function y(r) {
-  let e = r.createTexture();
-  return r.bindTexture(r.TEXTURE_2D, e), r.pixelStorei(r.UNPACK_FLIP_Y_WEBGL, !0), r.texParameteri(r.TEXTURE_2D, r.TEXTURE_WRAP_S, r.CLAMP_TO_EDGE), r.texParameteri(r.TEXTURE_2D, r.TEXTURE_WRAP_T, r.CLAMP_TO_EDGE), r.texParameteri(r.TEXTURE_2D, r.TEXTURE_MIN_FILTER, r.NEAREST), r.texParameteri(r.TEXTURE_2D, r.TEXTURE_MAG_FILTER, r.NEAREST), e;
+function createElementTexture(gl) {
+  let texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  return texture;
 }
-function R(r, e, t) {
-  t.readyState !== void 0 && t.readyState === 0 || (r.bindTexture(r.TEXTURE_2D, e), r.pixelStorei(r.UNPACK_FLIP_Y_WEBGL, !0), r.texImage2D(r.TEXTURE_2D, 0, r.RGBA, r.RGBA, r.UNSIGNED_BYTE, t), e._isTextureCleared = !1);
+function updateTexture(gl, texture, element) {
+  if (element.readyState !== void 0 && element.readyState === 0)
+    return;
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, element);
+  texture._isTextureCleared = false;
 }
-function L(r, e) {
-  e._isTextureCleared || (r.bindTexture(r.TEXTURE_2D, e), r.pixelStorei(r.UNPACK_FLIP_Y_WEBGL, !0), r.texImage2D(
-    r.TEXTURE_2D,
-    0,
-    r.RGBA,
-    1,
-    1,
-    0,
-    r.RGBA,
-    r.UNSIGNED_BYTE,
-    new Uint8Array([0, 0, 0, 0])
-  ), e._isTextureCleared = !0);
+function clearTexture(gl, texture) {
+  if (!texture._isTextureCleared) {
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      1,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      new Uint8Array([0, 0, 0, 0])
+    );
+    texture._isTextureCleared = true;
+  }
 }
-function Et() {
-  const r = [
+function generateRandomId() {
+  const appearanceAdjective = [
     "adorable",
     "alert",
     "average",
@@ -1781,7 +1761,8 @@ function Et() {
     "ugly",
     "unsightly",
     "unusual"
-  ], e = [
+  ];
+  const conditionAdjective = [
     "alive",
     "brainy",
     "broken",
@@ -1830,7 +1811,8 @@ function Et() {
     "tired",
     "wild",
     "wrong"
-  ], t = [
+  ];
+  const nounAnimal = [
     "manatee",
     "gila monster",
     "nematode",
@@ -1847,397 +1829,649 @@ function Et() {
     "house sparrow",
     "sea anemone"
   ];
-  function i(o) {
-    return o[Math.floor(Math.random() * o.length)];
+  function randomChoice(array) {
+    return array[Math.floor(Math.random() * array.length)];
   }
-  function n(o) {
-    return o = o.replace(/\b\w/g, (_) => _.toUpperCase()), o;
+  function capitalize(word) {
+    word = word.replace(/\b\w/g, (l) => l.toUpperCase());
+    return word;
   }
-  let s = i(r) + " " + i(e) + " " + i(t);
-  return s = n(s), s = s.replace(/ /g, "-"), s;
+  let name = randomChoice(appearanceAdjective) + " " + randomChoice(conditionAdjective) + " " + randomChoice(nounAnimal);
+  name = capitalize(name);
+  name = name.replace(/ /g, "-");
+  return name;
 }
-function At(r) {
-  return console.warn(
+function exportToJSON(vc) {
+  console.warn(
     "VideoContext.exportToJSON has been deprecated. Please use VideoContext.snapshot instead."
-  ), JSON.stringify(K(r));
+  );
+  return JSON.stringify(snapshotNodes(vc));
 }
-function St(r) {
+function snapshot(vc) {
   return {
-    nodes: K(r),
-    videoContext: Nt(r)
+    nodes: snapshotNodes(vc),
+    videoContext: snapshotVideoContext(vc)
   };
 }
-function Nt(r) {
+function snapshotVideoContext(vc) {
   return {
-    currentTime: r.currentTime,
-    duration: r.duration,
-    state: r.state,
-    playbackRate: r.playbackRate
+    currentTime: vc.currentTime,
+    duration: vc.duration,
+    state: vc.state,
+    playbackRate: vc.playbackRate
   };
 }
-let M = !1;
-function K(r) {
-  function e(s) {
-    var o = document.createElement("a");
-    return o.href = s, o.href;
+let warningExportSourceLogged = false;
+function snapshotNodes(vc) {
+  function qualifyURL(url) {
+    var a = document.createElement("a");
+    a.href = url;
+    return a.href;
   }
-  function t(s, o) {
-    let _ = [];
-    for (let u of s.inputs) {
-      if (u === void 0)
+  function getInputIDs(node, vc2) {
+    let inputs = [];
+    for (let input of node.inputs) {
+      if (input === void 0)
         continue;
-      let a, d = s.inputs.indexOf(u), p = o._processingNodes.indexOf(u);
-      if (p > -1)
-        a = "processor" + p;
-      else {
-        let h = o._sourceNodes.indexOf(u);
-        h > -1 ? a = "source" + h : console.log("Warning, can't find input", u);
+      let inputID;
+      let inputIndex = node.inputs.indexOf(input);
+      let index = vc2._processingNodes.indexOf(input);
+      if (index > -1) {
+        inputID = "processor" + index;
+      } else {
+        let index2 = vc2._sourceNodes.indexOf(input);
+        if (index2 > -1) {
+          inputID = "source" + index2;
+        } else {
+          console.log("Warning, can't find input", input);
+        }
       }
-      _.push({ id: a, index: d });
+      inputs.push({ id: inputID, index: inputIndex });
     }
-    return _;
+    return inputs;
   }
-  let i = {}, n = [];
-  for (let s in l)
-    n[l[s]] = s;
-  for (let s in r._sourceNodes) {
-    let o = r._sourceNodes[s], _ = "source" + s, u = "";
-    o._isResponsibleForElementLifeCycle ? u = e(o._elementURL) : (M || (console.debug(
-      "Warning - Trying to export source created from an element not a URL. URL of export will be set to the elements src attribute and may be incorrect",
-      o
-    ), M = !0), u = o.element.src);
-    let a = {
-      type: o.displayName,
-      url: u,
-      start: o.startTime,
-      stop: o.stopTime,
-      state: n[o.state]
+  let result = {};
+  let sourceNodeStateMapping = [];
+  for (let state in STATE$1) {
+    sourceNodeStateMapping[STATE$1[state]] = state;
+  }
+  for (let index in vc._sourceNodes) {
+    let source = vc._sourceNodes[index];
+    let id = "source" + index;
+    let node_url = "";
+    if (!source._isResponsibleForElementLifeCycle) {
+      if (!warningExportSourceLogged) {
+        console.debug(
+          "Warning - Trying to export source created from an element not a URL. URL of export will be set to the elements src attribute and may be incorrect",
+          source
+        );
+        warningExportSourceLogged = true;
+      }
+      node_url = source.element.src;
+    } else {
+      node_url = qualifyURL(source._elementURL);
+    }
+    let node = {
+      type: source.displayName,
+      url: node_url,
+      start: source.startTime,
+      stop: source.stopTime,
+      state: sourceNodeStateMapping[source.state]
     };
-    a.type === S && (a.currentTime = null, o.element && o.element.currentTime && (a.currentTime = o.element.currentTime)), o._sourceOffset && (a.sourceOffset = o._sourceOffset), i[_] = a;
+    if (node.type === TYPE$9) {
+      node.currentTime = null;
+      if (source.element && source.element.currentTime) {
+        node.currentTime = source.element.currentTime;
+      }
+    }
+    if (source._sourceOffset) {
+      node.sourceOffset = source._sourceOffset;
+    }
+    result[id] = node;
   }
-  for (let s in r._processingNodes) {
-    let o = r._processingNodes[s], _ = "processor" + s, u = {
-      type: o.displayName,
-      definition: o._definition,
-      inputs: t(o, r),
+  for (let index in vc._processingNodes) {
+    let processor = vc._processingNodes[index];
+    let id = "processor" + index;
+    let node = {
+      type: processor.displayName,
+      definition: processor._definition,
+      inputs: getInputIDs(processor, vc),
       properties: {}
     };
-    for (let a in u.definition.properties)
-      u.properties[a] = o[a];
-    u.type === I && (u.transitions = o._transitions), i[_] = u;
+    for (let property in node.definition.properties) {
+      node.properties[property] = processor[property];
+    }
+    if (node.type === TYPE$3) {
+      node.transitions = processor._transitions;
+    }
+    result[id] = node;
   }
-  return i.destination = {
+  result["destination"] = {
     type: "Destination",
-    inputs: t(r.destination, r)
-  }, i;
+    inputs: getInputIDs(vc.destination, vc)
+  };
+  return result;
 }
-function Ft(r, e) {
-  let t = document.createElement("div");
-  if (e !== void 0) {
-    var i = document.createElement("h2");
-    i.innerHTML = e, t.appendChild(i);
+function createControlFormForNode(node, nodeName) {
+  let rootDiv = document.createElement("div");
+  if (nodeName !== void 0) {
+    var title = document.createElement("h2");
+    title.innerHTML = nodeName;
+    rootDiv.appendChild(title);
   }
-  for (let s in r._properties) {
-    let o = document.createElement("p"), _ = document.createElement("h3");
-    _.innerHTML = s, o.appendChild(_);
-    let u = r._properties[s].value;
-    if (typeof u == "number") {
-      let a = document.createElement("input");
-      a.setAttribute("type", "range"), a.setAttribute("min", "0"), a.setAttribute("max", "1"), a.setAttribute("step", "0.01"), a.setAttribute("value", u, toString());
-      let d = document.createElement("input");
-      d.setAttribute("type", "number"), d.setAttribute("min", "0"), d.setAttribute("max", "1"), d.setAttribute("step", "0.01"), d.setAttribute("value", u, toString());
-      let p = !1;
-      a.onmousedown = function() {
-        p = !0;
-      }, a.onmouseup = function() {
-        p = !1;
-      }, a.onmousemove = function() {
-        p && (r[s] = parseFloat(a.value), d.value = a.value);
-      }, a.onchange = function() {
-        r[s] = parseFloat(a.value), d.value = a.value;
-      }, d.onchange = function() {
-        r[s] = parseFloat(d.value), a.value = d.value;
-      }, o.appendChild(a), o.appendChild(d);
-    } else if (Object.prototype.toString.call(u) === "[object Array]")
-      for (var n = 0; n < u.length; n++) {
-        let a = document.createElement("input");
-        a.setAttribute("type", "range"), a.setAttribute("min", "0"), a.setAttribute("max", "1"), a.setAttribute("step", "0.01"), a.setAttribute("value", u[n], toString());
-        let d = document.createElement("input");
-        d.setAttribute("type", "number"), d.setAttribute("min", "0"), d.setAttribute("max", "1"), d.setAttribute("step", "0.01"), d.setAttribute("value", u, toString());
-        let p = n, h = !1;
-        a.onmousedown = function() {
-          h = !0;
-        }, a.onmouseup = function() {
-          h = !1;
-        }, a.onmousemove = function() {
-          h && (r[s][p] = parseFloat(a.value), d.value = a.value);
-        }, a.onchange = function() {
-          r[s][p] = parseFloat(a.value), d.value = a.value;
-        }, d.onchange = function() {
-          r[s][p] = parseFloat(d.value), a.value = d.value;
-        }, o.appendChild(a), o.appendChild(d);
+  for (let propertyName in node._properties) {
+    let propertyParagraph = document.createElement("p");
+    let propertyTitleHeader = document.createElement("h3");
+    propertyTitleHeader.innerHTML = propertyName;
+    propertyParagraph.appendChild(propertyTitleHeader);
+    let propertyValue = node._properties[propertyName].value;
+    if (typeof propertyValue === "number") {
+      let range = document.createElement("input");
+      range.setAttribute("type", "range");
+      range.setAttribute("min", "0");
+      range.setAttribute("max", "1");
+      range.setAttribute("step", "0.01");
+      range.setAttribute("value", propertyValue, toString());
+      let number = document.createElement("input");
+      number.setAttribute("type", "number");
+      number.setAttribute("min", "0");
+      number.setAttribute("max", "1");
+      number.setAttribute("step", "0.01");
+      number.setAttribute("value", propertyValue, toString());
+      let mouseDown = false;
+      range.onmousedown = function() {
+        mouseDown = true;
+      };
+      range.onmouseup = function() {
+        mouseDown = false;
+      };
+      range.onmousemove = function() {
+        if (mouseDown) {
+          node[propertyName] = parseFloat(range.value);
+          number.value = range.value;
+        }
+      };
+      range.onchange = function() {
+        node[propertyName] = parseFloat(range.value);
+        number.value = range.value;
+      };
+      number.onchange = function() {
+        node[propertyName] = parseFloat(number.value);
+        range.value = number.value;
+      };
+      propertyParagraph.appendChild(range);
+      propertyParagraph.appendChild(number);
+    } else if (Object.prototype.toString.call(propertyValue) === "[object Array]") {
+      for (var i = 0; i < propertyValue.length; i++) {
+        let range = document.createElement("input");
+        range.setAttribute("type", "range");
+        range.setAttribute("min", "0");
+        range.setAttribute("max", "1");
+        range.setAttribute("step", "0.01");
+        range.setAttribute("value", propertyValue[i], toString());
+        let number = document.createElement("input");
+        number.setAttribute("type", "number");
+        number.setAttribute("min", "0");
+        number.setAttribute("max", "1");
+        number.setAttribute("step", "0.01");
+        number.setAttribute("value", propertyValue, toString());
+        let index = i;
+        let mouseDown = false;
+        range.onmousedown = function() {
+          mouseDown = true;
+        };
+        range.onmouseup = function() {
+          mouseDown = false;
+        };
+        range.onmousemove = function() {
+          if (mouseDown) {
+            node[propertyName][index] = parseFloat(range.value);
+            number.value = range.value;
+          }
+        };
+        range.onchange = function() {
+          node[propertyName][index] = parseFloat(range.value);
+          number.value = range.value;
+        };
+        number.onchange = function() {
+          node[propertyName][index] = parseFloat(number.value);
+          range.value = number.value;
+        };
+        propertyParagraph.appendChild(range);
+        propertyParagraph.appendChild(number);
       }
-    t.appendChild(o);
+    }
+    rootDiv.appendChild(propertyParagraph);
   }
-  return t;
+  return rootDiv;
 }
-function Rt(r) {
-  let e = r.destination, t = /* @__PURE__ */ new Map();
-  t.set(e, 0);
-  function i(n, s = 0) {
-    for (let o of n.inputs) {
-      let _ = s + 1;
-      t.has(o) ? _ > t.get(o) && t.set(o, _) : t.set(o, _), i(o, t.get(o));
+function calculateNodeDepthFromDestination(videoContext) {
+  let destination = videoContext.destination;
+  let depthMap = /* @__PURE__ */ new Map();
+  depthMap.set(destination, 0);
+  function itterateBackwards(node, depth = 0) {
+    for (let n of node.inputs) {
+      let d = depth + 1;
+      if (depthMap.has(n)) {
+        if (d > depthMap.get(n)) {
+          depthMap.set(n, d);
+        }
+      } else {
+        depthMap.set(n, d);
+      }
+      itterateBackwards(n, depthMap.get(n));
     }
   }
-  return i(e), t;
+  itterateBackwards(destination);
+  return depthMap;
 }
-function Dt(r, e) {
-  let t = e.getContext("2d"), i = e.width, n = e.height;
-  t.clearRect(0, 0, i, n);
-  let s = Rt(r), o = s.values();
-  o = Array.from(o).sort(function(h, m) {
-    return m - h;
+function visualiseVideoContextGraph(videoContext, canvas) {
+  let ctx = canvas.getContext("2d");
+  let w = canvas.width;
+  let h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  let nodeDepths = calculateNodeDepthFromDestination(videoContext);
+  let depths = nodeDepths.values();
+  depths = Array.from(depths).sort(function(a, b) {
+    return b - a;
   });
-  let _ = o[0], u = i / (_ + 1), a = n / r._sourceNodes.length / 3, d = a * 1.618;
-  function p(h, m, f, v) {
-    let g = m.get(h);
-    m.values();
-    let x = 0;
-    for (let b of m) {
-      if (b[0] === h)
+  let maxDepth = depths[0];
+  let xStep = w / (maxDepth + 1);
+  let nodeHeight = h / videoContext._sourceNodes.length / 3;
+  let nodeWidth = nodeHeight * 1.618;
+  function calculateNodePos(node, nodeDepths2, xStep2, nodeHeight2) {
+    let depth = nodeDepths2.get(node);
+    nodeDepths2.values();
+    let count = 0;
+    for (let nodeDepth of nodeDepths2) {
+      if (nodeDepth[0] === node)
         break;
-      b[1] === g && (x += 1);
+      if (nodeDepth[1] === depth)
+        count += 1;
     }
     return {
-      x: f * m.get(h),
-      y: v * 1.5 * x + 50
+      x: xStep2 * nodeDepths2.get(node),
+      y: nodeHeight2 * 1.5 * count + 50
     };
   }
-  for (let h = 0; h < r._renderGraph.connections.length; h++) {
-    let m = r._renderGraph.connections[h], f = p(m.source, s, u, a), v = p(m.destination, s, u, a);
-    if (f !== void 0 && v !== void 0) {
-      t.beginPath();
-      let g = f.x + d / 2, x = f.y + a / 2, b = v.x + d / 2, T = v.y + a / 2, Q = b - g, ee = T - x, E = Math.PI / 2 - Math.atan2(Q, ee), N = Math.sqrt(Math.pow(g - b, 2) + Math.pow(x - T, 2)), te = Math.min(g, b) + (Math.max(g, b) - Math.min(g, b)) / 2, ie = Math.min(x, T) + (Math.max(x, T) - Math.min(x, T)) / 2, re = Math.cos(E + Math.PI / 2) * N / 1.5 + te, ne = Math.sin(E + Math.PI / 2) * N / 1.5 + ie;
-      t.arc(re, ne, N / 1.2, E - Math.PI + 0.95, E - 0.95), t.stroke();
+  for (let i = 0; i < videoContext._renderGraph.connections.length; i++) {
+    let conn = videoContext._renderGraph.connections[i];
+    let source = calculateNodePos(conn.source, nodeDepths, xStep, nodeHeight);
+    let destination = calculateNodePos(conn.destination, nodeDepths, xStep, nodeHeight);
+    if (source !== void 0 && destination !== void 0) {
+      ctx.beginPath();
+      let x1 = source.x + nodeWidth / 2;
+      let y1 = source.y + nodeHeight / 2;
+      let x2 = destination.x + nodeWidth / 2;
+      let y2 = destination.y + nodeHeight / 2;
+      let dx = x2 - x1;
+      let dy = y2 - y1;
+      let angle = Math.PI / 2 - Math.atan2(dx, dy);
+      let distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+      let midX = Math.min(x1, x2) + (Math.max(x1, x2) - Math.min(x1, x2)) / 2;
+      let midY = Math.min(y1, y2) + (Math.max(y1, y2) - Math.min(y1, y2)) / 2;
+      let testX = Math.cos(angle + Math.PI / 2) * distance / 1.5 + midX;
+      let testY = Math.sin(angle + Math.PI / 2) * distance / 1.5 + midY;
+      ctx.arc(testX, testY, distance / 1.2, angle - Math.PI + 0.95, angle - 0.95);
+      ctx.stroke();
     }
   }
-  for (let h of s.keys()) {
-    let m = p(h, s, u, a), f = "#AA9639", v = "";
-    h.displayName === q && (f = "#000000"), h.displayName === z && (f = "#7D9F35", v = "Output"), h.displayName === S && (f = "#572A72", v = "Video"), h.displayName === V && (f = "#572A72", v = "Canvas"), h.displayName === Y && (f = "#572A72", v = "Image"), t.beginPath(), t.fillStyle = f, t.fillRect(m.x, m.y, d, a), t.fill(), t.fillStyle = "#000", t.textAlign = "center", t.font = "10px Arial", t.fillText(v, m.x + d / 2, m.y + a / 2 + 2.5), t.fill();
+  for (let node of nodeDepths.keys()) {
+    let pos = calculateNodePos(node, nodeDepths, xStep, nodeHeight);
+    let color = "#AA9639";
+    let text = "";
+    if (node.displayName === TYPE$2) {
+      color = "#000000";
+    }
+    if (node.displayName === TYPE$5) {
+      color = "#7D9F35";
+      text = "Output";
+    }
+    if (node.displayName === TYPE$9) {
+      color = "#572A72";
+      text = "Video";
+    }
+    if (node.displayName === TYPE$8) {
+      color = "#572A72";
+      text = "Canvas";
+    }
+    if (node.displayName === TYPE$7) {
+      color = "#572A72";
+      text = "Image";
+    }
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.fillRect(pos.x, pos.y, nodeWidth, nodeHeight);
+    ctx.fill();
+    ctx.fillStyle = "#000";
+    ctx.textAlign = "center";
+    ctx.font = "10px Arial";
+    ctx.fillText(text, pos.x + nodeWidth / 2, pos.y + nodeHeight / 2 + 2.5);
+    ctx.fill();
   }
+  return;
 }
-function Pt(r) {
-  function e(i) {
-    return r._sourceNodes.indexOf(i) !== -1 ? "source " + i.displayName + " " + r._sourceNodes.indexOf(i) : "processor " + i.displayName + " " + r._processingNodes.indexOf(i);
+function createSigmaGraphDataFromRenderGraph(videoContext) {
+  function idForNode(node) {
+    if (videoContext._sourceNodes.indexOf(node) !== -1) {
+      let id2 = "source " + node.displayName + " " + videoContext._sourceNodes.indexOf(node);
+      return id2;
+    }
+    let id = "processor " + node.displayName + " " + videoContext._processingNodes.indexOf(node);
+    return id;
   }
-  let t = {
+  let graph = {
     nodes: [
       {
-        id: e(r.destination),
+        id: idForNode(videoContext.destination),
         label: "Destination Node",
         x: 2.5,
         y: 0.5,
         size: 2,
-        node: r.destination
+        node: videoContext.destination
       }
     ],
     edges: []
   };
-  for (let i = 0; i < r._sourceNodes.length; i++) {
-    let n = r._sourceNodes[i], s = i * (1 / r._sourceNodes.length);
-    t.nodes.push({
-      id: e(n),
+  for (let i = 0; i < videoContext._sourceNodes.length; i++) {
+    let sourceNode = videoContext._sourceNodes[i];
+    let y = i * (1 / videoContext._sourceNodes.length);
+    graph.nodes.push({
+      id: idForNode(sourceNode),
       label: "Source " + i.toString(),
       x: 0,
-      y: s,
+      y,
       size: 2,
       color: "#572A72",
-      node: n
+      node: sourceNode
     });
   }
-  for (let i = 0; i < r._processingNodes.length; i++) {
-    let n = r._processingNodes[i];
-    t.nodes.push({
-      id: e(n),
+  for (let i = 0; i < videoContext._processingNodes.length; i++) {
+    let processingNode = videoContext._processingNodes[i];
+    graph.nodes.push({
+      id: idForNode(processingNode),
       x: Math.random() * 2.5,
       y: Math.random(),
       size: 2,
-      node: n
+      node: processingNode
     });
   }
-  for (let i = 0; i < r._renderGraph.connections.length; i++) {
-    let n = r._renderGraph.connections[i];
-    t.edges.push({
+  for (let i = 0; i < videoContext._renderGraph.connections.length; i++) {
+    let conn = videoContext._renderGraph.connections[i];
+    graph.edges.push({
       id: "e" + i.toString(),
-      source: e(n.source),
-      target: e(n.destination)
+      source: idForNode(conn.source),
+      target: idForNode(conn.destination)
     });
   }
-  return t;
+  return graph;
 }
-function kt(r, e) {
-  let t = r.compositor($.COMBINE);
-  for (let i of e) {
-    let n;
-    if (i.type === "video")
-      n = r.video(i.src, i.sourceStart);
-    else if (i.type === "image")
-      n = r.image(i.src, i.sourceStart);
-    else {
-      console.debug(`Clip type ${i.type} not recognised, skipping.`);
+function importSimpleEDL(ctx, playlist) {
+  let trackNode = ctx.compositor(DEFINITIONS.COMBINE);
+  for (let clip of playlist) {
+    let node;
+    if (clip.type === "video") {
+      node = ctx.video(clip.src, clip.sourceStart);
+    } else if (clip.type === "image") {
+      node = ctx.image(clip.src, clip.sourceStart);
+    } else {
+      console.debug(`Clip type ${clip.type} not recognised, skipping.`);
       continue;
     }
-    n.startAt(i.start), n.stopAt(i.start + i.duration), n.connect(t);
+    node.startAt(clip.start);
+    node.stopAt(clip.start + clip.duration);
+    node.connect(trackNode);
   }
-  return t;
+  return trackNode;
 }
-function It(r, e, t) {
-  let i = e.getContext("2d"), n = e.width, s = e.height, o = s / r._sourceNodes.length, _ = r.duration;
-  if (t > _ && !r.endOnLastSourceEnd && (_ = t), r.duration === 1 / 0) {
-    let d = 0;
-    for (let p = 0; p < r._sourceNodes.length; p++) {
-      let h = r._sourceNodes[p];
-      h._stopTime !== 1 / 0 && (d += h._stopTime);
+function visualiseVideoContextTimeline(videoContext, canvas, currentTime) {
+  let ctx = canvas.getContext("2d");
+  let w = canvas.width;
+  let h = canvas.height;
+  let trackHeight = h / videoContext._sourceNodes.length;
+  let playlistDuration = videoContext.duration;
+  if (currentTime > playlistDuration && !videoContext.endOnLastSourceEnd)
+    playlistDuration = currentTime;
+  if (videoContext.duration === Infinity) {
+    let total = 0;
+    for (let i = 0; i < videoContext._sourceNodes.length; i++) {
+      let sourceNode = videoContext._sourceNodes[i];
+      if (sourceNode._stopTime !== Infinity)
+        total += sourceNode._stopTime;
     }
-    d > r.currentTime ? _ = d + 5 : _ = r.currentTime + 5;
+    if (total > videoContext.currentTime) {
+      playlistDuration = total + 5;
+    } else {
+      playlistDuration = videoContext.currentTime + 5;
+    }
   }
-  let u = n / _, a = {
+  let pixelsPerSecond = w / playlistDuration;
+  let mediaSourceStyle = {
     video: ["#572A72", "#3C1255"],
     image: ["#7D9F35", "#577714"],
     canvas: ["#AA9639", "#806D15"]
   };
-  i.clearRect(0, 0, n, s), i.fillStyle = "#999";
-  for (let d of r._processingNodes)
-    if (d.displayName === I)
-      for (let p in d._transitions)
-        for (let h of d._transitions[p]) {
-          let m = (h.end - h.start) * u, f = s, v = h.start * u, g = 0;
-          i.fillStyle = "rgba(0,0,0, 0.3)", i.fillRect(v, g, m, f), i.fill();
-        }
-  for (let d = 0; d < r._sourceNodes.length; d++) {
-    let p = r._sourceNodes[d], h = p._stopTime - p._startTime;
-    h === 1 / 0 && (h = r.currentTime);
-    let m = p._startTime, f = h * u, v = o, g = m * u, x = o * d;
-    i.fillStyle = a.video[d % a.video.length], i.fillRect(g, x, f, v), i.fill();
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#999";
+  for (let node of videoContext._processingNodes) {
+    if (node.displayName !== TYPE$3)
+      continue;
+    for (let propertyName in node._transitions) {
+      for (let transition of node._transitions[propertyName]) {
+        let tW = (transition.end - transition.start) * pixelsPerSecond;
+        let tH = h;
+        let tX = transition.start * pixelsPerSecond;
+        let tY = 0;
+        ctx.fillStyle = "rgba(0,0,0, 0.3)";
+        ctx.fillRect(tX, tY, tW, tH);
+        ctx.fill();
+      }
+    }
   }
-  t !== void 0 && (i.fillStyle = "#000", i.fillRect(t * u, 0, 1, s));
+  for (let i = 0; i < videoContext._sourceNodes.length; i++) {
+    let sourceNode = videoContext._sourceNodes[i];
+    let duration = sourceNode._stopTime - sourceNode._startTime;
+    if (duration === Infinity)
+      duration = videoContext.currentTime;
+    let start = sourceNode._startTime;
+    let msW = duration * pixelsPerSecond;
+    let msH = trackHeight;
+    let msX = start * pixelsPerSecond;
+    let msY = trackHeight * i;
+    ctx.fillStyle = mediaSourceStyle.video[i % mediaSourceStyle.video.length];
+    ctx.fillRect(msX, msY, msW, msH);
+    ctx.fill();
+  }
+  if (currentTime !== void 0) {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(currentTime * pixelsPerSecond, 0, 1, h);
+  }
 }
-class wt {
+class UpdateablesManager {
   constructor() {
-    this._updateables = [], this._useWebworker = !1, this._active = !1, this._previousRAFTime = void 0, this._previousWorkerTime = void 0, this._webWorkerString = "            var running = false;            function tick(){                postMessage(Date.now());                if (running){                    setTimeout(tick, 1000/20);                }            }            self.addEventListener('message',function(msg){                var data = msg.data;                if (data === 'start'){                    running = true;                    tick();                }                if (data === 'stop') running = false;            });", this._webWorker = void 0;
+    this._updateables = [];
+    this._useWebworker = false;
+    this._active = false;
+    this._previousRAFTime = void 0;
+    this._previousWorkerTime = void 0;
+    this._webWorkerString = "            var running = false;            function tick(){                postMessage(Date.now());                if (running){                    setTimeout(tick, 1000/20);                }            }            self.addEventListener('message',function(msg){                var data = msg.data;                if (data === 'start'){                    running = true;                    tick();                }                if (data === 'stop') running = false;            });";
+    this._webWorker = void 0;
   }
   _initWebWorker() {
     window.URL = window.URL || window.webkitURL;
-    let e = new Blob([this._webWorkerString], {
+    let blob = new Blob([this._webWorkerString], {
       type: "application/javascript"
     });
-    this._webWorker = new Worker(URL.createObjectURL(e)), this._webWorker.onmessage = (t) => {
-      let i = t.data;
-      this._updateWorkerTime(i);
+    this._webWorker = new Worker(URL.createObjectURL(blob));
+    this._webWorker.onmessage = (msg) => {
+      let time = msg.data;
+      this._updateWorkerTime(time);
     };
   }
   _lostVisibility() {
-    this._previousWorkerTime = Date.now(), this._useWebworker = !0, this._webWorker || this._initWebWorker(), this._webWorker.postMessage("start");
+    this._previousWorkerTime = Date.now();
+    this._useWebworker = true;
+    if (!this._webWorker) {
+      this._initWebWorker();
+    }
+    this._webWorker.postMessage("start");
   }
   _gainedVisibility() {
-    this._useWebworker = !1, this._previousRAFTime = void 0, this._webWorker && this._webWorker.postMessage("stop"), requestAnimationFrame(this._updateRAFTime.bind(this));
+    this._useWebworker = false;
+    this._previousRAFTime = void 0;
+    if (this._webWorker)
+      this._webWorker.postMessage("stop");
+    requestAnimationFrame(this._updateRAFTime.bind(this));
   }
   _init() {
-    if (window.Worker) {
-      if (typeof document.hidden > "u") {
-        window.addEventListener("focus", this._gainedVisibility.bind(this)), window.addEventListener("blur", this._lostVisibility.bind(this));
-        return;
-      }
-      document.addEventListener(
-        "visibilitychange",
-        () => {
-          document.hidden === !0 ? this._lostVisibility() : this._gainedVisibility();
-        },
-        !1
-      ), requestAnimationFrame(this._updateRAFTime.bind(this));
+    if (!window.Worker)
+      return;
+    if (typeof document.hidden === "undefined") {
+      window.addEventListener("focus", this._gainedVisibility.bind(this));
+      window.addEventListener("blur", this._lostVisibility.bind(this));
+      return;
+    }
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (document.hidden === true) {
+          this._lostVisibility();
+        } else {
+          this._gainedVisibility();
+        }
+      },
+      false
+    );
+    requestAnimationFrame(this._updateRAFTime.bind(this));
+  }
+  _updateWorkerTime(time) {
+    let dt = (time - this._previousWorkerTime) / 1e3;
+    if (dt !== 0)
+      this._update(dt);
+    this._previousWorkerTime = time;
+  }
+  _updateRAFTime(time) {
+    if (this._previousRAFTime === void 0)
+      this._previousRAFTime = time;
+    let dt = (time - this._previousRAFTime) / 1e3;
+    if (dt !== 0)
+      this._update(dt);
+    this._previousRAFTime = time;
+    if (!this._useWebworker)
+      requestAnimationFrame(this._updateRAFTime.bind(this));
+  }
+  _update(dt) {
+    for (let i = 0; i < this._updateables.length; i++) {
+      this._updateables[i]._update(parseFloat(dt));
     }
   }
-  _updateWorkerTime(e) {
-    let t = (e - this._previousWorkerTime) / 1e3;
-    t !== 0 && this._update(t), this._previousWorkerTime = e;
-  }
-  _updateRAFTime(e) {
-    this._previousRAFTime === void 0 && (this._previousRAFTime = e);
-    let t = (e - this._previousRAFTime) / 1e3;
-    t !== 0 && this._update(t), this._previousRAFTime = e, this._useWebworker || requestAnimationFrame(this._updateRAFTime.bind(this));
-  }
-  _update(e) {
-    for (let t = 0; t < this._updateables.length; t++)
-      this._updateables[t]._update(parseFloat(e));
-  }
-  register(e) {
-    this._updateables.push(e), this._active === !1 && (this._active = !0, this._init());
+  register(updateable) {
+    this._updateables.push(updateable);
+    if (this._active === false) {
+      this._active = true;
+      this._init();
+    }
   }
 }
-function G({ src: r, srcObject: e }) {
-  return !((r === "" || r === void 0) && e == null);
+function mediaElementHasSource({ src, srcObject }) {
+  return !((src === "" || src === void 0) && srcObject == null);
 }
-const Ut = "AudioNode";
-class D extends P {
+const TYPE$1 = "AudioNode";
+class AudioNode extends MediaNode {
   /**
    * Initialise an instance of an AudioNode.
    * This should not be called directly, but created through a call to videoContext.audio();
    */
   constructor() {
-    super(...arguments), this._displayName = Ut, this._elementType = "audio";
+    super(...arguments);
+    this._displayName = TYPE$1;
+    this._elementType = "audio";
   }
-  _update(e) {
-    super._update(e, !1);
+  _update(currentTime) {
+    super._update(currentTime, false);
   }
 }
-const Ot = "CanvasNode";
-class Z extends C {
-  constructor(e, t, i, n, s = 4, o = {}) {
-    super(e, t, i, n), this._preloadTime = s, this._attributes = o, this._textureUploaded = !1, this._displayName = Ot;
+const TYPE = "CanvasNode";
+class TextNode extends SourceNode {
+  constructor(text, gl, renderGraph, currentTime, preloadTime = 4, attributes = {}) {
+    super(text, gl, renderGraph, currentTime);
+    this._preloadTime = preloadTime;
+    this._attributes = attributes;
+    this._textureUploaded = false;
+    this._displayName = TYPE;
   }
   get elementURL() {
     return this._elementURL;
   }
   _load() {
     if (this._text !== void 0) {
-      for (let e in this._attributes)
-        this._text[e] = this._attributes[e];
+      for (let key in this._attributes) {
+        this._text[key] = this._attributes[key];
+      }
       return;
     }
     if (this._isResponsibleForElementLifeCycle) {
-      super._load(), this._text = document.createElement("canvas");
-      const e = this._text.getContext("2d");
-      e.fillStyle = this._attributes.color, e.font = this._attributes.font, e.fillText(this._elementURL, this._attributes.left, this._attributes.top), this._ready = !0, this._element = this._text, this._triggerCallbacks("loaded");
-      for (let t in this._attributes)
-        this._text[t] = this._attributes[t];
+      super._load();
+      this._text = document.createElement("canvas");
+      const ctx = this._text.getContext("2d");
+      ctx.fillStyle = this._attributes.color;
+      ctx.font = this._attributes.font;
+      ctx.fillText(this._elementURL, this._attributes.left, this._attributes.top);
+      this._ready = true;
+      this._element = this._text;
+      this._triggerCallbacks("loaded");
+      for (let key in this._attributes) {
+        this._text[key] = this._attributes[key];
+      }
     }
   }
   _unload() {
-    super._unload(), this._isResponsibleForElementLifeCycle && this._text !== void 0 && delete this._text, this._ready = !1;
+    super._unload();
+    if (this._isResponsibleForElementLifeCycle) {
+      if (this._text !== void 0) {
+        delete this._text;
+      }
+    }
+    this._ready = false;
   }
-  _seek(e) {
-    super._seek(e), (this.state === l.playing || this.state === l.paused) && this._text === void 0 && this._load(), (this._state === l.sequenced || this._state === l.ended) && this._element !== void 0 && this._unload();
+  _seek(time) {
+    super._seek(time);
+    if (this.state === STATE$1.playing || this.state === STATE$1.paused) {
+      if (this._text === void 0)
+        this._load();
+    }
+    if ((this._state === STATE$1.sequenced || this._state === STATE$1.ended) && this._element !== void 0) {
+      this._unload();
+    }
   }
-  _update(e) {
-    if (this._textureUploaded ? super._update(e, !1) : super._update(e), this._startTime - this._currentTime <= this._preloadTime && this._state !== l.waiting && this._state !== l.ended && this._load(), this._state === l.playing)
-      return !0;
-    if (this._state === l.paused)
-      return !0;
-    if (this._state === l.ended && this._text !== void 0)
-      return this._unload(), !1;
+  _update(currentTime) {
+    if (this._textureUploaded) {
+      super._update(currentTime, false);
+    } else {
+      super._update(currentTime);
+    }
+    if (this._startTime - this._currentTime <= this._preloadTime && this._state !== STATE$1.waiting && this._state !== STATE$1.ended)
+      this._load();
+    if (this._state === STATE$1.playing) {
+      return true;
+    } else if (this._state === STATE$1.paused) {
+      return true;
+    } else if (this._state === STATE$1.ended && this._text !== void 0) {
+      this._unload();
+      return false;
+    }
   }
 }
-const Lt = {
-  AudioNode: D,
-  CanvasNode: X,
-  ImageNode: H,
-  MediaNode: P,
-  SourceNode: C,
-  VideoNode: F,
-  TextNode: Z
+const NODES = {
+  AudioNode,
+  CanvasNode,
+  ImageNode,
+  MediaNode,
+  SourceNode,
+  VideoNode,
+  TextNode
 };
-class A {
+class RenderGraph {
   /**
    * Manages the rendering graph.
    */
@@ -2250,11 +2484,14 @@ class A {
    * @param {GraphNode} node - the node to get the outputs for.
    * @return {GraphNode[]} An array of the nodes which are connected to the output.
    */
-  getOutputsForNode(e) {
-    let t = [];
-    return this.connections.forEach(function(i) {
-      i.source === e && t.push(i.destination);
-    }), t;
+  getOutputsForNode(node) {
+    let results = [];
+    this.connections.forEach(function(connection) {
+      if (connection.source === node) {
+        results.push(connection.destination);
+      }
+    });
+    return results;
   }
   /**
    * Get a list of nodes which are connected, by input name, to the given node. Array contains objects of the form: {"source":sourceNode, "type":"name", "name":inputName, "destination":destinationNode}.
@@ -2262,11 +2499,14 @@ class A {
    * @param {GraphNode} node - the node to get the named inputs for.
    * @return {Object[]} An array of objects representing the nodes and connection type, which are connected to the named inputs for the node.
    */
-  getNamedInputsForNode(e) {
-    let t = [];
-    return this.connections.forEach(function(i) {
-      i.destination === e && i.type === "name" && t.push(i);
-    }), t;
+  getNamedInputsForNode(node) {
+    let results = [];
+    this.connections.forEach(function(connection) {
+      if (connection.destination === node && connection.type === "name") {
+        results.push(connection);
+      }
+    });
+    return results;
   }
   /**
    * Get a list of nodes which are connected, by z-index name, to the given node. Array contains objects of the form: {"source":sourceNode, "type":"zIndex", "zIndex":0, "destination":destinationNode}.
@@ -2274,13 +2514,17 @@ class A {
    * @param {GraphNode} node - the node to get the z-index refernced inputs for.
    * @return {Object[]} An array of objects representing the nodes and connection type, which are connected by z-Index for the node.
    */
-  getZIndexInputsForNode(e) {
-    let t = [];
-    return this.connections.forEach(function(i) {
-      i.destination === e && i.type === "zIndex" && t.push(i);
-    }), t.sort(function(i, n) {
-      return i.zIndex - n.zIndex;
-    }), t;
+  getZIndexInputsForNode(node) {
+    let results = [];
+    this.connections.forEach(function(connection) {
+      if (connection.destination === node && connection.type === "zIndex") {
+        results.push(connection);
+      }
+    });
+    results.sort(function(a, b) {
+      return a.zIndex - b.zIndex;
+    });
+    return results;
   }
   /**
    * Get a list of nodes which are connected as inputs to the given node. The length of the return array is always equal to the number of inputs for the node, with undefined taking the place of any inputs not connected.
@@ -2288,38 +2532,52 @@ class A {
    * @param {GraphNode} node - the node to get the inputs for.
    * @return {GraphNode[]} An array of GraphNodes which are connected to the node.
    */
-  getInputsForNode(e) {
-    let t = e.inputNames, i = [], n = this.getNamedInputsForNode(e), s = this.getZIndexInputsForNode(e);
-    if (e._limitConnections === !0) {
-      for (let _ = 0; _ < t.length; _++)
-        i[_] = void 0;
-      for (let _ of n) {
-        let u = t.indexOf(_.name);
-        i[u] = _.source;
+  getInputsForNode(node) {
+    let inputNames = node.inputNames;
+    let results = [];
+    let namedInputs = this.getNamedInputsForNode(node);
+    let indexedInputs = this.getZIndexInputsForNode(node);
+    if (node._limitConnections === true) {
+      for (let i = 0; i < inputNames.length; i++) {
+        results[i] = void 0;
       }
-      let o = 0;
-      for (let _ = 0; _ < i.length; _++)
-        i[_] === void 0 && s[o] !== void 0 && (i[_] = s[o].source, o += 1);
+      for (let connection of namedInputs) {
+        let index = inputNames.indexOf(connection.name);
+        results[index] = connection.source;
+      }
+      let indexedInputsIndex = 0;
+      for (let i = 0; i < results.length; i++) {
+        if (results[i] === void 0 && indexedInputs[indexedInputsIndex] !== void 0) {
+          results[i] = indexedInputs[indexedInputsIndex].source;
+          indexedInputsIndex += 1;
+        }
+      }
     } else {
-      for (let o of n)
-        i.push(o.source);
-      for (let o of s)
-        i.push(o.source);
+      for (let connection of namedInputs) {
+        results.push(connection.source);
+      }
+      for (let connection of indexedInputs) {
+        results.push(connection.source);
+      }
     }
-    return i;
+    return results;
   }
   /**
    * Check if a named input on a node is available to connect too.
    * @param {GraphNode} node - the node to check.
    * @param {String} inputName - the named input to check.
    */
-  isInputAvailable(e, t) {
-    if (e._inputNames.indexOf(t) === -1)
-      return !1;
-    for (let i of this.connections)
-      if (i.type === "name" && i.destination === e && i.name === t)
-        return !1;
-    return !0;
+  isInputAvailable(node, inputName) {
+    if (node._inputNames.indexOf(inputName) === -1)
+      return false;
+    for (let connection of this.connections) {
+      if (connection.type === "name") {
+        if (connection.destination === node && connection.name === inputName) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
   /**
    * Register a connection between two nodes.
@@ -2329,38 +2587,50 @@ class A {
    * @param {(String | number)} [target] - the target port of the conenction, this could be a string to specfiy a specific named port, a number to specify a port by index, or undefined, in which case the next available port will be connected to.
    * @return {boolean} Will return true if connection succeeds otherwise will throw a ConnectException.
    */
-  registerConnection(e, t, i) {
-    if (t.inputs.length >= t.inputNames.length && t._limitConnections === !0)
-      throw new w("Node has reached max number of inputs, can't connect");
-    if (t._limitConnections === !1 && this.getInputsForNode(t).includes(e) && (console.debug(
-      "WARNING - node connected mutliple times, removing previous connection"
-    ), this.unregisterConnection(e, t)), typeof i == "number")
+  registerConnection(sourceNode, destinationNode, target) {
+    if (destinationNode.inputs.length >= destinationNode.inputNames.length && destinationNode._limitConnections === true) {
+      throw new ConnectException("Node has reached max number of inputs, can't connect");
+    }
+    if (destinationNode._limitConnections === false) {
+      const inputs = this.getInputsForNode(destinationNode);
+      if (inputs.includes(sourceNode)) {
+        console.debug(
+          "WARNING - node connected mutliple times, removing previous connection"
+        );
+        this.unregisterConnection(sourceNode, destinationNode);
+      }
+    }
+    if (typeof target === "number") {
       this.connections.push({
-        source: e,
+        source: sourceNode,
         type: "zIndex",
-        zIndex: i,
-        destination: t
+        zIndex: target,
+        destination: destinationNode
       });
-    else if (typeof i == "string" && t._limitConnections)
-      if (this.isInputAvailable(t, i))
+    } else if (typeof target === "string" && destinationNode._limitConnections) {
+      if (this.isInputAvailable(destinationNode, target)) {
         this.connections.push({
-          source: e,
+          source: sourceNode,
           type: "name",
-          name: i,
-          destination: t
+          name: target,
+          destination: destinationNode
         });
-      else
-        throw new w("Port " + i + " is already connected to");
-    else {
-      let n = this.getZIndexInputsForNode(t), s = 0;
-      n.length > 0 && (s = n[n.length - 1].zIndex + 1), this.connections.push({
-        source: e,
+      } else {
+        throw new ConnectException("Port " + target + " is already connected to");
+      }
+    } else {
+      let indexedConns = this.getZIndexInputsForNode(destinationNode);
+      let index = 0;
+      if (indexedConns.length > 0)
+        index = indexedConns[indexedConns.length - 1].zIndex + 1;
+      this.connections.push({
+        source: sourceNode,
         type: "zIndex",
-        zIndex: s,
-        destination: t
+        zIndex: index,
+        destination: destinationNode
       });
     }
-    return !0;
+    return true;
   }
   /**
    * Remove a connection between two nodes.
@@ -2368,84 +2638,109 @@ class A {
    * @param {GraphNode} destinationNode - the node to register connection to.
    * @return {boolean} Will return true if removing connection succeeds, or false if there was no connectionsction to remove.
    */
-  unregisterConnection(e, t) {
-    let i = [];
-    return this.connections.forEach(function(n) {
-      n.source === e && n.destination === t && i.push(n);
-    }), i.length === 0 ? !1 : (i.forEach((n) => {
-      let s = this.connections.indexOf(n);
-      this.connections.splice(s, 1);
-    }), !0);
+  unregisterConnection(sourceNode, destinationNode) {
+    let toRemove = [];
+    this.connections.forEach(function(connection) {
+      if (connection.source === sourceNode && connection.destination === destinationNode) {
+        toRemove.push(connection);
+      }
+    });
+    if (toRemove.length === 0)
+      return false;
+    toRemove.forEach((removeNode) => {
+      let index = this.connections.indexOf(removeNode);
+      this.connections.splice(index, 1);
+    });
+    return true;
   }
-  static outputEdgesFor(e, t) {
-    let i = [];
-    for (let n of t)
-      n.source === e && i.push(n);
-    return i;
-  }
-  static inputEdgesFor(e, t) {
-    let i = [];
-    for (let n of t)
-      n.destination === e && i.push(n);
-    return i;
-  }
-  static getInputlessNodes(e) {
-    let t = [];
-    for (let i of e)
-      t.push(i.source);
-    for (let i of e) {
-      let n = t.indexOf(i.destination);
-      n !== -1 && t.splice(n, 1);
+  static outputEdgesFor(node, connections) {
+    let results = [];
+    for (let conn of connections) {
+      if (conn.source === node) {
+        results.push(conn);
+      }
     }
-    return t;
+    return results;
+  }
+  static inputEdgesFor(node, connections) {
+    let results = [];
+    for (let conn of connections) {
+      if (conn.destination === node) {
+        results.push(conn);
+      }
+    }
+    return results;
+  }
+  static getInputlessNodes(connections) {
+    let inputLess = [];
+    for (let conn of connections) {
+      inputLess.push(conn.source);
+    }
+    for (let conn of connections) {
+      let index = inputLess.indexOf(conn.destination);
+      if (index !== -1) {
+        inputLess.splice(index, 1);
+      }
+    }
+    return inputLess;
   }
 }
-class B {
-  constructor(e = null) {
-    this._element = this._createElement(), this._node = e;
+class VideoElementCacheItem {
+  constructor(node = null) {
+    this._element = this._createElement();
+    this._node = node;
   }
   _createElement() {
-    let e = document.createElement("video");
-    return e.setAttribute("crossorigin", "anonymous"), e.setAttribute("webkit-playsinline", ""), e.setAttribute("playsinline", ""), e;
+    let videoElement = document.createElement("video");
+    videoElement.setAttribute("crossorigin", "anonymous");
+    videoElement.setAttribute("webkit-playsinline", "");
+    videoElement.setAttribute("playsinline", "");
+    return videoElement;
   }
   get element() {
     return this._element;
   }
-  set element(e) {
-    this._element = e;
+  set element(element) {
+    this._element = element;
   }
-  linkNode(e) {
-    this._node = e;
+  linkNode(node) {
+    this._node = node;
   }
   unlinkNode() {
     this._node = null;
   }
   isPlaying() {
-    return this._node && this._node._state === l.playing;
+    return this._node && this._node._state === STATE$1.playing;
   }
 }
-class Mt {
-  constructor(e = 3) {
-    this._cacheItems = [], this._cacheItemsInitialised = !1;
-    for (let t = 0; t < e; t++)
-      this._cacheItems.push(new B());
+class VideoElementCache {
+  constructor(cache_size = 3) {
+    this._cacheItems = [];
+    this._cacheItemsInitialised = false;
+    for (let i = 0; i < cache_size; i++) {
+      this._cacheItems.push(new VideoElementCacheItem());
+    }
   }
   init() {
-    if (!this._cacheItemsInitialised)
-      for (let e of this._cacheItems)
+    if (!this._cacheItemsInitialised) {
+      for (let cacheItem of this._cacheItems) {
         try {
-          e.element.play().then(
+          cacheItem.element.play().then(
             () => {
-              e.isPlaying() || e.element.pause();
+              if (!cacheItem.isPlaying()) {
+                cacheItem.element.pause();
+              }
             },
-            (t) => {
-              if (t.name !== "NotSupportedError")
-                throw t;
+            (e) => {
+              if (e.name !== "NotSupportedError")
+                throw e;
             }
           );
-        } catch {
+        } catch (e) {
         }
-    this._cacheItemsInitialised = !0;
+      }
+    }
+    this._cacheItemsInitialised = true;
   }
   /**
    * Find and return an empty initialised element or, if the cache is
@@ -2453,37 +2748,47 @@ class Mt {
    *
    * @param {Object} mediaNode A `MediaNode` instance
    */
-  getElementAndLinkToNode(e) {
-    for (let i of this._cacheItems)
-      if (!G(i.element))
-        return i.linkNode(e), i.element;
+  getElementAndLinkToNode(mediaNode) {
+    for (let cacheItem2 of this._cacheItems) {
+      if (!mediaElementHasSource(cacheItem2.element)) {
+        cacheItem2.linkNode(mediaNode);
+        return cacheItem2.element;
+      }
+    }
     console.debug(
       "No available video element in the cache, creating a new one. This may break mobile, make your initial cache larger."
     );
-    let t = new B(e);
-    return this._cacheItems.push(t), this._cacheItemsInitialised = !1, t.element;
+    let cacheItem = new VideoElementCacheItem(mediaNode);
+    this._cacheItems.push(cacheItem);
+    this._cacheItemsInitialised = false;
+    return cacheItem.element;
   }
   /**
    * Unlink any media node currently linked to a cached video element.
    *
    * @param {VideoElement} element The element to unlink from any media nodes
    */
-  unlinkNodeFromElement(e) {
-    for (let t of this._cacheItems)
-      e === t._element && t.unlinkNode();
+  unlinkNodeFromElement(element) {
+    for (let cacheItem of this._cacheItems) {
+      if (element === cacheItem._element) {
+        cacheItem.unlinkNode();
+      }
+    }
   }
   get length() {
     return this._cacheItems.length;
   }
   get unused() {
-    let e = 0;
-    for (let t of this._cacheItems)
-      G(t.element) || (e += 1);
-    return e;
+    let count = 0;
+    for (let cacheItem of this._cacheItems) {
+      if (!mediaElementHasSource(cacheItem.element))
+        count += 1;
+    }
+    return count;
   }
 }
-let J = new wt();
-class c {
+let updateablesManager = new UpdateablesManager();
+class VideoContext {
   /**
    * Initialise the VideoContext and render to the specific canvas. A 2nd parameter can be passed to the constructor which is a function that get's called if the VideoContext fails to initialise.
    *
@@ -2506,29 +2811,63 @@ class c {
    * ctx.play();
    *
    */
-  constructor(e, t, {
-    manualUpdate: i = !1,
-    endOnLastSourceEnd: n = !0,
-    useVideoElementCache: s = !0,
-    videoElementCacheSize: o = 6,
-    webglContextAttributes: _ = {}
+  constructor(canvas, initErrorCallback, {
+    manualUpdate = false,
+    endOnLastSourceEnd = true,
+    useVideoElementCache = true,
+    videoElementCacheSize = 6,
+    webglContextAttributes = {}
   } = {}) {
-    if (this._canvas = e, this._endOnLastSourceEnd = n, this._gl = e.getContext(
+    this._canvas = canvas;
+    this._endOnLastSourceEnd = endOnLastSourceEnd;
+    this._gl = canvas.getContext(
       "experimental-webgl",
       Object.assign(
-        { preserveDrawingBuffer: !0 },
+        { preserveDrawingBuffer: true },
         // can be overriden
-        _,
-        { alpha: !1 }
+        webglContextAttributes,
+        { alpha: false }
         // Can't be overriden because it is copied last
       )
-    ), this._gl === null) {
-      console.error("Failed to intialise WebGL."), t && t();
+    );
+    if (this._gl === null) {
+      console.error("Failed to intialise WebGL.");
+      if (initErrorCallback)
+        initErrorCallback();
       return;
     }
-    this._useVideoElementCache = s, this._useVideoElementCache && (this._videoElementCache = new Mt(o)), this._canvas.id && (typeof this._canvas.id == "string" || this._canvas.id instanceof String) && (this._id = e.id), this._id === void 0 && (this._id = Et()), window.__VIDEOCONTEXT_REFS__ === void 0 && (window.__VIDEOCONTEXT_REFS__ = {}), window.__VIDEOCONTEXT_REFS__[this._id] = this, this._renderGraph = new A(), this._sourceNodes = [], this._processingNodes = [], this._timeline = [], this._currentTime = 0, this._state = c.STATE.PAUSED, this._playbackRate = 1, this._volume = 1, this._sourcesPlaying = void 0, this._destinationNode = new xt(this._gl, this._renderGraph), this._callbacks = /* @__PURE__ */ new Map(), Object.keys(c.EVENTS).forEach(
-      (u) => this._callbacks.set(c.EVENTS[u], [])
-    ), this._timelineCallbacks = [], i || J.register(this);
+    this._useVideoElementCache = useVideoElementCache;
+    if (this._useVideoElementCache) {
+      this._videoElementCache = new VideoElementCache(videoElementCacheSize);
+    }
+    if (this._canvas.id) {
+      if (typeof this._canvas.id === "string" || this._canvas.id instanceof String) {
+        this._id = canvas.id;
+      }
+    }
+    if (this._id === void 0)
+      this._id = generateRandomId();
+    if (window.__VIDEOCONTEXT_REFS__ === void 0)
+      window.__VIDEOCONTEXT_REFS__ = {};
+    window.__VIDEOCONTEXT_REFS__[this._id] = this;
+    this._renderGraph = new RenderGraph();
+    this._sourceNodes = [];
+    this._processingNodes = [];
+    this._timeline = [];
+    this._currentTime = 0;
+    this._state = VideoContext.STATE.PAUSED;
+    this._playbackRate = 1;
+    this._volume = 1;
+    this._sourcesPlaying = void 0;
+    this._destinationNode = new DestinationNode(this._gl, this._renderGraph);
+    this._callbacks = /* @__PURE__ */ new Map();
+    Object.keys(VideoContext.EVENTS).forEach(
+      (name) => this._callbacks.set(VideoContext.EVENTS[name], [])
+    );
+    this._timelineCallbacks = [];
+    if (!manualUpdate) {
+      updateablesManager.register(this);
+    }
   }
   /**
    * Returns an ID assigned to the VideoContext instance. This will either be the same id as the underlying canvas element,
@@ -2540,8 +2879,12 @@ class c {
   /**
    * Set the ID of the VideoContext instance. This should be unique.
    */
-  set id(e) {
-    delete window.__VIDEOCONTEXT_REFS__[this._id], window.__VIDEOCONTEXT_REFS__[e] !== void 0 && console.warn("Warning; setting id to that of an existing VideoContext instance."), window.__VIDEOCONTEXT_REFS__[e] = this, this._id = e;
+  set id(newID) {
+    delete window.__VIDEOCONTEXT_REFS__[this._id];
+    if (window.__VIDEOCONTEXT_REFS__[newID] !== void 0)
+      console.warn("Warning; setting id to that of an existing VideoContext instance.");
+    window.__VIDEOCONTEXT_REFS__[newID] = this;
+    this._id = newID;
   }
   /**
    * Register a callback to happen at a specific point in time.
@@ -2549,24 +2892,27 @@ class c {
    * @param {Function} func - the callback to register.
    * @param {number} ordering - the order in which to call the callback if more than one is registered for the same time.
    */
-  registerTimelineCallback(e, t, i = 0) {
+  registerTimelineCallback(time, func, ordering = 0) {
     this._timelineCallbacks.push({
-      time: e,
-      func: t,
-      ordering: i
+      time,
+      func,
+      ordering
     });
   }
   /**
    * Unregister a callback which happens at a specific point in time.
    * @param {Function} func - the callback to unregister.
    */
-  unregisterTimelineCallback(e) {
-    let t = [];
-    for (let i of this._timelineCallbacks)
-      i.func === e && t.push(i);
-    for (let i of t) {
-      let n = this._timelineCallbacks.indexOf(i);
-      this._timelineCallbacks.splice(n, 1);
+  unregisterTimelineCallback(func) {
+    let toRemove = [];
+    for (let callback of this._timelineCallbacks) {
+      if (callback.func === func) {
+        toRemove.push(callback);
+      }
+    }
+    for (let callback of toRemove) {
+      let index = this._timelineCallbacks.indexOf(callback);
+      this._timelineCallbacks.splice(index, 1);
     }
   }
   /**
@@ -2582,10 +2928,10 @@ class c {
    * ctx.registerCallback(VideoContext.EVENTS.UPDATE, () => console.log("new frame"));
    * ctx.registerCallback(VideoContext.EVENTS.ENDED, () => console.log("Playback ended"));
    */
-  registerCallback(e, t) {
-    if (!this._callbacks.has(e))
-      return !1;
-    this._callbacks.get(e).push(t);
+  registerCallback(type, func) {
+    if (!this._callbacks.has(type))
+      return false;
+    this._callbacks.get(type).push(func);
   }
   /**
    * Remove a previously registered callback
@@ -2605,18 +2951,21 @@ class c {
    * ctx.unregisterCallback(updateCallback);
    *
    */
-  unregisterCallback(e) {
-    for (let t of this._callbacks.values()) {
-      let i = t.indexOf(e);
-      if (i !== -1)
-        return t.splice(i, 1), !0;
+  unregisterCallback(func) {
+    for (let funcArray of this._callbacks.values()) {
+      let index = funcArray.indexOf(func);
+      if (index !== -1) {
+        funcArray.splice(index, 1);
+        return true;
+      }
     }
-    return !1;
+    return false;
   }
-  _callCallbacks(e) {
-    let t = this._callbacks.get(e);
-    for (let i of t)
-      i(this._currentTime);
+  _callCallbacks(type) {
+    let funcArray = this._callbacks.get(type);
+    for (let func of funcArray) {
+      func(this._currentTime);
+    }
   }
   /**
    * Get the canvas that the VideoContext is using.
@@ -2652,13 +3001,19 @@ class c {
    * ctx.play();
    *
    */
-  set currentTime(e) {
-    e < this.duration && this._state === c.STATE.ENDED && (this._state = c.STATE.PAUSED), (typeof e == "string" || e instanceof String) && (e = parseFloat(e));
-    for (let t = 0; t < this._sourceNodes.length; t++)
-      this._sourceNodes[t]._seek(e);
-    for (let t = 0; t < this._processingNodes.length; t++)
-      this._processingNodes[t]._seek(e);
-    this._currentTime = e;
+  set currentTime(currentTime) {
+    if (currentTime < this.duration && this._state === VideoContext.STATE.ENDED)
+      this._state = VideoContext.STATE.PAUSED;
+    if (typeof currentTime === "string" || currentTime instanceof String) {
+      currentTime = parseFloat(currentTime);
+    }
+    for (let i = 0; i < this._sourceNodes.length; i++) {
+      this._sourceNodes[i]._seek(currentTime);
+    }
+    for (let i = 0; i < this._processingNodes.length; i++) {
+      this._processingNodes[i]._seek(currentTime);
+    }
+    this._currentTime = currentTime;
   }
   /**
    * Get how far through the internal timeline has been played.
@@ -2700,10 +3055,13 @@ class c {
    * ctx.play();
    */
   get duration() {
-    let e = 0;
-    for (let t = 0; t < this._sourceNodes.length; t++)
-      this._sourceNodes[t].state !== l.waiting && this._sourceNodes[t]._stopTime > e && (e = this._sourceNodes[t]._stopTime);
-    return e;
+    let maxTime = 0;
+    for (let i = 0; i < this._sourceNodes.length; i++) {
+      if (this._sourceNodes[i].state !== STATE$1.waiting && this._sourceNodes[i]._stopTime > maxTime) {
+        maxTime = this._sourceNodes[i]._stopTime;
+      }
+    }
+    return maxTime;
   }
   /**
    * Get the final node in the render graph which represents the canvas to display content on to.
@@ -2739,12 +3097,17 @@ class c {
    * ctx.playbackRate = 2;
    * ctx.play(); // Double playback rate means this will finish playing in 5 seconds.
    */
-  set playbackRate(e) {
-    if (e <= 0)
+  set playbackRate(rate) {
+    if (rate <= 0) {
       throw new RangeError("playbackRate must be greater than 0");
-    for (let t of this._sourceNodes)
-      t.constructor.name === S && (t._globalPlaybackRate = e, t._playbackRateUpdated = !0);
-    this._playbackRate = e;
+    }
+    for (let node of this._sourceNodes) {
+      if (node.constructor.name === TYPE$9) {
+        node._globalPlaybackRate = rate;
+        node._playbackRateUpdated = true;
+      }
+    }
+    this._playbackRate = rate;
   }
   /**
    *  Return the current playbackRate of the video context.
@@ -2757,14 +3120,15 @@ class c {
    * Set the volume of all MediaNode created in the VideoContext.
    * @param {number} volume - the volume to apply to the video nodes.
    */
-  set volume(e) {
-    for (let t of this._sourceNodes)
-      if (t instanceof F || t instanceof D) {
-        if (t.fadeIn)
+  set volume(vol) {
+    for (let node of this._sourceNodes) {
+      if (node instanceof VideoNode || node instanceof AudioNode) {
+        if (node.fadeIn)
           continue;
-        e ? t.volume = t.sound : t.volume = e;
+        vol ? node.volume = node.sound : node.volume = vol;
       }
-    this._volume = e;
+    }
+    this._volume = vol;
   }
   /**
    * Return the current volume of the video context.
@@ -2785,7 +3149,11 @@ class c {
    * ctx.play();
    */
   play() {
-    return console.debug("VideoContext - playing"), this._videoElementCache && this._videoElementCache.init(), this._state = c.STATE.PLAYING, !0;
+    console.debug("VideoContext - playing");
+    if (this._videoElementCache)
+      this._videoElementCache.init();
+    this._state = VideoContext.STATE.PLAYING;
+    return true;
   }
   /**
    * Pause playback of the VideoContext
@@ -2801,7 +3169,9 @@ class c {
    * setTimeout(() => ctx.pause(), 1000); //pause playback after roughly one second.
    */
   pause() {
-    return console.debug("VideoContext - pausing"), this._state = c.STATE.PAUSED, !0;
+    console.debug("VideoContext - pausing");
+    this._state = VideoContext.STATE.PAUSED;
+    return true;
   }
   /**
    * Create a new node representing a video source
@@ -2817,19 +3187,20 @@ class c {
    * var ctx = new VideoContext(canvasElement);
    * var videoNode = ctx.video("bigbuckbunny.mp4");
    */
-  video(e, t = 0, i = 4, n = {}) {
-    let s = new F(
-      e,
+  video(src, sourceOffset = 0, preloadTime = 4, videoElementAttributes = {}) {
+    let videoNode = new VideoNode(
+      src,
       this._gl,
       this._renderGraph,
       this._currentTime,
       this._playbackRate,
-      t,
-      i,
+      sourceOffset,
+      preloadTime,
       this._videoElementCache,
-      n
+      videoElementAttributes
     );
-    return this._sourceNodes.push(s), s;
+    this._sourceNodes.push(videoNode);
+    return videoNode;
   }
   /**
    * Create a new node representing an audio source
@@ -2844,27 +3215,29 @@ class c {
    * var ctx = new VideoContext(canvasElement);
    * var audioNode = ctx.audio("ziggystardust.mp3");
    */
-  audio(e, t = 0, i = 4, n = {}) {
-    let s = new D(
-      e,
+  audio(src, sourceOffset = 0, preloadTime = 4, audioElementAttributes = {}) {
+    let audioNode = new AudioNode(
+      src,
       this._gl,
       this._renderGraph,
       this._currentTime,
       this._playbackRate,
-      t,
-      i,
+      sourceOffset,
+      preloadTime,
       this._audioElementCache,
-      n
+      audioElementAttributes
     );
-    return this._sourceNodes.push(s), s;
+    this._sourceNodes.push(audioNode);
+    return audioNode;
   }
   /**
    * @deprecated
    */
-  createVideoSourceNode(e, t = 0, i = 4, n = {}) {
-    return this._deprecate(
+  createVideoSourceNode(src, sourceOffset = 0, preloadTime = 4, videoElementAttributes = {}) {
+    this._deprecate(
       "Warning: createVideoSourceNode will be deprecated in v1.0, please switch to using VideoContext.video()"
-    ), this.video(e, t, i, n);
+    );
+    return this.video(src, sourceOffset, preloadTime, videoElementAttributes);
   }
   /**
    * Create a new node representing an image source
@@ -2884,16 +3257,17 @@ class c {
    * var ctx = new VideoContext(canvasElement);
    * var imageNode = ctx.image(imageElement);
    */
-  image(e, t = 4, i = {}) {
-    let n = new H(
-      e,
+  image(src, preloadTime = 4, imageElementAttributes = {}) {
+    let imageNode = new ImageNode(
+      src,
       this._gl,
       this._renderGraph,
       this._currentTime,
-      t,
-      i
+      preloadTime,
+      imageElementAttributes
     );
-    return this._sourceNodes.push(n), n;
+    this._sourceNodes.push(imageNode);
+    return imageNode;
   }
   /**
    * Create a new node representing an image source
@@ -2913,58 +3287,64 @@ class c {
    * var ctx = new VideoContext(canvasElement);
    * var imageNode = ctx.image(imageElement);
    */
-  text(e, t = 4, i = {}) {
-    let n = new Z(
-      e,
+  text(text, preloadTime = 4, textElementAttributes = {}) {
+    let textNode = new TextNode(
+      text,
       this._gl,
       this._renderGraph,
       this._currentTime,
-      t,
-      i
+      preloadTime,
+      textElementAttributes
     );
-    return this._sourceNodes.push(n), n;
+    this._sourceNodes.push(textNode);
+    return textNode;
   }
   /**
    * @deprecated
    */
-  createImageSourceNode(e, t = 0, i = 4, n = {}) {
-    return this._deprecate(
+  createImageSourceNode(src, sourceOffset = 0, preloadTime = 4, imageElementAttributes = {}) {
+    this._deprecate(
       "Warning: createImageSourceNode will be deprecated in v1.0, please switch to using VideoContext.image()"
-    ), this.image(e, t, i, n);
+    );
+    return this.image(src, sourceOffset, preloadTime, imageElementAttributes);
   }
   /**
    * Create a new node representing a canvas source
    * @param {Canvas} src - The canvas element to create the canvas node from.
    * @return {CanvasNode} A new canvas node.
    */
-  canvas(e) {
-    let t = new X(e, this._gl, this._renderGraph, this._currentTime);
-    return this._sourceNodes.push(t), t;
+  canvas(canvas) {
+    let canvasNode = new CanvasNode(canvas, this._gl, this._renderGraph, this._currentTime);
+    this._sourceNodes.push(canvasNode);
+    return canvasNode;
   }
   /**
    * @deprecated
    */
-  createCanvasSourceNode(e, t = 0, i = 4) {
-    return this._deprecate(
+  createCanvasSourceNode(canvas, sourceOffset = 0, preloadTime = 4) {
+    this._deprecate(
       "Warning: createCanvasSourceNode will be deprecated in v1.0, please switch to using VideoContext.canvas()"
-    ), this.canvas(e, t, i);
+    );
+    return this.canvas(canvas, sourceOffset, preloadTime);
   }
   /**
    * Create a new effect node.
    * @param {Object} definition - this is an object defining the shaders, inputs, and properties of the compositing node to create. Builtin definitions can be found by accessing VideoContext.DEFINITIONS.
    * @return {EffectNode} A new effect node created from the passed definition
    */
-  effect(e) {
-    let t = new j(this._gl, this._renderGraph, e);
-    return this._processingNodes.push(t), t;
+  effect(definition) {
+    let effectNode = new EffectNode(this._gl, this._renderGraph, definition);
+    this._processingNodes.push(effectNode);
+    return effectNode;
   }
   /**
    * @deprecated
    */
-  createEffectNode(e) {
-    return this._deprecate(
+  createEffectNode(definition) {
+    this._deprecate(
       "Warning: createEffectNode will be deprecated in v1.0, please switch to using VideoContext.effect()"
-    ), this.effect(e);
+    );
+    return this.effect(definition);
   }
   /**
    * Create a new compositiing node.
@@ -3028,9 +3408,10 @@ class c {
    * trackNode.connect(ctx.destination);
    *
    */
-  compositor(e) {
-    let t = new yt(this._gl, this._renderGraph, e);
-    return this._processingNodes.push(t), t;
+  compositor(definition) {
+    let compositingNode = new CompositingNode(this._gl, this._renderGraph, definition);
+    this._processingNodes.push(compositingNode);
+    return compositingNode;
   }
   /**
    * Instanciate a custom built source node
@@ -3038,23 +3419,25 @@ class c {
    * @param {Object} src
    * @param  {...any} options
    */
-  customSourceNode(e, t, ...i) {
-    const n = new e(
-      t,
+  customSourceNode(CustomSourceNode, src, ...options) {
+    const customSourceNode = new CustomSourceNode(
+      src,
       this._gl,
       this._renderGraph,
       this._currentTime,
-      ...i
+      ...options
     );
-    return this._sourceNodes.push(n), n;
+    this._sourceNodes.push(customSourceNode);
+    return customSourceNode;
   }
   /**
    * @depricated
    */
-  createCompositingNode(e) {
-    return this._deprecate(
+  createCompositingNode(definition) {
+    this._deprecate(
       "Warning: createCompositingNode will be deprecated in v1.0, please switch to using VideoContext.compositor()"
-    ), this.compositor(e);
+    );
+    return this.compositor(definition);
   }
   /**
    * Create a new transition node.
@@ -3134,22 +3517,24 @@ class c {
    * //start playback
    * ctx.play();
    */
-  transition(e) {
-    let t = new Tt(this._gl, this._renderGraph, e);
-    return this._processingNodes.push(t), t;
+  transition(definition) {
+    let transitionNode = new TransitionNode(this._gl, this._renderGraph, definition);
+    this._processingNodes.push(transitionNode);
+    return transitionNode;
   }
   /**
    * @deprecated
    */
-  createTransitionNode(e) {
-    return this._deprecate(
+  createTransitionNode(definition) {
+    this._deprecate(
       "Warning: createTransitionNode will be deprecated in v1.0, please switch to using VideoContext.transition()"
-    ), this.transition(e);
+    );
+    return this.transition(definition);
   }
   _isStalled() {
-    for (let e = 0; e < this._sourceNodes.length; e++)
-      ;
-    return !1;
+    for (let i = 0; i < this._sourceNodes.length; i++) {
+    }
+    return false;
   }
   /**
    * This allows manual calling of the update loop of the videoContext.
@@ -3171,111 +3556,171 @@ class c {
    * update();
    *
    */
-  update(e) {
-    this._update(e);
+  update(dt) {
+    this._update(dt);
   }
-  _update(e) {
-    if (this._sourceNodes = this._sourceNodes.filter((t) => {
-      if (!t.destroyed)
-        return t;
-    }), this._processingNodes = this._processingNodes.filter((t) => {
-      if (!t.destroyed)
-        return t;
-    }), this._state === c.STATE.PLAYING || this._state === c.STATE.STALLED || this._state === c.STATE.PAUSED) {
-      if (this._callCallbacks(c.EVENTS.UPDATE), this._state !== c.STATE.PAUSED && (this._isStalled() ? (this._callCallbacks(c.EVENTS.STALLED), this._state = c.STATE.STALLED) : this._state = c.STATE.PLAYING), this._state === c.STATE.PLAYING) {
-        let o = /* @__PURE__ */ new Map();
-        for (let u of this._timelineCallbacks)
-          u.time >= this.currentTime && u.time < this._currentTime + e * this._playbackRate && (o.has(u.time) || o.set(u.time, []), o.get(u.time).push(u));
-        let _ = Array.from(o.keys());
-        _.sort(function(u, a) {
-          return u - a;
+  _update(dt) {
+    this._sourceNodes = this._sourceNodes.filter((sourceNode) => {
+      if (!sourceNode.destroyed)
+        return sourceNode;
+    });
+    this._processingNodes = this._processingNodes.filter((processingNode) => {
+      if (!processingNode.destroyed)
+        return processingNode;
+    });
+    if (this._state === VideoContext.STATE.PLAYING || this._state === VideoContext.STATE.STALLED || this._state === VideoContext.STATE.PAUSED) {
+      this._callCallbacks(VideoContext.EVENTS.UPDATE);
+      if (this._state !== VideoContext.STATE.PAUSED) {
+        if (this._isStalled()) {
+          this._callCallbacks(VideoContext.EVENTS.STALLED);
+          this._state = VideoContext.STATE.STALLED;
+        } else {
+          this._state = VideoContext.STATE.PLAYING;
+        }
+      }
+      if (this._state === VideoContext.STATE.PLAYING) {
+        let activeCallbacks = /* @__PURE__ */ new Map();
+        for (let callback of this._timelineCallbacks) {
+          if (callback.time >= this.currentTime && callback.time < this._currentTime + dt * this._playbackRate) {
+            if (!activeCallbacks.has(callback.time))
+              activeCallbacks.set(callback.time, []);
+            activeCallbacks.get(callback.time).push(callback);
+          }
+        }
+        let timeIntervals = Array.from(activeCallbacks.keys());
+        timeIntervals.sort(function(a, b) {
+          return a - b;
         });
-        for (let u of _) {
-          let a = o.get(u);
-          a.sort(function(d, p) {
-            return d.ordering - p.ordering;
+        for (let t of timeIntervals) {
+          let callbacks = activeCallbacks.get(t);
+          callbacks.sort(function(a, b) {
+            return a.ordering - b.ordering;
           });
-          for (let d of a)
-            d.func();
+          for (let callback of callbacks) {
+            callback.func();
+          }
         }
-        if (this._currentTime += e * this._playbackRate, this._currentTime > this.duration && this._endOnLastSourceEnd) {
-          for (let u = 0; u < this._sourceNodes.length; u++)
-            this._sourceNodes[u]._update(this._currentTime);
-          this._state = c.STATE.ENDED, this._callCallbacks(c.EVENTS.ENDED);
-        }
-      }
-      let t = !1;
-      for (let o = 0; o < this._sourceNodes.length; o++) {
-        let _ = this._sourceNodes[o];
-        this._state, c.STATE.STALLED, this._state === c.STATE.PAUSED && _._pause(), this._state === c.STATE.PLAYING && _._play(), _._update(this._currentTime), (_._state === l.paused || _._state === l.playing) && (t = !0);
-      }
-      t !== this._sourcesPlaying && this._state === c.STATE.PLAYING && (t === !0 ? this._callCallbacks(c.EVENTS.CONTENT) : this._callCallbacks(c.EVENTS.NOCONTENT), this._sourcesPlaying = t);
-      let i = [], n = this._renderGraph.connections.slice(), s = A.getInputlessNodes(n);
-      for (; s.length > 0; ) {
-        let o = s.pop();
-        i.push(o);
-        for (let _ of A.outputEdgesFor(o, n)) {
-          let u = n.indexOf(_);
-          u > -1 && n.splice(u, 1), A.inputEdgesFor(_.destination, n).length === 0 && s.push(_.destination);
+        this._currentTime += dt * this._playbackRate;
+        if (this._currentTime > this.duration && this._endOnLastSourceEnd) {
+          for (let i = 0; i < this._sourceNodes.length; i++) {
+            this._sourceNodes[i]._update(this._currentTime);
+          }
+          this._state = VideoContext.STATE.ENDED;
+          this._callCallbacks(VideoContext.EVENTS.ENDED);
         }
       }
-      for (let o of i)
-        this._sourceNodes.indexOf(o) === -1 && (o._update(this._currentTime), o._render());
+      let sourcesPlaying = false;
+      for (let i = 0; i < this._sourceNodes.length; i++) {
+        let sourceNode = this._sourceNodes[i];
+        if (this._state === VideoContext.STATE.STALLED)
+          ;
+        if (this._state === VideoContext.STATE.PAUSED) {
+          sourceNode._pause();
+        }
+        if (this._state === VideoContext.STATE.PLAYING) {
+          sourceNode._play();
+        }
+        sourceNode._update(this._currentTime);
+        if (sourceNode._state === STATE$1.paused || sourceNode._state === STATE$1.playing) {
+          sourcesPlaying = true;
+        }
+      }
+      if (sourcesPlaying !== this._sourcesPlaying && this._state === VideoContext.STATE.PLAYING) {
+        if (sourcesPlaying === true) {
+          this._callCallbacks(VideoContext.EVENTS.CONTENT);
+        } else {
+          this._callCallbacks(VideoContext.EVENTS.NOCONTENT);
+        }
+        this._sourcesPlaying = sourcesPlaying;
+      }
+      let sortedNodes = [];
+      let connections = this._renderGraph.connections.slice();
+      let nodes = RenderGraph.getInputlessNodes(connections);
+      while (nodes.length > 0) {
+        let node = nodes.pop();
+        sortedNodes.push(node);
+        for (let edge of RenderGraph.outputEdgesFor(node, connections)) {
+          let index = connections.indexOf(edge);
+          if (index > -1)
+            connections.splice(index, 1);
+          if (RenderGraph.inputEdgesFor(edge.destination, connections).length === 0) {
+            nodes.push(edge.destination);
+          }
+        }
+      }
+      for (let node of sortedNodes) {
+        if (this._sourceNodes.indexOf(node) === -1) {
+          node._update(this._currentTime);
+          node._render();
+        }
+      }
     }
   }
   /**
    * Destroy all nodes in the graph and reset the timeline. After calling this any created nodes will be unusable.
    */
   reset() {
-    for (let e of this._callbacks)
-      this.unregisterCallback(e);
-    for (let e of this._sourceNodes)
-      e.destroy();
-    for (let e of this._processingNodes)
-      e.destroy();
-    this._update(0), this._sourceNodes = [], this._processingNodes = [], this._timeline = [], this._currentTime = 0, this._state = c.STATE.PAUSED, this._playbackRate = 1, this._sourcesPlaying = void 0, Object.keys(c.EVENTS).forEach(
-      (e) => this._callbacks.set(c.EVENTS[e], [])
-    ), this._timelineCallbacks = [];
+    for (let callback of this._callbacks) {
+      this.unregisterCallback(callback);
+    }
+    for (let node of this._sourceNodes) {
+      node.destroy();
+    }
+    for (let node of this._processingNodes) {
+      node.destroy();
+    }
+    this._update(0);
+    this._sourceNodes = [];
+    this._processingNodes = [];
+    this._timeline = [];
+    this._currentTime = 0;
+    this._state = VideoContext.STATE.PAUSED;
+    this._playbackRate = 1;
+    this._sourcesPlaying = void 0;
+    Object.keys(VideoContext.EVENTS).forEach(
+      (name) => this._callbacks.set(VideoContext.EVENTS[name], [])
+    );
+    this._timelineCallbacks = [];
   }
-  _deprecate(e) {
-    console.log(e);
+  _deprecate(msg) {
+    console.log(msg);
   }
   static get DEFINITIONS() {
-    return $;
+    return DEFINITIONS;
   }
   static get NODES() {
-    return Lt;
+    return NODES;
   }
   /**
    * Get a JS Object containing the state of the VideoContext instance and all the created nodes.
    */
   snapshot() {
-    return St(this);
+    return snapshot(this);
   }
 }
-const Gt = Object.freeze({
+const STATE = Object.freeze({
   PLAYING: 0,
   PAUSED: 1,
   STALLED: 2,
   ENDED: 3,
   BROKEN: 4
 });
-c.STATE = Gt;
-const Bt = Object.freeze({
+VideoContext.STATE = STATE;
+const EVENTS = Object.freeze({
   UPDATE: "update",
   STALLED: "stalled",
   ENDED: "ended",
   CONTENT: "content",
   NOCONTENT: "nocontent"
 });
-c.EVENTS = Bt;
-c.visualiseVideoContextTimeline = It;
-c.visualiseVideoContextGraph = Dt;
-c.createControlFormForNode = Ft;
-c.createSigmaGraphDataFromRenderGraph = Pt;
-c.exportToJSON = At;
-c.updateablesManager = J;
-c.importSimpleEDL = kt;
+VideoContext.EVENTS = EVENTS;
+VideoContext.visualiseVideoContextTimeline = visualiseVideoContextTimeline;
+VideoContext.visualiseVideoContextGraph = visualiseVideoContextGraph;
+VideoContext.createControlFormForNode = createControlFormForNode;
+VideoContext.createSigmaGraphDataFromRenderGraph = createSigmaGraphDataFromRenderGraph;
+VideoContext.exportToJSON = exportToJSON;
+VideoContext.updateablesManager = updateablesManager;
+VideoContext.importSimpleEDL = importSimpleEDL;
 export {
-  c as default
+  VideoContext as default
 };
