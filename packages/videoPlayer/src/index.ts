@@ -67,6 +67,7 @@ export class Editor {
       [MATERIAL_TYPE.PHOTO]: addPhotoNode,
       [MATERIAL_TYPE.SUBTITLE]: addSubtitleNode,
       [MATERIAL_TYPE.TEXT]: addTextNode,
+      [MATERIAL_TYPE.FILTER]: () => {},
     }
     this.init()
   }
