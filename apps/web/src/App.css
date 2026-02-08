@@ -12,7 +12,7 @@ Header{
   display: flex;
   flex-direction: row;
   padding: 24px;
-  justify-content: space-between;
+  gap: 24px;
 }
 
 /* 禁用拖动时的过渡，避免闪烁 */
