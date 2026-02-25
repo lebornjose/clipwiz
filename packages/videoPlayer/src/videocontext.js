@@ -3335,6 +3335,83 @@ class VideoContext {
   effect(definition) {
     let effectNode = new EffectNode(this._gl, this._renderGraph, definition);
     this._processingNodes.push(effectNode);
+    let timedEffectConfigured = false;
+    let effectStartTime = NaN;
+    let effectStopTime = Infinity;
+    const bypassEffect = () => {
+      const inputs = effectNode.inputs;
+      const outputs = effectNode.outputs;
+      if (inputs.length === 0 || outputs.length === 0)
+        return;
+      inputs.forEach((inputNode) => {
+        outputs.forEach((outputNode) => {
+          inputNode.connect(outputNode);
+        });
+      });
+      effectNode.disconnect();
+      inputs.forEach((inputNode) => {
+        inputNode.disconnect(effectNode);
+      });
+    };
+    const insertEffect = () => {
+      const inputs = effectNode.inputs;
+      const outputs = effectNode.outputs;
+      if (inputs.length === 0 || outputs.length === 0)
+        return;
+      inputs.forEach((inputNode) => {
+        inputNode.connect(effectNode);
+      });
+      outputs.forEach((outputNode) => {
+        effectNode.connect(outputNode);
+      });
+      inputs.forEach((inputNode) => {
+        outputs.forEach((outputNode) => {
+          inputNode.disconnect(outputNode);
+        });
+      });
+    };
+    const configureTimedEffect = () => {
+      if (timedEffectConfigured)
+        return;
+      timedEffectConfigured = true;
+      if (!isNaN(effectStartTime) && this._currentTime < effectStartTime) {
+        bypassEffect();
+      } else if (this._currentTime >= effectStopTime) {
+        bypassEffect();
+      } else if (!isNaN(effectStartTime) && this._currentTime >= effectStartTime) {
+        insertEffect();
+      }
+      if (!isNaN(effectStartTime)) {
+        this.registerTimelineCallback(effectStartTime, () => {
+          insertEffect();
+        });
+      }
+      if (effectStopTime !== Infinity) {
+        this.registerTimelineCallback(effectStopTime, () => {
+          bypassEffect();
+        }, 1);
+      }
+    };
+    effectNode.start = (time) => {
+      effectStartTime = this._currentTime + time;
+      configureTimedEffect();
+      return effectNode;
+    };
+    effectNode.stop = (time) => {
+      effectStopTime = this._currentTime + time;
+      configureTimedEffect();
+      return effectNode;
+    };
+    effectNode.startAt = (time) => {
+      effectStartTime = time;
+      configureTimedEffect();
+      return effectNode;
+    };
+    effectNode.stopAt = (time) => {
+      effectStopTime = time;
+      configureTimedEffect();
+      return effectNode;
+    };
     return effectNode;
   }
   /**

@@ -8,6 +8,7 @@ import { getGifImage } from './components/getBufferImage'
 import Pag from './components/Pag.js'
 import { addSubtitleNode } from './components/subtitle.js'
 import { addTextNode } from './components/text.js'
+import { addFilter } from './components/filter.js'
 
 export interface IApplicationOptions {
   canvas: HTMLCanvasElement
@@ -67,7 +68,7 @@ export class Editor {
       [MATERIAL_TYPE.PHOTO]: addPhotoNode,
       [MATERIAL_TYPE.SUBTITLE]: addSubtitleNode,
       [MATERIAL_TYPE.TEXT]: addTextNode,
-      [MATERIAL_TYPE.FILTER]: () => {},
+      [MATERIAL_TYPE.FILTER]: addFilter,
     }
     this.init()
   }
