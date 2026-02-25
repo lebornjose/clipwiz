@@ -21,8 +21,6 @@ const VideoPlayer = () => {
       console.log('跳过重复初始化')
       return
     }
-
-
     const editor = new Editor({
       canvas: canvasRef.current,
       trackInfo,
