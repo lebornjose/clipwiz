@@ -1,5 +1,5 @@
 import type { Editor } from '../index'
-import type { IFilterTrackItem } from '@clipwiz/shared'
+import { IFilterTrackItem, TIME_CONFIG } from '@clipwiz/shared'
 import VideoContext from '../videocontext';
 
 export const addFilter = (editor: Editor, trackId: string, item: IFilterTrackItem) => {
@@ -12,7 +12,7 @@ export const addFilter = (editor: Editor, trackId: string, item: IFilterTrackIte
   // // 2. 创建一个合成节点，把所有输入先合成成一条
   // const combine = editor.videoCtx.compositor(VideoContext.DEFINITIONS.COMBINE);
   // debugger
-  inputs.forEach(input => {
+  inputs.forEach((input: any) => {
     if(input.format === 'video') {
       input.disconnect(); // 关键：先从 destination 上拆下来
       input.connect(blur);
@@ -21,26 +21,18 @@ export const addFilter = (editor: Editor, trackId: string, item: IFilterTrackIte
   });
 
   blur.connect(destination);
-
   editor.videoCtx.registerCallback("update", function() {
     const time =  editor.videoCtx.currentTime;
-
     // 更新滤镜管理器
-    if(time >=3) {
-      inputs.forEach(input => {
+    if(time >= (item.endTime / TIME_CONFIG.MILL_TIME_CONVERSION)) {
+      inputs.forEach((input: any) => {
         if(input.format === 'video') {
           input.disconnect(); // 关键：先从 destination 上拆下来
           input.connect(destination);
         }
       });
     }
-
   });
-  // combine.connect(blur);
-  // combine.connect(destination);
-
-  // blur.start(0);
-  // blur.stop(3);
 }
 
 

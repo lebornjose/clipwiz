@@ -9,7 +9,6 @@ interface VideoTrackImgProps {
 export const VideoTrackImg = ({ videoTrackItem }: VideoTrackImgProps) => {
   // ✅ 直接使用 videoUrl，不需要 useState（因为它来自 props）
   const videoUrl = videoTrackItem?.url || '';
-  console.log(videoTrackItem, 'videoTrackItem');
 
   const count = 10;
 

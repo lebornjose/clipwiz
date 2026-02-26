@@ -1,5 +1,5 @@
 
-import { Timeline, TimelineState } from '@xzdarcy/react-timeline-editor';
+import { Timeline, TimelineState, TimelineEngine } from '@xzdarcy/react-timeline-editor';
 import { VideoCameraOutlined, AudioOutlined, FileImageOutlined, FileTextOutlined, FontSizeOutlined, FilterOutlined} from '@ant-design/icons';
 import { MATERIAL_TYPE, IVideoTrackItem, IAudioTrackItem, IPhotoTrackItem, ISubtitleTrackItem, ITextTrackItem, IFilterTrackItem } from '@clipwiz/shared';
 import { convertTrackInfoToTimelineRow } from './convert';
@@ -38,6 +38,7 @@ const TimeLine = () => {
   const [editorData, setEditorData] = useState<CustomTimelineRow[]>(listData);
 
   useEffect(() => {
+
     eventBus.on('video:pause', (time: number) => {
       timelineState.current?.pause();
     });
@@ -45,7 +46,18 @@ const TimeLine = () => {
       timelineState.current?.setScrollTop(time);
       timelineState.current?.play({ });
     });
+    eventBus.on('video:seek', (time: number) => {
+      timelineState.current?.setTime(time);
+    })
+
+    if (!timelineState.current) return;
+    const { listener } = timelineState.current;
+    listener.on('afterSetTime', ({ time }) => {
+      console.log('time', time);
+      eventBus.emit('time:update', time);
+    });
   }, []);
+
   return (
     <div className="time-line">
       <div ref={domRef}
