@@ -103,18 +103,52 @@ const trackInfo: ITrackInfo = {
           id: "4",
           url: "https://mogic-creative.oss-cn-hangzhou.aliyuncs.com/algorithm_qn/process/20240722/1721649059534_mute.mp4",
           startTime: 0,
-          endTime: 10000,
+          endTime: 5000,
           hide: false,
           // IVideoTrackItem 特有属性
           format: MATERIAL_TYPE.VIDEO,
-          duration: 10000,
+          duration: 5000,
           fromTime: 0,
-          toTime: 10000, // fromTime + duration
+          toTime: 5000, // fromTime + duration
           width: 1280,
           height: 720,
           volume: 1,
           playRate: 1,
           needCut: 0,
+          transitionIn: {
+            alias: "圆形遮罩1",
+            desc: "叠加",
+            duration: 500,
+            effectId: "0",
+            format: 1,
+            layerList: ["4", "5"],
+            name: "xxx",
+          }
+        },
+        {
+          id: "5",
+          startTime: 5000,
+          endTime: 10000,
+          hide: false,
+          url: "https://mogic-creative.oss-cn-hangzhou.aliyuncs.com/algorithm_qn/process/20250306/1741259970364.mp4",
+          format: MATERIAL_TYPE.VIDEO,
+          duration: 5000,
+          fromTime: 0,
+          toTime: 5000, // fromTime + duration
+          width: 1280,
+          height: 720,
+          volume: 1,
+          playRate: 1,
+          needCut: 0,
+          transitionOut: {
+            alias: "圆形遮罩1",
+            desc: "叠加",
+            duration: 500,
+            effectId: "0",
+            format: 1,
+            layerList: ["4", "5"],
+            name: "xxx",
+          }
         }
       ],
     },

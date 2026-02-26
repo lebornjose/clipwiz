@@ -63,6 +63,17 @@ export interface INode {
   }
 }
 
+export interface TransitionItem {
+  alias: string
+  desc: string
+  duration: number
+  effectId: string
+  format: number
+  layerList: string[]
+  name: string
+}
+
+
 
 export interface IVideoNode extends INode {
   playbackRate: number
@@ -74,7 +85,9 @@ export interface IVideoNode extends INode {
   addTransition: Function
   removeTransition: Function
   // commonEffects?: CommonEffects[]
-  _elementURL: string
+  _elementURL: string,
+  transitionIn?: TransitionItem
+  transitionOut?: TransitionItem
 }
 
 export interface IPhotoNode extends INode {
@@ -155,6 +168,8 @@ export interface IVideoTrackItem extends TrackItem {
   fadeIn?: number
   fadeOut?: number
   scaleMode?: number
+  transitionIn?: TransitionItem
+  transitionOut?: TransitionItem
 }
 
 export interface VideoTrack {
