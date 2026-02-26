@@ -6,18 +6,14 @@ export const addFilter = (editor: Editor, trackId: string, item: IFilterTrackIte
   const destination = editor.videoCtx.destination;
 
   const blur = editor.videoCtx.effect(VideoContext.DEFINITIONS.MONOCHROME);
-  // // 1. 找到当前所有连到 destination 的输入节点（整画面的“当前内容”）
+  // // // 1. 找到当前所有连到 destination 的输入节点（整画面的“当前内容”）
   const inputs = destination.inputs; // GraphNode 自带的 getter
 
-  // // 2. 创建一个合成节点，把所有输入先合成成一条
-  // const combine = editor.videoCtx.compositor(VideoContext.DEFINITIONS.COMBINE);
-  // debugger
   inputs.forEach((input: any) => {
-    if(input.format === 'video') {
+    if(input.format === 'video' && input._startTime < 3) {
       input.disconnect(); // 关键：先从 destination 上拆下来
       input.connect(blur);
     }
-
   });
 
   blur.connect(destination);
@@ -29,6 +25,14 @@ export const addFilter = (editor: Editor, trackId: string, item: IFilterTrackIte
         if(input.format === 'video') {
           input.disconnect(); // 关键：先从 destination 上拆下来
           input.connect(destination);
+        }
+      });
+    }
+    if(time < (item.endTime / TIME_CONFIG.MILL_TIME_CONVERSION)) {
+      inputs.forEach((input: any) => {
+        if(input.format === 'video' && input._startTime < 3) {
+          input.disconnect(); // 关键：先从 destination 上拆下来
+          input.connect(blur);
         }
       });
     }
