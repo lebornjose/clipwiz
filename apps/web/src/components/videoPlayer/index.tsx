@@ -16,6 +16,11 @@ const VideoPlayer = () => {
   const [isMuted, setIsMuted] = useState(false)
 
   useEffect(() => {
+    eventBus.on('time:update', (time) => {
+      if(editorRef.current) {
+        editorRef.current.seek(time);
+      }
+    })
     // ✅ 如果已经初始化过，直接返回
     if (!canvasRef.current || initializedRef.current) {
       console.log('跳过重复初始化')
@@ -30,6 +35,7 @@ const VideoPlayer = () => {
       setProgress: (time: number) => {
         console.log('setProgress', time)
         setCurrentTime(time)
+        // eventBus.emit('video:seek', time);
       },
     })
 
@@ -84,6 +90,7 @@ const VideoPlayer = () => {
     if (!editorRef.current) return
     setCurrentTime(value)
     editorRef.current.seek(value)
+    eventBus.emit('video:seek', value);
     // editorRef.current.setProcess(value)
   }
 
