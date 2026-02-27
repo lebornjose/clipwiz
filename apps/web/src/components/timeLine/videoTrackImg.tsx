@@ -1,3 +1,4 @@
+import { ColumnWidthOutlined } from '@ant-design/icons';
 import { IVideoTrackItem } from '@clipwiz/shared';
 
 // ✅ 定义 Props 接口
@@ -24,6 +25,13 @@ export const VideoTrackImg = ({ videoTrackItem }: VideoTrackImgProps) => {
             />
           )
         })
+      }
+      {
+        videoTrackItem?.transitionIn && (
+          <div className='effect-item-transition-in'>
+            <ColumnWidthOutlined />
+          </div>
+        )
       }
     </div>
   )
