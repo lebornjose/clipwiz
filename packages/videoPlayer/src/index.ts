@@ -30,6 +30,7 @@ export class Editor {
   public setProgress: (time: number) => void
   public gifCanvasEl: HTMLCanvasElement = document.createElement('canvas')
   public pag: Pag
+  public transitionMap: Map<string, any> // 记录转场
 
   public addNodeFunc: {
     [key: string]: Function
@@ -55,7 +56,7 @@ export class Editor {
     this.isWaiting = false
     this.totalTime = options.trackInfo.duration
     this.videoTrack = options.trackInfo.tracks.reverse()
-
+    this.transitionMap = new Map()
     this.canvasHeight = options.trackInfo.height
     this.canvasWidth = options.trackInfo.width
     // this.currentTime = 0

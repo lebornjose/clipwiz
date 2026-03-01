@@ -46,6 +46,7 @@ export type SourceElement =
 
   export class TransitionNode {
     // todo
+    transition(startTime: number, endTime: number, startValue: number, endValue: number, transitionType: string): void;
   }
 
   export class GraphNode {
@@ -160,6 +161,7 @@ export type SourceElement =
   }
 
 declare class VideoContext {
+  static DEFINITIONS: any;
   constructor (canvas: HTMLCanvasElement)
   registerCallback(type: string, func: Function): void
   unregisterCallback(func: Function): void

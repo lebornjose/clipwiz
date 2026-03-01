@@ -127,14 +127,14 @@ const trackInfo: ITrackInfo = {
         },
         {
           id: "5",
-          startTime: 5000,
+          startTime: 4000,
           endTime: 10000,
           hide: false,
           url: "https://mogic-creative.oss-cn-hangzhou.aliyuncs.com/algorithm_qn/process/20250306/1741259970364.mp4",
           format: MATERIAL_TYPE.VIDEO,
-          duration: 5000,
+          duration: 6000,
           fromTime: 0,
-          toTime: 5000, // fromTime + duration
+          toTime: 6000, // fromTime + duration
           width: 1280,
           height: 720,
           volume: 1,
