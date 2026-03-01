@@ -11,7 +11,7 @@ export const VideoTrackImg = ({ videoTrackItem }: VideoTrackImgProps) => {
   // ✅ 直接使用 videoUrl，不需要 useState（因为它来自 props）
   const videoUrl = videoTrackItem?.url || '';
 
-  const count = 10;
+  const count = 5;
 
   return (
     <div className='effect-item-video'>
@@ -27,8 +27,8 @@ export const VideoTrackImg = ({ videoTrackItem }: VideoTrackImgProps) => {
         })
       }
       {
-        videoTrackItem?.transitionIn && (
-          <div className='effect-item-transition-in'>
+        videoTrackItem?.transitionOut && (
+          <div className='effect-item-transition-out'>
             <ColumnWidthOutlined />
           </div>
         )
