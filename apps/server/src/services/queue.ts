@@ -3,7 +3,11 @@ import { processVideoJob } from './videoProcessor.js'
 
 // 强制使用内存队列
 const videoQueue = new Queue('video-processing', {
-  redis: false // 使用内存队列
+  redis: {
+    port: 6379,
+    host: '127.0.0.1',
+    lazyConnect: true
+  }
 })
 
 console.log('Using memory queue for job processing')

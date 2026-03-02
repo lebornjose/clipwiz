@@ -4,6 +4,7 @@ import { ScissorOutlined, DownloadOutlined } from '@ant-design/icons'
 import LeftCon from './components/leftCon'
 import TimeLine from './components/timeLine'
 import VideoPlayer from './components/videoPlayer'
+import { POST, downloadFile } from './utils'
 import './App.css'
 
 const { Header } = Layout
@@ -75,16 +76,10 @@ function App() {
     }
   }, [isDragging])
 
-  const handleExportVideo = () => {
-    fetch('/api/graph',
-      {
-        method: 'POST',
-        body: JSON.stringify({}),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    )
+  const handleExportVideo = async () => {
+    const data = await POST('/api/graph', {})
+    const url = data.data.downloadUrl;
+    downloadFile(url, 'exported-video.mp4')
     message.success('导出视频成功')
   }
 

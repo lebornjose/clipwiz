@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import path from 'path'
 import { uploadRouter } from './routes/upload.js'
 import { videoRouter } from './routes/video.js'
 import { jobRouter } from './routes/job.js'
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 4000
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use('/uploads', express.static(path.resolve(process.env.UPLOAD_DIR || './uploads')))
 
 // Routes
 app.get('/health', (req, res) => {
@@ -37,4 +39,3 @@ app.listen(PORT, () => {
 })
 
 export default app
-

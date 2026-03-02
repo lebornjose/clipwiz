@@ -4,7 +4,7 @@ import fs from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import { videoQueue } from './queue.js'
 import type { Job } from 'bull'
-import { ITrackInfo, MATERIAL_TYPE } from '@clipwiz/shared'
+import { ITrackInfo, MATERIAL_TYPE, IVideoTrackItem } from '@clipwiz/shared'
 
 const uploadDir = process.env.UPLOAD_DIR || './uploads'
 const outputDir = path.join(uploadDir, 'output')
@@ -119,9 +119,9 @@ class VideoProcessor {
 
 // 处理视频任务
 export async function processVideoJob(job: Job): Promise<any> {
-  const { operation, fileId, fileIds, trackInfo } = job.data
+  const { operation } = job.data
   const processor = new VideoProcessor()
-
+  console.log('33', operation);
   switch (operation) {
     case 'trim':
       return await processTrim(job, processor)
@@ -131,7 +131,7 @@ export async function processVideoJob(job: Job): Promise<any> {
       return await processWatermark(job, processor)
     case 'transcode':
       return await processTranscode(job, processor)
-    case 'composite':
+    case 'composite': // 合成视频
       return await processComposite(job, processor)
     default:
       throw new Error(`未知操作: ${operation}`)
@@ -281,11 +281,13 @@ async function processTranscode(job: Job, processor: VideoProcessor): Promise<an
 // 合成视频处理
 async function processComposite(job: Job, processor: VideoProcessor): Promise<any> {
   const { trackInfo } = job.data
+  if (!trackInfo) {
+    throw new Error('缺少 trackInfo，无法执行合成')
+  }
   const outputPath = processor['getOutputPath']('mp4')
 
   // 生成FFmpeg命令
   const command = generateCompositeCommand(trackInfo, outputPath)
-
   return new Promise((resolve, reject) => {
     command
       .on('progress', (progress) => {
@@ -305,178 +307,106 @@ async function processComposite(job: Job, processor: VideoProcessor): Promise<an
   })
 }
 
-// 生成合成命令
-function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ffmpeg.FfmpegCommand {
-  const { width, height, duration, tracks } = trackInfo
+interface VideoSlot {
+  sourceUrl: string
+  startMs: number
+  endMs: number
+  fromMs: number
+  toMs: number
+}
 
-  let command = ffmpeg()
-  let hasVideo = false
-  let hasAudio = false
+function msToSec(ms: number): string {
+  return (ms / 1000).toFixed(3)
+}
 
-  // 处理各个轨道
-  tracks.forEach((track, trackIndex) => {
-    if (track.hide) return
+function normalizeVideoSlots(trackInfo: ITrackInfo): VideoSlot[] {
+  const slots: VideoSlot[] = []
+  const videoTracks = trackInfo.tracks.filter((track) => track.trackType === MATERIAL_TYPE.VIDEO && !track.hide)
 
-    switch (track.trackType) {
-      case MATERIAL_TYPE.VIDEO:
-        track.children.forEach((item: any, index: number) => {
-          if (item.hide) return
-          command = command.input(item.url)
-          hasVideo = true
-        })
-        break
-      case MATERIAL_TYPE.BGM_AUDIO:
-        track.children.forEach((item: any, index: number) => {
-          if (item.hide) return
-          command = command.input(item.url)
-          hasAudio = true
-        })
-        break
-      case MATERIAL_TYPE.PHOTO:
-        track.children.forEach((item: any, index: number) => {
-          if (item.hide) return
-          command = command.input(item.url)
-          hasVideo = true
-        })
-        break
-    }
+  videoTracks.forEach((track) => {
+    track.children.forEach((item) => {
+      const videoItem = item as IVideoTrackItem
+      if (videoItem.hide || !videoItem.url) return
+
+      const slotStartMs = Math.max(0, videoItem.startTime)
+      const slotEndMs = Math.max(slotStartMs, videoItem.endTime)
+      const sourceFromMs = Math.max(0, videoItem.fromTime ?? 0)
+      const sourceToMs = Math.max(sourceFromMs, videoItem.toTime ?? sourceFromMs + (slotEndMs - slotStartMs))
+      const slotDurationMs = slotEndMs - slotStartMs
+      const sourceDurationMs = sourceToMs - sourceFromMs
+      const actualDurationMs = Math.min(slotDurationMs, sourceDurationMs)
+
+      if (actualDurationMs <= 0) return
+
+      slots.push({
+        sourceUrl: videoItem.url,
+        startMs: slotStartMs,
+        endMs: slotStartMs + actualDurationMs,
+        fromMs: sourceFromMs,
+        toMs: sourceFromMs + actualDurationMs
+      })
+    })
   })
 
-  // 设置输出参数
-  command = command
-    .output(outputPath)
-    .outputOptions([
-      `-t ${duration / 1000}`, // 转换为秒
-      `-s ${width}x${height}`,
-      `-c:v libx264`,
-      `-preset medium`,
-      `-crf 23`,
-      `-c:a aac`,
-      `-b:a 128k`,
-      `-shortest`
-    ])
+  return slots.sort((a, b) => a.startMs - b.startMs)
+}
+
+// 生成合成命令（当前只处理视频轨道）
+function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ffmpeg.FfmpegCommand {
+  const width = Math.max(2, Math.floor(trackInfo.width || 1280))
+  const height = Math.max(2, Math.floor(trackInfo.height || 720))
+  const durationMs = Math.max(1, Math.floor(trackInfo.duration || 10000))
+  const durationSec = msToSec(durationMs)
+  const fps = Math.max(1, Math.floor(trackInfo.fps || 25))
+  const videoSlots = normalizeVideoSlots(trackInfo)
+
+  if (videoSlots.length === 0) {
+    throw new Error('当前未找到可导出的有效视频轨道片段')
+  }
+
+  let command = ffmpeg()
+  videoSlots.forEach((slot) => {
+    command = command.input(slot.sourceUrl)
+  })
+
+  const filters: string[] = []
+  filters.push(`color=c=black:s=${width}x${height}:d=${durationSec}[base]`)
+
+  videoSlots.forEach((slot, inputIndex) => {
+    filters.push(
+      `[${inputIndex}:v]trim=start=${msToSec(slot.fromMs)}:end=${msToSec(slot.toMs)},` +
+      `setpts=PTS-STARTPTS+${msToSec(slot.startMs)}/TB,scale=${width}:${height},setsar=1[v${inputIndex}]`
+    )
+  })
+
+  let currentVideoLabel = '[base]'
+  videoSlots.forEach((_, index) => {
+    const nextLabel = index === videoSlots.length - 1 ? '[vout]' : `[vo${index}]`
+    filters.push(`${currentVideoLabel}[v${index}]overlay=eof_action=pass:shortest=0${nextLabel}`)
+    currentVideoLabel = nextLabel
+  })
+
+  command = command.complexFilter(filters)
+
+  const outputOptions = [
+    '-map', '[vout]',
+    '-t', durationSec,
+    '-r', `${fps}`,
+    '-pix_fmt', 'yuv420p',
+    '-c:v', 'libx264',
+    '-preset', 'medium',
+    '-crf', '23',
+    '-movflags', '+faststart',
+    '-an'
+  ]
+
+  command = command.output(outputPath).outputOptions(outputOptions)
+
+  command.on('start', (commandLine) => {
+    console.log('FFmpeg 命令:', commandLine)
+  })
 
   return command
 }
 
-// 处理视频轨道
-function processVideoTrack(command: ffmpeg.FfmpegCommand, track: any, inputCount: number, videoStreams: string[], audioStreams: string[]): number {
-  track.children.forEach((item: any, index: number) => {
-    if (item.hide) return
-
-    // 添加视频输入
-    command = command.input(item.url)
-
-    // 计算时间偏移（转换为秒）
-    const fromTime = item.fromTime / 1000
-    const toTime = item.toTime / 1000
-
-    // 构建滤镜链
-    const filterChain = []
-
-    // 裁剪视频
-    if (item.needCut) {
-      filterChain.push(`[${inputCount}:v]trim=start=${fromTime}:end=${toTime},setpts=PTS-STARTPTS[vid${inputCount}]`)
-      videoStreams.push(`[vid${inputCount}]`)
-    } else {
-      filterChain.push(`[${inputCount}:v]setpts=PTS-STARTPTS[vid${inputCount}]`)
-      videoStreams.push(`[vid${inputCount}]`)
-    }
-
-    // 添加音频
-    if (!item.muted && item.volume > 0) {
-      filterChain.push(`[${inputCount}:a]volume=${item.volume},atrim=start=${fromTime}:end=${toTime},asetpts=PTS-STARTPTS[aud${inputCount}]`)
-      audioStreams.push(`[aud${inputCount}]`)
-    }
-
-    // 应用滤镜
-    if (filterChain.length > 0) {
-      command = command.complexFilter(filterChain)
-    }
-
-    inputCount++
-  })
-
-  return inputCount
-}
-
-// 处理音频轨道
-function processAudioTrack(command: ffmpeg.FfmpegCommand, track: any, inputCount: number, audioStreams: string[]): number {
-  track.children.forEach((item: any, index: number) => {
-    if (item.hide) return
-
-    // 添加音频输入
-    command = command.input(item.url)
-
-    // 计算时间偏移（转换为秒）
-    const duration = (item.endTime - item.startTime) / 1000
-    const fromTime = item.fromTime / 1000
-    const toTime = item.toTime / 1000
-
-    // 构建滤镜链
-    const filterChain = []
-
-    // 处理音频
-    let audioFilter = `[${inputCount}:a]`
-
-    // 音量控制
-    if (item.volume !== 1) {
-      audioFilter += `volume=${item.volume},`
-    }
-
-    // 淡入淡出
-    if (item.fadeIn) {
-      audioFilter += `afade=t=in:st=0:d=${item.fadeIn / 1000},`
-    }
-    if (item.fadeOut) {
-      audioFilter += `afade=t=out:st=${(duration - item.fadeOut) / 1000}:d=${item.fadeOut / 1000},`
-    }
-
-    // 裁剪音频
-    audioFilter += `atrim=start=${fromTime}:end=${toTime},asetpts=PTS-STARTPTS[aud${inputCount}]`
-
-    filterChain.push(audioFilter)
-    audioStreams.push(`[aud${inputCount}]`)
-
-    // 应用滤镜
-    if (filterChain.length > 0) {
-      command = command.complexFilter(filterChain)
-    }
-
-    inputCount++
-  })
-
-  return inputCount
-}
-
-// 处理图片轨道
-function processPhotoTrack(command: ffmpeg.FfmpegCommand, track: any, inputCount: number, videoStreams: string[]): number {
-  track.children.forEach((item: any, index: number) => {
-    if (item.hide) return
-
-    // 添加图片输入
-    command = command.input(item.url)
-
-    // 计算时间偏移（转换为秒）
-    const duration = (item.endTime - item.startTime) / 1000
-
-    // 构建滤镜链
-    const filterChain = []
-
-    // 处理图片
-    filterChain.push(`[${inputCount}:v]scale=${item.width}:${item.height},loop=loop=-1:size=1:start=0,setpts=N/FRAME_RATE/TB,trim=duration=${duration}[img${inputCount}]`)
-    videoStreams.push(`[img${inputCount}]`)
-
-    // 应用滤镜
-    if (filterChain.length > 0) {
-      command = command.complexFilter(filterChain)
-    }
-
-    inputCount++
-  })
-
-  return inputCount
-}
-
 export const videoProcessor = new VideoProcessor()
-
