@@ -1,19 +1,17 @@
 import Queue from 'bull'
 import { processVideoJob } from './videoProcessor.js'
 
-const redisConfig = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379')
-}
-
-export const videoQueue = new Queue('video-processing', {
-  redis: redisConfig
+// 强制使用内存队列
+const videoQueue = new Queue('video-processing', {
+  redis: false // 使用内存队列
 })
+
+console.log('Using memory queue for job processing')
 
 // 处理视频任务
 videoQueue.process(async (job) => {
   console.log(`Processing job ${job.id}: ${job.data.operation}`)
-  
+
   try {
     const result = await processVideoJob(job)
     return result
@@ -38,5 +36,6 @@ videoQueue.on('progress', (job, progress) => {
   console.log(`Job ${job.id} progress: ${progress}%`)
 })
 
+export { videoQueue }
 export default videoQueue
 
