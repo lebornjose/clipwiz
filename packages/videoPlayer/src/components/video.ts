@@ -46,7 +46,6 @@ export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackI
     const startTime = (item.endTime - 1000) / TIME_CONFIG.MILL_TIME_CONVERSION
     const endtime = (item.endTime) / TIME_CONFIG.MILL_TIME_CONVERSION
     crossFadeEffect.transition(startTime, endtime, 0.0, 1.0, "mix");
-    // videoNode.connect(crossFadeEffect)
     editor.transitionMap.set(item.transitionIn.layerList.join('_'), crossFadeEffect)
   }
   if(item.transitionIn || item.transitionOut) {

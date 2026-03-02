@@ -5,6 +5,7 @@ import { uploadRouter } from './routes/upload.js'
 import { videoRouter } from './routes/video.js'
 import { jobRouter } from './routes/job.js'
 import { errorHandler } from './middleware/errorHandler.js'
+import { graphRouter } from './routes/graph.js'
 
 dotenv.config()
 
@@ -24,6 +25,9 @@ app.get('/health', (req, res) => {
 app.use('/api/upload', uploadRouter)
 app.use('/api/video', videoRouter)
 app.use('/api/job', jobRouter)
+app.use('/api/graph', graphRouter)  // 合成视频
+
+
 
 // Error handling
 app.use(errorHandler)

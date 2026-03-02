@@ -37,6 +37,9 @@ export type SourceElement =
   }
 
   export class EffectNode {
+    connect(destination: () => DestinationNode) {
+      throw new Error('Method not implemented.');
+    }
     // todo
   }
 

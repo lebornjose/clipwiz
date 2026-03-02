@@ -19,7 +19,7 @@ export const STATE = Object.freeze({
 })
 
 export class DestinationNode {
-  // todo
+
 }
 export interface INode {
   element: HTMLImageElement
@@ -44,7 +44,7 @@ export interface INode {
   start: (startTime: number) => void
   stop: (endTime: number) => void
   // pipParams: IPipParams
-  // destination(): DestinationNode
+  destination(): DestinationNode
   registerCallback(type: string, func: Function): void
   unregisterCallback(func: Function): void
   connect(targetNode: DestinationNode): boolean

@@ -38,11 +38,11 @@ function App() {
         const containerRect = containerRef.current.getBoundingClientRect()
         const bottomPosition = containerRect.bottom
         const newHeight = bottomPosition - e.clientY
-        
+
         // 限制最小和最大高度
         const minHeight = 150
         const maxHeight = containerRect.height - 300 // 预留至少 300px 给 VideoPlayer
-        
+
         if (newHeight >= minHeight && newHeight <= maxHeight) {
           setTimelineHeight(newHeight)
         }
@@ -75,6 +75,19 @@ function App() {
     }
   }, [isDragging])
 
+  const handleExportVideo = () => {
+    fetch('/api/graph',
+      {
+        method: 'POST',
+        body: JSON.stringify({}),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    message.success('导出视频成功')
+  }
+
   return (
     <Layout style={{ minHeight: '100vh' }} ref={containerRef}>
       <Header style={{
@@ -91,15 +104,15 @@ function App() {
         </div>
 
         <div className='header-right'>
-          <Button icon={<DownloadOutlined />} type="primary" size="small">
+          <Button icon={<DownloadOutlined />} type="primary" size="small" onClick={() => handleExportVideo()}>
             导出视频
           </Button>
         </div>
       </Header>
 
-      <Layout 
+      <Layout
         className={`app-layout ${isDragging ? 'dragging' : ''}`}
-        style={{ 
+        style={{
           height: `calc(100vh - 64px - ${timelineHeight}px)`, // 减去 Header 高度和 TimeLine 高度
           overflow: 'hidden'
         }}
