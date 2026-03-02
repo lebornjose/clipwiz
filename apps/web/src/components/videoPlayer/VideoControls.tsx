@@ -6,6 +6,8 @@ import {
   StepForwardOutlined,
   SoundFilled,
   SoundOutlined,
+  CameraOutlined,
+  ScissorOutlined,
   ExpandOutlined,
 } from '@ant-design/icons'
 import './VideoControls.less'
@@ -16,6 +18,7 @@ interface VideoControlsProps {
   duration: number
   volume: number
   isMuted: boolean
+  aspectRatioLabel?: string
   onPlayPause: () => void
   onProgressChange: (value: number) => void
   onVolumeChange: (value: number) => void
@@ -28,6 +31,7 @@ const VideoControls = ({
   duration,
   volume,
   isMuted,
+  aspectRatioLabel = '16:9',
   onPlayPause,
   onProgressChange,
   onVolumeChange,
@@ -61,7 +65,6 @@ const VideoControls = ({
 
   return (
     <div className='video-controls'>
-      {/* 进度条 */}
       <div className='progress-bar-container'>
         <Slider
           className='progress-bar'
@@ -74,20 +77,16 @@ const VideoControls = ({
         />
       </div>
 
-      {/* 控制按钮区域 */}
       <div className='controls-bar'>
-        {/* 左侧：时间显示 */}
         <div className='controls-left'>
-          <div className='time-display-compact'>
-            <span className='current-time'>{formatTime(currentTime)}</span>
-            <span className='time-separator'>|</span>
-            <span className='total-time'>{formatTime(duration)}</span>
+          <div className='time-display'>
+            <span className='time-current'>{formatTime(currentTime)}</span>
+            <span className='time-divider'>|</span>
+            <span className='time-total'>{formatTime(duration)}</span>
           </div>
         </div>
 
-        {/* 中间：播放控制 */}
         <div className='controls-center'>
-          {/* 上一帧 */}
           <Button
             type='text'
             size='small'
@@ -96,7 +95,6 @@ const VideoControls = ({
             onClick={handlePrevFrame}
           />
 
-          {/* 播放/暂停 */}
           <Button
             type='text'
             size='small'
@@ -111,7 +109,6 @@ const VideoControls = ({
             onClick={onPlayPause}
           />
 
-          {/* 下一帧 */}
           <Button
             type='text'
             size='small'
@@ -121,9 +118,7 @@ const VideoControls = ({
           />
         </div>
 
-        {/* 右侧：工具按钮 */}
         <div className='controls-right'>
-          {/* 音量控制 */}
           <div className='volume-control-compact'>
             <Button
               type='text'
@@ -152,7 +147,19 @@ const VideoControls = ({
             </div>
           </div>
 
-          {/* 全屏 */}
+          <Button
+            type='text'
+            size='small'
+            className='control-btn'
+            icon={<ScissorOutlined style={{ fontSize: 16 }} />}
+          />
+          <span className='ratio-pill'>{aspectRatioLabel}</span>
+          <Button
+            type='text'
+            size='small'
+            className='control-btn'
+            icon={<CameraOutlined style={{ fontSize: 16 }} />}
+          />
           <Button
             type='text'
             size='small'
@@ -166,4 +173,3 @@ const VideoControls = ({
 }
 
 export default VideoControls
-

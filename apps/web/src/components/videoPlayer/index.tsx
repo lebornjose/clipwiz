@@ -5,6 +5,17 @@ import VideoControls from './VideoControls'
 import './index.less'
 import { eventBus } from '../../utils'
 
+const gcd = (a: number, b: number): number => {
+  let x = Math.abs(a)
+  let y = Math.abs(b)
+  while (y !== 0) {
+    const t = y
+    y = x % y
+    x = t
+  }
+  return x || 1
+}
+
 const VideoPlayer = () => {
   const editorRef = useRef<Editor | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -14,6 +25,8 @@ const VideoPlayer = () => {
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(1)
   const [isMuted, setIsMuted] = useState(false)
+  const ratio = gcd(trackInfo.width, trackInfo.height)
+  const aspectRatioLabel = `${trackInfo.width / ratio}:${trackInfo.height / ratio}`
 
   useEffect(() => {
     eventBus.on('time:update', (time) => {
@@ -97,7 +110,19 @@ const VideoPlayer = () => {
   return (
     <div className='video-player-container'>
       <div className='video-wrapper'>
-        <canvas ref={canvasRef} className='video-canvas' width={1280} height={720}></canvas>
+        <div className='video-stage'>
+          <div
+            className='video-frame'
+            style={{ aspectRatio: `${trackInfo.width} / ${trackInfo.height}` }}
+          >
+            <canvas
+              ref={canvasRef}
+              className='video-canvas'
+              width={trackInfo.width}
+              height={trackInfo.height}
+            />
+          </div>
+        </div>
 
         <VideoControls
           isPlaying={isPlaying}
@@ -105,6 +130,7 @@ const VideoPlayer = () => {
           duration={duration}
           volume={volume}
           isMuted={isMuted}
+          aspectRatioLabel={aspectRatioLabel}
           onPlayPause={togglePlay}
           onProgressChange={handleProgressChange}
           onVolumeChange={handleVolumeChange}
