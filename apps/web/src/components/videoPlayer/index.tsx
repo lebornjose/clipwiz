@@ -20,6 +20,7 @@ const VideoPlayer = () => {
   const editorRef = useRef<Editor | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const initializedRef = useRef(false)  // ✅ 添加初始化标志
+  const isPlayingRef = useRef(false)    // 用 ref 避免 setProgress 闭包中读到过期 state
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -46,9 +47,14 @@ const VideoPlayer = () => {
         console.log('Editor state:', state)
       },
       setProgress: (time: number) => {
-        console.log('setProgress', time)
         setCurrentTime(time)
-        // eventBus.emit('video:seek', time);
+        const totalDuration = trackInfo.duration / 1000
+        // 视频播放结束：同步停止时间轴
+        if (isPlayingRef.current && time >= totalDuration) {
+          isPlayingRef.current = false
+          setIsPlaying(false)
+          eventBus.emit('video:pause')
+        }
       },
     })
 
@@ -63,9 +69,16 @@ const VideoPlayer = () => {
     if (!editorRef.current) return
 
     if (isPlaying) {
+      isPlayingRef.current = false
       editorRef.current.pause()
       eventBus.emit('video:pause')
     } else {
+      isPlayingRef.current = true
+      // 若已播放到末尾，先将时间轴游标归零，再开始播放
+      if (currentTime >= duration) {
+        setCurrentTime(0)
+        eventBus.emit('video:seek', 0)
+      }
       editorRef.current.play()
       eventBus.emit('video:play')
     }

@@ -1,39 +1,63 @@
+.material-con {
+  padding: var(--spacing-3);
 
-.material-con{
-
-  .material-list{
+  .material-list {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 10px;
-    .material-list-item{
+    gap: var(--spacing-2);
+
+    .material-list-item {
       position: relative;
-      padding: 5px;
-      .ant-tag{
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        background: rgba(0, 0, 0, 0.5); // 半透明黑色背景
-        color: #fff; // 白色文字
-        border: none; // 移除边框
-        backdrop-filter: blur(4px); // 背景模糊效果（可选）
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid transparent;
+      transition: border-color var(--transition-fast);
+
+      &:hover {
+        border-color: var(--color-primary-container);
       }
-      .material-list-item-img{
-        width: 140px;
-        height: 140px;
-        border-radius: 8px;
-        img{
+
+      :global .ant-tag {
+        position: absolute;
+        top: var(--spacing-2);
+        left: var(--spacing-2);
+        background: rgba(0, 0, 0, 0.55);
+        color: var(--color-on-surface);
+        border: none;
+        font-size: var(--font-size-xs);
+        font-family: var(--font-mono);
+        backdrop-filter: blur(4px);
+        border-radius: var(--radius-xs);
+        padding: 0 4px;
+        line-height: 18px;
+      }
+
+      .material-list-item-img {
+        width: 120px;
+        height: 80px;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+
+        img {
           width: 100%;
-          object-fit: cover;
           height: 100%;
-          border-radius: 8px;
+          object-fit: cover;
+          display: block;
         }
       }
-      .material-list-item-name{
-        font-size: 14px;
-        font-weight: 600;
-        color: #333;
-        margin-top: 10px;
+
+      .material-list-item-name {
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-on-surface-variant);
+        margin-top: var(--spacing-1);
+        padding: 0 2px var(--spacing-1);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 120px;
       }
     }
   }

@@ -13,7 +13,7 @@ const trackInfo: ITrackInfo = {
         {
           id: "1769928697263",
           duration: 1000,
-          startTime: 0,
+          startTime: 1000,
           endTime: 3000,
           name: "滤镜1",
           code: "filter",
@@ -115,24 +115,24 @@ const trackInfo: ITrackInfo = {
           volume: 1,
           playRate: 1,
           needCut: 0,
-          transitionIn: {
-            alias: "圆形遮罩1",
-            desc: "叠加",
-            duration: 500,
-            effectId: "0",
-            format: 1,
-            layerList: ["4", "5"],
-            name: "xxx",
-          }
+          // transitionIn: {
+          //   alias: "圆形遮罩1",
+          //   desc: "叠加",
+          //   duration: 500,
+          //   effectId: "0",
+          //   format: 1,
+          //   layerList: ["4", "5"],
+          //   name: "xxx",
+          // }
         },
         {
           id: "5",
-          startTime: 4000,
+          startTime: 5000,
           endTime: 10000,
           hide: false,
           url: "https://mogic-creative.oss-cn-hangzhou.aliyuncs.com/algorithm_qn/process/20250306/1741259970364.mp4",
           format: MATERIAL_TYPE.VIDEO,
-          duration: 6000,
+          duration: 5000,
           fromTime: 0,
           toTime: 6000, // fromTime + duration
           width: 1280,
@@ -140,15 +140,15 @@ const trackInfo: ITrackInfo = {
           volume: 1,
           playRate: 1,
           needCut: 0,
-          transitionOut: {
-            alias: "圆形遮罩1",
-            desc: "叠加",
-            duration: 500,
-            effectId: "0",
-            format: 1,
-            layerList: ["4", "5"],
-            name: "xxx",
-          }
+          // transitionOut: {
+          //   alias: "圆形遮罩1",
+          //   desc: "叠加",
+          //   duration: 500,
+          //   effectId: "0",
+          //   format: 1,
+          //   layerList: ["4", "5"],
+          //   name: "xxx",
+          // }
         }
       ],
     },
