@@ -1,109 +1,111 @@
-.time-line{
+.time-line {
   width: 100%;
   height: 100%;
-  background-color: #191b1d;
+  background-color: var(--color-surface-container-low);
   display: flex;
   overflow: hidden;
 }
-.timeline-list{
+
+.timeline-list {
   width: 36px;
   margin-top: 42px;
   height: calc(100% - 42px);
   overflow-y: auto;
   overflow-x: hidden;
-  .video-item{
-    height: 100px;
+
+  .video-item {
+    height: var(--timeline-video-height);
   }
+
   &-item {
-    color: #a8c1f8;
-    height: 32px;
+    color: var(--color-primary);
+    height: var(--timeline-track-height);
     padding: 2px;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
 
-
     & .text {
-      color: #fff;
+      color: var(--color-on-surface);
       height: 28px;
       width: 100%;
-      padding-left: 10px;
-      border-radius: 4px;
+      padding-left: var(--spacing-2);
+      border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
-      background-color: #333;
+      background-color: var(--color-surface-container-high);
     }
   }
 }
-.effect-item-video{
+
+/* 轨道条目 — 轨道类型色使用低饱和度变体，与暗色背景协调 */
+.effect-item-base {
+  color: var(--color-on-surface);
+  padding: 0 var(--spacing-2);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-size: var(--font-size-base);
+  height: 100%;
+  overflow: hidden;
+}
+
+.effect-item-video {
   text-align: center;
-  color: #fff;
+  color: var(--color-on-surface);
   line-height: 80px;
   display: flex;
-  // overflow: hidden;
   position: relative;
 }
 
-.effect-item-audio{
-  color: #fff;
-  background-color: #2ecc71; /* 绿色 - 代表音频/音乐 */
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.effect-item-audio {
+  .effect-item-base();
+  background-color: rgba(46, 160, 67, 0.25);  /* 绿 - 音频 */
+  border: 1px solid rgba(46, 160, 67, 0.40);
 }
-.effect-item-photo{
-  color: #fff;
-  background-color: #9b59b6; /* 紫色 - 代表图片/贴图 */
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+
+.effect-item-photo {
+  .effect-item-base();
+  background-color: rgba(130, 80, 180, 0.30);  /* 紫 - 图片贴图 */
+  border: 1px solid rgba(130, 80, 180, 0.45);
 }
-.effect-item-subtitle{
-  color: #fff;
-  background-color: #f39c12; /* 橙黄色 - 代表字幕，醒目且易识别 */
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+
+.effect-item-subtitle {
+  .effect-item-base();
+  background-color: rgba(220, 150, 30, 0.25);  /* 橙 - 字幕 */
+  border: 1px solid rgba(220, 150, 30, 0.40);
 }
-.effect-item-text{
-  color: #fff;
-  background-color: #3498db; /* 蓝色 - 代表文本 */
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+
+.effect-item-text {
+  .effect-item-base();
+  background-color: rgba(60, 130, 210, 0.25);  /* 蓝 - 文字 */
+  border: 1px solid rgba(60, 130, 210, 0.40);
 }
-.effect-item-filter{
-  color: #fff;
-  background-color: #e74c3c; /* 红色 - 代表滤镜 */
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+
+.effect-item-filter {
+  .effect-item-base();
+  background-color: rgba(200, 60, 60, 0.22);   /* 红 - 滤镜 */
+  border: 1px solid rgba(200, 60, 60, 0.38);
 }
-.effect-item-transition-out{
+
+.effect-item-transition-out {
   position: absolute;
   top: 40px;
   left: -20px;
-  background-color: #fff;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  background-color: var(--color-surface-container-high);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
   height: 24px;
   width: 40px;
   line-height: 24px;
-  border-radius: 4px;
-  z-index: 100;
-  .anticon{
-    font-size: 16px;
-    color: #333;
+  border-radius: var(--radius-sm);
+  z-index: var(--z-raised);
+
+  .anticon {
+    font-size: var(--font-size-md);
+    color: var(--color-on-surface-variant);
     position: relative;
     top: 2px;
   }

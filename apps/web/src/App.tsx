@@ -85,16 +85,9 @@ function App() {
 
   return (
     <Layout style={{ minHeight: '100vh' }} ref={containerRef}>
-      <Header style={{
-        background: '#001529',
-        color: '#fff',
-        fontSize: '24px',
-        fontWeight: 'bold',
-        display: 'flex',
-        alignItems: 'center'
-      }}>
+      <Header className='app-header'>
         <div className='header-left'>
-          <ScissorOutlined style={{ marginRight: '12px' }} />
+          <ScissorOutlined />
           ClipWiz 视频编辑器
         </div>
 
@@ -108,7 +101,7 @@ function App() {
       <Layout
         className={`app-layout ${isDragging ? 'dragging' : ''}`}
         style={{
-          height: `calc(100vh - 64px - ${timelineHeight}px)`, // 减去 Header 高度和 TimeLine 高度
+          height: `calc(100vh - var(--layout-header-height) - ${timelineHeight}px)`,
           overflow: 'hidden'
         }}
       >

@@ -42,9 +42,9 @@ const TimeLine = () => {
     eventBus.on('video:pause', (time: number) => {
       timelineState.current?.pause();
     });
-    eventBus.on('video:play', (time: number) => {
-      timelineState.current?.setScrollTop(time);
-      timelineState.current?.play({ });
+    eventBus.on('video:play', () => {
+      const endTime = trackInfo.duration / 1000
+      timelineState.current?.play({ endTime });
     });
     eventBus.on('video:seek', (time: number) => {
       timelineState.current?.setTime(time);

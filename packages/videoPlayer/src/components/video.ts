@@ -41,22 +41,22 @@ export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackI
   videoNode.format = item.format
   videoNode.type = MATERIAL_TYPE.VIDEO
   videoNode.trackId = trackId
-  if(item.transitionIn) { // 入场转场
-    const crossFadeEffect = editor.videoCtx.transition(VideoContext.DEFINITIONS.DREAMFADE);
-    const startTime = (item.endTime - 1000) / TIME_CONFIG.MILL_TIME_CONVERSION
-    const endtime = (item.endTime) / TIME_CONFIG.MILL_TIME_CONVERSION
-    crossFadeEffect.transition(startTime, endtime, 0.0, 1.0, "mix");
-    editor.transitionMap.set(item.transitionIn.layerList.join('_'), crossFadeEffect)
-  }
-  if(item.transitionIn || item.transitionOut) {
-    const transitionId = item.transitionOut?.layerList.join('_') || item.transitionIn?.layerList.join('_')
-    videoNode.connect(editor.transitionMap.get(transitionId!))
-  } else {
+  // if(item.transitionIn) { // 入场转场
+  //   const crossFadeEffect = editor.videoCtx.transition(VideoContext.DEFINITIONS.DREAMFADE);
+  //   const startTime = (item.endTime - 1000) / TIME_CONFIG.MILL_TIME_CONVERSION
+  //   const endtime = (item.endTime) / TIME_CONFIG.MILL_TIME_CONVERSION
+  //   crossFadeEffect.transition(startTime, endtime, 0.0, 1.0, "mix");
+  //   editor.transitionMap.set(item.transitionIn.layerList.join('_'), crossFadeEffect)
+  // }
+  // if(item.transitionIn || item.transitionOut) {
+  //   const transitionId = item.transitionOut?.layerList.join('_') || item.transitionIn?.layerList.join('_')
+  //   videoNode.connect(editor.transitionMap.get(transitionId!))
+  // } else {
     videoNode.connect(editor.videoCtx.destination as DestinationNode)
-  }
-  if(item.transitionOut) {
-    editor.transitionMap.get(item.transitionOut.layerList.join('_')).connect(editor.videoCtx.destination as DestinationNode)
-  }
+  // }
+  // if(item.transitionOut) {
+  //   editor.transitionMap.get(item.transitionOut.layerList.join('_')).connect(editor.videoCtx.destination as DestinationNode)
+  // }
   // videoNode.registerCallback('waiting', () => {
   //   if (editor.videoCtx.state !== STATE.PLAYING) {
   //     return
