@@ -8,7 +8,7 @@ import { getGifImage } from './components/getBufferImage'
 import Pag from './components/Pag.js'
 import { addSubtitleNode } from './components/subtitle.js'
 import { addTextNode } from './components/text.js'
-import { addFilter } from './components/filter.js'
+import { addFilter, FilterEffect } from './components/filter.js'
 
 export interface IApplicationOptions {
   canvas: HTMLCanvasElement
@@ -31,6 +31,7 @@ export class Editor {
   public gifCanvasEl: HTMLCanvasElement = document.createElement('canvas')
   public pag: Pag
   public transitionMap: Map<string, any> // 记录转场
+  public filterEffects: FilterEffect[]    // 滤镜效果列表
 
   public addNodeFunc: {
     [key: string]: Function
@@ -57,6 +58,7 @@ export class Editor {
     this.totalTime = options.trackInfo.duration
     this.videoTrack = options.trackInfo.tracks.reverse()
     this.transitionMap = new Map()
+    this.filterEffects = []
     this.canvasHeight = options.trackInfo.height
     this.canvasWidth = options.trackInfo.width
     // this.currentTime = 0
@@ -80,6 +82,7 @@ export class Editor {
       // this.isPlayingWaiting = true
       this.videoCtx.pause()
     }
+    this.resetFilters()
     return new Promise(() => {
       let time = val
       // 这个是最后一帧时间会注销到video元素，导致黑屏出现，所以这次先处理位2位小数，
@@ -154,7 +157,82 @@ export class Editor {
     this.loadTrack()
   }
 
+  /**
+   * 每帧管理滤镜状态：进入/退出滤镜时间区间时切换节点连接关系
+   */
+  manageFilters() {
+    const time = this.videoCtx.currentTime
+    const sourceNodes = this.videoCtx._sourceNodes
+
+    for (const filter of this.filterEffects) {
+      const inRange = time >= filter.startTime && time < filter.endTime
+
+      // EffectNode 只有单输入槽，只对 VIDEO 节点施加滤镜
+      // PHOTO/GIF/字幕/花字等 canvas 节点保持直连 destination，不受影响
+      const isFilterable = (node: any) =>
+        node.type === MATERIAL_TYPE.VIDEO &&
+        node.startTime <= time &&
+        node.stopTime > time
+
+      if (inRange && !filter.active) {
+        // 进入滤镜区间：videoNode 路由到 effectNode，effectNode 以原 zIndex 接入 destination
+        filter.active = true
+        sourceNodes.forEach((node: any) => {
+          if (isFilterable(node)) {
+            const conns: any[] = (this.videoCtx as any)._renderGraph.getZIndexInputsForNode(this.videoCtx.destination)
+            const conn = conns.find((c: any) => c.source === node)
+            const originalZIndex = conn ? conn.zIndex : 0
+            node.disconnect()
+            node.connect(filter.effectNode)
+            // effectNode 以视频节点原来的 zIndex 接入 destination，保持渲染层级
+            filter.effectNode.connect(this.videoCtx.destination, originalZIndex)
+            filter.routedNodes.set(node, originalZIndex)
+          }
+        })
+      } else if (!inRange && filter.active) {
+        // 离开滤镜区间：effectNode 断开，videoNode 以原始 zIndex 恢复到 destination
+        filter.active = false
+        filter.effectNode.disconnect(this.videoCtx.destination)
+        filter.routedNodes.forEach((originalZIndex: number, node: any) => {
+          node.disconnect(filter.effectNode)
+          node.connect(this.videoCtx.destination, originalZIndex)
+        })
+        filter.routedNodes.clear()
+      } else if (inRange && filter.active) {
+        // 仍在滤镜区间内：补路由新进入的活跃节点
+        sourceNodes.forEach((node: any) => {
+          if (isFilterable(node) && !filter.routedNodes.has(node)) {
+            const conns: any[] = (this.videoCtx as any)._renderGraph.getZIndexInputsForNode(this.videoCtx.destination)
+            const conn = conns.find((c: any) => c.source === node)
+            const originalZIndex = conn ? conn.zIndex : 0
+            node.disconnect()
+            node.connect(filter.effectNode)
+            filter.routedNodes.set(node, originalZIndex)
+          }
+        })
+      }
+    }
+  }
+
+  /**
+   * seek 时重置所有滤镜状态，让 manageFilters 在下一帧重新判断
+   */
+  resetFilters() {
+    for (const filter of this.filterEffects) {
+      if (filter.active) {
+        filter.effectNode.disconnect(this.videoCtx.destination)
+        filter.routedNodes.forEach((originalZIndex: number, node: any) => {
+          node.disconnect(filter.effectNode)
+          node.connect(this.videoCtx.destination, originalZIndex)
+        })
+        filter.routedNodes.clear()
+        filter.active = false
+      }
+    }
+  }
+
   async draw() {
+    this.manageFilters()
     const currentTime = this.videoCtx.currentTime
     const sourceNodes = this.videoCtx._sourceNodes
     const nodes = sourceNodes.filter((item) => {
@@ -207,6 +285,7 @@ export class Editor {
   }
 
   seek(time: number) {
+    this.resetFilters()
     this.videoCtx.currentTime = time
     this.setProgress(time)
     this.draw()
