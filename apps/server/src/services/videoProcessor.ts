@@ -4,7 +4,10 @@ import fs from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import { videoQueue } from './queue.js'
 import type { Job } from 'bull'
-import { ITrackInfo, MATERIAL_TYPE, IVideoTrackItem } from '@clipwiz/shared'
+import {
+  ITrackInfo, MATERIAL_TYPE,
+  IVideoTrackItem, IAudioTrackItem, ISubtitleTrackItem,
+} from '@clipwiz/shared'
 
 const uploadDir = process.env.UPLOAD_DIR || './uploads'
 const outputDir = path.join(uploadDir, 'output')
@@ -315,6 +318,16 @@ interface VideoSlot {
   toMs: number
 }
 
+interface AudioSlot {
+  sourceUrl: string
+  startMs: number  // 在时间轴上的起始位置（ms）
+  fromMs: number   // 在源音频中的裁剪起点（ms）
+  toMs: number     // 在源音频中的裁剪终点（ms）
+  volume: number   // 音量 0-1
+  fadeIn: number   // 淡入时长（ms）
+  fadeOut: number  // 淡出时长（ms）
+}
+
 function msToSec(ms: number): string {
   return (ms / 1000).toFixed(3)
 }
@@ -351,7 +364,43 @@ function normalizeVideoSlots(trackInfo: ITrackInfo): VideoSlot[] {
   return slots.sort((a, b) => a.startMs - b.startMs)
 }
 
-// 生成合成命令（当前只处理视频轨道）
+function normalizeAudioSlots(trackInfo: ITrackInfo): AudioSlot[] {
+  const slots: AudioSlot[] = []
+  const audioTrackTypes = [MATERIAL_TYPE.BGM_AUDIO, MATERIAL_TYPE.SOUND_AUDIO, MATERIAL_TYPE.ORAL_AUDIO]
+  const audioTracks = trackInfo.tracks.filter(
+    (track) => audioTrackTypes.includes(track.trackType as any) && !track.hide
+  )
+
+  audioTracks.forEach((track) => {
+    track.children.forEach((item) => {
+      const audioItem = item as IAudioTrackItem
+      if (audioItem.muted || audioItem.hide || !audioItem.url) return
+
+      const startMs = Math.max(0, audioItem.startTime)
+      const endMs = Math.max(startMs, audioItem.endTime)
+      const fromMs = Math.max(0, audioItem.fromTime ?? 0)
+      const slotDurationMs = endMs - startMs
+      const sourceDurationMs = audioItem.toTime != null ? audioItem.toTime - fromMs : slotDurationMs
+      const actualDurationMs = Math.min(slotDurationMs, sourceDurationMs)
+
+      if (actualDurationMs <= 0) return
+
+      slots.push({
+        sourceUrl: audioItem.url,
+        startMs,
+        fromMs,
+        toMs: fromMs + actualDurationMs,
+        volume: audioItem.volume ?? 1,
+        fadeIn: audioItem.fadeIn ?? 0,
+        fadeOut: audioItem.fadeOut ?? 0,
+      })
+    })
+  })
+
+  return slots
+}
+
+// 生成合成命令
 function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ffmpeg.FfmpegCommand {
   const width = Math.max(2, Math.floor(trackInfo.width || 1280))
   const height = Math.max(2, Math.floor(trackInfo.height || 720))
@@ -359,6 +408,7 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
   const durationSec = msToSec(durationMs)
   const fps = Math.max(1, Math.floor(trackInfo.fps || 25))
   const videoSlots = normalizeVideoSlots(trackInfo)
+  const audioSlots = normalizeAudioSlots(trackInfo)
 
   if (videoSlots.length === 0) {
     throw new Error('当前未找到可导出的有效视频轨道片段')
@@ -366,6 +416,10 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
 
   let command = ffmpeg()
   videoSlots.forEach((slot) => {
+    command = command.input(slot.sourceUrl)
+  })
+  // 添加音频输入（视频输入之后）
+  audioSlots.forEach((slot) => {
     command = command.input(slot.sourceUrl)
   })
 
@@ -386,10 +440,52 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
     currentVideoLabel = nextLabel
   })
 
+  // 处理背景音频轨道
+  const videoInputCount = videoSlots.length
+  const audioOutLabels: string[] = []
+
+  audioSlots.forEach((slot, i) => {
+    const inputIndex = videoInputCount + i
+    const label = `a${i}`
+    const segDurationSec = ((slot.toMs - slot.fromMs) / 1000).toFixed(3)
+
+    let filterChain = `[${inputIndex}:a]atrim=start=${msToSec(slot.fromMs)}:end=${msToSec(slot.toMs)},asetpts=PTS-STARTPTS`
+
+    if (slot.volume !== 1) {
+      filterChain += `,volume=${slot.volume}`
+    }
+    if (slot.fadeIn > 0) {
+      filterChain += `,afade=t=in:st=0:d=${msToSec(slot.fadeIn)}`
+    }
+    if (slot.fadeOut > 0) {
+      const fadeStart = (parseFloat(segDurationSec) - slot.fadeOut / 1000).toFixed(3)
+      filterChain += `,afade=t=out:st=${fadeStart}:d=${msToSec(slot.fadeOut)}`
+    }
+
+    // adelay 单位是毫秒，支持多声道
+    filterChain += `,adelay=${slot.startMs}|${slot.startMs}[${label}]`
+
+    filters.push(filterChain)
+    audioOutLabels.push(`[${label}]`)
+  })
+
+  // 混音
+  let hasAudio = false
+  if (audioOutLabels.length === 1) {
+    // 只有一路音频，直接重命名标签
+    filters[filters.length - 1] = filters[filters.length - 1].replace(`[a0]`, '[aout]')
+    audioOutLabels[0] = '[aout]'
+    hasAudio = true
+  } else if (audioOutLabels.length > 1) {
+    filters.push(`${audioOutLabels.join('')}amix=inputs=${audioOutLabels.length}:duration=longest:normalize=0[aout]`)
+    hasAudio = true
+  }
+
   command = command.complexFilter(filters)
 
   const outputOptions = [
     '-map', '[vout]',
+    ...(hasAudio ? ['-map', '[aout]'] : []),
     '-t', durationSec,
     '-r', `${fps}`,
     '-pix_fmt', 'yuv420p',
@@ -397,7 +493,7 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
     '-preset', 'medium',
     '-crf', '23',
     '-movflags', '+faststart',
-    '-an'
+    ...(hasAudio ? ['-c:a', 'aac', '-b:a', '192k'] : ['-an'])
   ]
 
   command = command.output(outputPath).outputOptions(outputOptions)
