@@ -14,7 +14,7 @@ export const addTextNode = async (editor: Editor, trackId: string, item: ITextTr
   canvas.style.height = 720 + 'px';
 
   const pagView = await editor.pag.PAG.PAGView.init(pagFile, canvas);
-  const textNode = editor.videoCtx.canvas(canvas);
+  const textNode = editor.videoCtx.canvas(canvas) as any;
 
   textNode.id = item.id
   textNode.trackId = trackId

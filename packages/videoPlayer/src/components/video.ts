@@ -1,8 +1,7 @@
-import type {IVideoTrackItem, IVideoNode, DestinationNode } from '@clipwiz/shared'
+import type {IVideoTrackItem, IVideoNode } from '@clipwiz/shared'
 import { MATERIAL_TYPE, TIME_CONFIG } from '@clipwiz/shared'
 import { Editor } from '../index'
 import { convertEndTime } from '../utils'
-import VideoContext from '../videocontext'
 
 
 // let videoWaiting = 0 // 上报视频因为加载导致的loading 时间
@@ -52,7 +51,8 @@ export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackI
   //   const transitionId = item.transitionOut?.layerList.join('_') || item.transitionIn?.layerList.join('_')
   //   videoNode.connect(editor.transitionMap.get(transitionId!))
   // } else {
-    videoNode.connect(editor.videoCtx.destination as DestinationNode)
+    // zIndex=0 keeps video as background so overlays (photo/subtitle/text) render on top
+    ;(videoNode as any).connect(editor.videoCtx.destination, 0)
   // }
   // if(item.transitionOut) {
   //   editor.transitionMap.get(item.transitionOut.layerList.join('_')).connect(editor.videoCtx.destination as DestinationNode)
@@ -76,4 +76,6 @@ export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackI
       }
     }
   })
+
+  return videoNode
 }

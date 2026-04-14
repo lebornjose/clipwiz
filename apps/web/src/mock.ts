@@ -115,19 +115,20 @@ const trackInfo: ITrackInfo = {
           volume: 1,
           playRate: 1,
           needCut: 0,
-          // transitionIn: {
-          //   alias: "圆形遮罩1",
-          //   desc: "叠加",
-          //   duration: 500,
-          //   effectId: "0",
-          //   format: 1,
-          //   layerList: ["4", "5"],
-          //   name: "xxx",
-          // }
+          // 出场转场：从 clip4 过渡到 clip5，使用星形擦除，持续 2 秒
+          transitionOut: {
+            alias: "STAR_WIPE",
+            desc: "星形擦除",
+            duration: 500,
+            effectId: "STAR_WIPE",
+            format: 1,
+            layerList: ["4", "5"],
+            name: "STAR_WIPE",
+          }
         },
         {
           id: "5",
-          startTime: 5000,
+          startTime: 4500,
           endTime: 10000,
           hide: false,
           url: "https://mogic-creative.oss-cn-hangzhou.aliyuncs.com/algorithm_qn/process/20250306/1741259970364.mp4",
@@ -140,15 +141,15 @@ const trackInfo: ITrackInfo = {
           volume: 1,
           playRate: 1,
           needCut: 0,
-          // transitionOut: {
-          //   alias: "圆形遮罩1",
-          //   desc: "叠加",
-          //   duration: 500,
-          //   effectId: "0",
-          //   format: 1,
-          //   layerList: ["4", "5"],
-          //   name: "xxx",
-          // }
+          transitionIn: {
+            alias: "STAR_WIPE",
+            desc: "星形擦除",
+            duration: 500,
+            effectId: "STAR_WIPE",
+            format: 1,
+            layerList: ["4", "5"],
+            name: "STAR_WIPE",
+          }
         }
       ],
     },
