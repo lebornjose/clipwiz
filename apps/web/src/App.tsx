@@ -5,6 +5,7 @@ import LeftCon from './components/leftCon'
 import TimeLine from './components/timeLine'
 import VideoPlayer from './components/videoPlayer'
 import { POST, downloadFile } from './utils'
+import trackInfo from './mock'
 import './App.css'
 
 const { Header } = Layout
@@ -77,7 +78,7 @@ function App() {
   }, [isDragging])
 
   const handleExportVideo = async () => {
-    const data = await POST('/api/graph', {})
+    const data = await POST('/api/graph', { trackInfo })
     const url = data.data.downloadUrl;
     downloadFile(url, 'exported-video.mp4')
     message.success('导出视频成功')

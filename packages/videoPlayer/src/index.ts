@@ -1,6 +1,6 @@
 
 import VideoContext from './videocontext.js'
-import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, STATE, IPhotoTrackItem } from '@clipwiz/shared'
+import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, STATE, IPhotoTrackItem, IVideoNode, IVideoTrackItem, resolveTransitionBetweenItems, TransitionItem } from '@clipwiz/shared'
 import { addVideoNode } from './components/video'
 import { addBgm } from './components/audio'
 import { addPhotoNode } from './components/photo'
@@ -31,6 +31,17 @@ export class Editor {
   public gifCanvasEl: HTMLCanvasElement = document.createElement('canvas')
   public pag: Pag
   public transitionMap: Map<string, any> // 记录转场
+  public transitionRegistry: Map<string, {
+    node: any
+    transition: TransitionItem
+    durationSec: number
+    overlapStart: number  // seconds in VideoContext timeline
+    overlapEnd: number    // seconds in VideoContext timeline
+    prevNodeId: string
+    currentNodeId: string
+    phase: 'pre' | 'transition' | 'post' | 'reset' // current routing state ('reset' = pending reconnect)
+  }>
+  public videoNodeRegistry: Map<string, IVideoNode>
   public filterEffects: FilterEffect[]    // 滤镜效果列表
 
   public addNodeFunc: {
@@ -58,6 +69,8 @@ export class Editor {
     this.totalTime = options.trackInfo.duration
     this.videoTrack = options.trackInfo.tracks.reverse()
     this.transitionMap = new Map()
+    this.transitionRegistry = new Map()
+    this.videoNodeRegistry = new Map()
     this.filterEffects = []
     this.canvasHeight = options.trackInfo.height
     this.canvasWidth = options.trackInfo.width
@@ -83,6 +96,7 @@ export class Editor {
       this.videoCtx.pause()
     }
     this.resetFilters()
+    this.resetTransitions()
     return new Promise(() => {
       let time = val
       // 这个是最后一帧时间会注销到video元素，导致黑屏出现，所以这次先处理位2位小数，
@@ -125,10 +139,143 @@ export class Editor {
       this.gifSources[`gifSources${item.materialId || item.id!}`] = { frameCount, imageDecoder, trackData: new Map() }
     }
   }
+
+  getTransitionDefinition(item?: TransitionItem) {
+    const definitions = (VideoContext as any).DEFINITIONS || {}
+    if (item) {
+      // Look up by effectId or name (case-insensitive, support both "STAR_WIPE" and "star_wipe")
+      const byEffectId = item.effectId ? definitions[item.effectId.toUpperCase()] : undefined
+      const byName = item.name ? definitions[item.name.toUpperCase()] : undefined
+      if (byEffectId) return byEffectId
+      if (byName) return byName
+    }
+    return definitions.CROSSFADE || definitions.DREAMFADE
+  }
+
+  registerVideoTransition(prevItem: IVideoTrackItem | undefined, currentItem: IVideoTrackItem, currentNode: IVideoNode) {
+    if (!prevItem) return
+
+    const resolved = resolveTransitionBetweenItems(prevItem, currentItem)
+    if (!resolved) return
+
+    const definition = this.getTransitionDefinition(resolved.transition)
+    if (!definition) return
+
+    const prevNode = this.videoNodeRegistry.get(prevItem.id)
+    if (!prevNode) return
+
+    // Overlap window comes directly from the data model:
+    //   currentItem.startTime = when clip2 enters the timeline = transition start
+    //   prevItem.endTime      = when clip1 leaves the timeline = transition end
+    // The two clips are expected to have overlapping time ranges in the data.
+    const overlapStart = currentItem.startTime / 1000
+    const overlapEnd = prevItem.endTime / 1000
+    if (overlapEnd <= overlapStart) return
+
+    const durationSec = overlapEnd - overlapStart
+    const key = resolved.key
+
+    // Create the VideoContext transition node for this pair
+    const transitionNode = this.videoCtx.transition(definition)
+    // Schedule mix 0→1 over the blend window (absolute timeline times)
+    ;(transitionNode as any).transitionAt(overlapStart, overlapEnd, 0, 1, 'mix')
+    this.transitionMap.set(key, transitionNode)
+
+    // addVideoNode already called currentNode.start(currentItem.startTime/1000),
+    // so the VideoContext startTime is already correct — no adjustment needed.
+
+    // Disconnect currentNode from destination: it must NOT be visible before the transition
+    // (its VideoContext texture is cleared while in sequenced state anyway, but keeping it
+    // off destination avoids any edge-case compositing with alpha blending).
+    ;(currentNode as any).disconnect(this.videoCtx.destination)
+
+    // Phase "pre": prevNode is already connected to destination from addVideoNode.
+    this.transitionRegistry.set(key, {
+      node: transitionNode,
+      transition: resolved.transition,
+      durationSec,
+      overlapStart,
+      overlapEnd,
+      prevNodeId: prevItem.id,
+      currentNodeId: currentItem.id,
+      phase: 'pre',
+    })
+  }
+
+  /**
+   * Per-frame connection management.
+   * pre:        prevNode → destination
+   * transition: prevNode + currentNode → transitionNode → destination
+   * post:       currentNode → destination
+   *
+   * Idempotent: only reconnects on phase change.
+   */
+  manageTransitions() {
+    const time = this.videoCtx.currentTime
+
+    this.transitionRegistry.forEach((registry) => {
+      const prevNode = this.videoNodeRegistry.get(registry.prevNodeId)
+      const currentNode = this.videoNodeRegistry.get(registry.currentNodeId)
+      if (!prevNode || !currentNode) return
+
+      const { overlapStart, overlapEnd, node: transitionNode } = registry
+      const dest = this.videoCtx.destination
+
+      if (time < overlapStart && registry.phase !== 'pre') {
+        // Seek back before transition
+        ;(currentNode as any).disconnect(dest)
+        ;(currentNode as any).disconnect(transitionNode)
+        ;(prevNode as any).disconnect(transitionNode)
+        transitionNode.disconnect(dest)
+        ;(prevNode as any).connect(dest, 0)  // zIndex=0: video as background, overlays render on top
+        registry.phase = 'pre'
+      } else if (time >= overlapStart && time < overlapEnd && registry.phase !== 'transition') {
+        // Enter transition window
+        ;(prevNode as any).disconnect(dest)
+        ;(currentNode as any).disconnect(dest)
+        prevNode.connect(transitionNode)
+        currentNode.connect(transitionNode)
+        transitionNode.connect(dest, 0)  // zIndex=0: video blend as background
+        registry.phase = 'transition'
+      } else if (time >= overlapEnd && registry.phase !== 'post') {
+        // Exit transition window
+        ;(prevNode as any).disconnect(transitionNode)
+        ;(currentNode as any).disconnect(transitionNode)
+        transitionNode.disconnect(dest)
+        ;(currentNode as any).connect(dest, 0)  // zIndex=0: video as background
+        registry.phase = 'post'
+      }
+    })
+  }
+
+  /**
+   * Force-reset all transition routing to match current time (called on seek).
+   */
+  resetTransitions() {
+    this.transitionRegistry.forEach((registry) => {
+      const prevNode = this.videoNodeRegistry.get(registry.prevNodeId)
+      const currentNode = this.videoNodeRegistry.get(registry.currentNodeId)
+      if (!prevNode || !currentNode) return
+
+      const { node: transitionNode } = registry
+      const dest = this.videoCtx.destination
+
+      // Tear down all connections for this pair
+      ;(prevNode as any).disconnect(dest)
+      ;(prevNode as any).disconnect(transitionNode)
+      ;(currentNode as any).disconnect(dest)
+      ;(currentNode as any).disconnect(transitionNode)
+      transitionNode.disconnect(dest)
+      // Sentinel: 'reset' never matches 'pre'/'transition'/'post', so manageTransitions
+      // will always re-evaluate and reconnect on the next draw() call.
+      registry.phase = 'reset'
+    })
+  }
+
   loadTrack() {
     console.log(this.videoTrack)
     for (const track of this.videoTrack) {
-      track.children?.forEach((child) => {
+      track.children?.forEach((child, childIndex) => {
         if ([MATERIAL_TYPE.BGM_AUDIO, MATERIAL_TYPE.VIDEO].includes(track.trackType as MATERIAL_TYPE)) {
           track.children.forEach((child) => {
             const c = child as IAudioTrackItem
@@ -148,7 +295,13 @@ export class Editor {
         if ((child as IPhotoTrackItem).format === MATERIAL_TYPE.GIF) {
           void this.loadPhoto(child as IPhotoTrackItem)
         }
-        this.addNodeFunc[track.trackType](this, track.trackId, child)
+        const node = this.addNodeFunc[track.trackType](this, track.trackId, child)
+        if (track.trackType === MATERIAL_TYPE.VIDEO && node) {
+          const currentItem = child as IVideoTrackItem
+          this.videoNodeRegistry.set(currentItem.id, node as IVideoNode)
+          const prevItem = childIndex > 0 ? track.children[childIndex - 1] as IVideoTrackItem : undefined
+          this.registerVideoTransition(prevItem, currentItem, node as IVideoNode)
+        }
       })
     }
   }
@@ -232,6 +385,7 @@ export class Editor {
   }
 
   async draw() {
+    this.manageTransitions()
     this.manageFilters()
     const currentTime = this.videoCtx.currentTime
     const sourceNodes = this.videoCtx._sourceNodes
@@ -286,6 +440,7 @@ export class Editor {
 
   seek(time: number) {
     this.resetFilters()
+    this.resetTransitions()
     this.videoCtx.currentTime = time
     this.setProgress(time)
     this.draw()

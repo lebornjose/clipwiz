@@ -73,6 +73,53 @@ export interface TransitionItem {
   name: string
 }
 
+export interface ResolvedTransition {
+  transition: TransitionItem
+  key: string
+  duration: number
+  source: 'prev.transitionOut' | 'current.transitionIn' | 'prev.transitionIn' | 'current.transitionOut'
+}
+
+const transitionMatchesPair = (
+  transition: TransitionItem | undefined,
+  prevId?: string,
+  currentId?: string,
+) => {
+  if (!transition) return false
+  if (!transition.layerList?.length || !prevId || !currentId) return true
+  return transition.layerList.includes(prevId) && transition.layerList.includes(currentId)
+}
+
+export const getTransitionKey = (transition: TransitionItem, fallbackIds: string[] = []) => {
+  const ids = transition.layerList?.length ? transition.layerList : fallbackIds
+  return [...ids].sort().join('_')
+}
+
+export const resolveTransitionBetweenItems = (
+  prev?: Pick<IVideoTrackItem, 'id' | 'transitionIn' | 'transitionOut'>,
+  current?: Pick<IVideoTrackItem, 'id' | 'transitionIn' | 'transitionOut'>,
+): ResolvedTransition | null => {
+  if (!prev || !current) return null
+
+  const candidates: Array<{ transition?: TransitionItem; source: ResolvedTransition['source'] }> = [
+    { transition: prev.transitionOut, source: 'prev.transitionOut' },
+    { transition: current.transitionIn, source: 'current.transitionIn' },
+    { transition: prev.transitionIn, source: 'prev.transitionIn' },
+    { transition: current.transitionOut, source: 'current.transitionOut' },
+  ]
+
+  const matched = candidates.find(({ transition }) => transitionMatchesPair(transition, prev.id, current.id))
+
+  if (!matched?.transition) return null
+
+  return {
+    transition: matched.transition,
+    key: getTransitionKey(matched.transition, [prev.id, current.id]),
+    duration: matched.transition.duration,
+    source: matched.source,
+  }
+}
+
 
 
 export interface IVideoNode extends INode {

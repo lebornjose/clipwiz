@@ -7,11 +7,16 @@
 }
 
 .timeline-list {
-  width: 36px;
+  width: 52px;
   margin-top: 42px;
   height: calc(100% - 42px);
   overflow-y: auto;
   overflow-x: hidden;
+  padding: 6px 8px 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 24%),
+    var(--color-surface-container-low);
+  border-right: 1px solid var(--color-border);
 
   .video-item {
     height: var(--timeline-video-height);
@@ -20,26 +25,28 @@
   &-item {
     color: var(--color-primary);
     height: var(--timeline-track-height);
-    padding: 2px;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
 
-    & .text {
-      color: var(--color-on-surface);
-      height: 28px;
-      width: 100%;
-      padding-left: var(--spacing-2);
-      border-radius: var(--radius-sm);
-      display: flex;
-      align-items: center;
-      background-color: var(--color-surface-container-high);
+  .video-item,
+  .bgm-item,
+  .photo-item,
+  .subtitle-item,
+  .text-item,
+  .filter-item {
+    .anticon {
+      font-size: 16px;
     }
   }
 }
 
-/* 轨道条目 — 轨道类型色使用低饱和度变体，与暗色背景协调 */
 .effect-item-base {
   color: var(--color-on-surface);
   padding: 0 var(--spacing-2);
@@ -53,60 +60,119 @@
 }
 
 .effect-item-video {
-  text-align: center;
-  color: var(--color-on-surface);
-  line-height: 80px;
-  display: flex;
   position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: visible;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.08));
+}
+
+.effect-item-video-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.effect-item-video-strip img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.effect-item-video-strip img:last-child {
+  border-right: none;
+}
+
+.effect-item-video-overlay {
+  position: absolute;
+  inset: auto 8px 8px 8px;
+  display: flex;
+  justify-content: flex-start;
+  pointer-events: none;
+}
+
+.effect-item-video-title {
+  max-width: 70%;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(11, 17, 32, 0.72);
+  color: #f7fafc;
+  font-size: 12px;
+  line-height: 1.2;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.effect-item-transition-chip {
+  position: absolute;
+  top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(120, 119, 255, 0.92), rgba(46, 196, 182, 0.92));
+  color: white;
+  box-shadow: 0 8px 20px rgba(47, 83, 151, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 11px;
+  line-height: 1;
+  z-index: 2;
+  backdrop-filter: blur(8px);
+}
+
+.effect-item-transition-chip--left {
+  left: -8px;
+}
+
+.effect-item-transition-chip--right {
+  right: -8px;
+}
+
+.effect-item-transition-chip .anticon {
+  font-size: 12px;
+}
+
+.effect-item-transition-chip em {
+  font-style: normal;
+  opacity: 0.82;
 }
 
 .effect-item-audio {
   .effect-item-base();
-  background-color: rgba(46, 160, 67, 0.25);  /* 绿 - 音频 */
+  background-color: rgba(46, 160, 67, 0.25);
   border: 1px solid rgba(46, 160, 67, 0.40);
 }
 
 .effect-item-photo {
   .effect-item-base();
-  background-color: rgba(130, 80, 180, 0.30);  /* 紫 - 图片贴图 */
+  background-color: rgba(130, 80, 180, 0.30);
   border: 1px solid rgba(130, 80, 180, 0.45);
 }
 
 .effect-item-subtitle {
   .effect-item-base();
-  background-color: rgba(220, 150, 30, 0.25);  /* 橙 - 字幕 */
+  background-color: rgba(220, 150, 30, 0.25);
   border: 1px solid rgba(220, 150, 30, 0.40);
 }
 
 .effect-item-text {
   .effect-item-base();
-  background-color: rgba(60, 130, 210, 0.25);  /* 蓝 - 文字 */
+  background-color: rgba(60, 130, 210, 0.25);
   border: 1px solid rgba(60, 130, 210, 0.40);
 }
 
 .effect-item-filter {
   .effect-item-base();
-  background-color: rgba(200, 60, 60, 0.22);   /* 红 - 滤镜 */
+  background-color: rgba(200, 60, 60, 0.22);
   border: 1px solid rgba(200, 60, 60, 0.38);
-}
-
-.effect-item-transition-out {
-  position: absolute;
-  top: 40px;
-  left: -20px;
-  background-color: var(--color-surface-container-high);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-xs);
-  height: 24px;
-  width: 40px;
-  line-height: 24px;
-  border-radius: var(--radius-sm);
-  z-index: var(--z-raised);
-
-  .anticon {
-    font-size: var(--font-size-md);
-    color: var(--color-on-surface-variant);
-    position: relative;
-    top: 2px;
-  }
 }

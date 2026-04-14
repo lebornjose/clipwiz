@@ -6,8 +6,101 @@ import { videoQueue } from './queue.js'
 import type { Job } from 'bull'
 import {
   ITrackInfo, MATERIAL_TYPE,
-  IVideoTrackItem, IAudioTrackItem, ISubtitleTrackItem,
+  IVideoTrackItem, IAudioTrackItem,
+  resolveTransitionBetweenItems,
 } from '@clipwiz/shared'
+
+// Map effectId → internal effect type used by buildAlphaExpr
+const EFFECT_TYPE_MAP: Record<string, string> = {
+  CROSSFADE:       'fade',
+  DREAMFADE:       'fade',
+  HORIZONTAL_WIPE: 'wipeleft',
+  VERTICAL_WIPE:   'wipeup',
+  STAR_WIPE:       'radial',
+  STATIC_DISSOLVE: 'dissolve',
+  RANDOM_DISSOLVE: 'dissolve',
+}
+
+function getEffectType(effectId?: string): string {
+  return (effectId && EFFECT_TYPE_MAP[effectId.toUpperCase()]) ?? 'fade'
+}
+
+/**
+ * Build a `blend=all_expr` string for the transition between two clips.
+ *
+ * The blend filter takes two inputs:
+ *   Input 1 (A) = outgoing clip  (trim to exactly transitionDur, PTS from 0)
+ *   Input 2 (B) = incoming clip  (trim to exactly transitionDur, PTS from 0)
+ *
+ * `progress` is a 0→1 FFmpeg expression.  In blend, T = PTS of first input in seconds.
+ * When both inputs are trimmed to [0, transitionDur], progress = T / transitionDur.
+ *
+ * Corresponds to VideoContext GLSL (A = u_image_a = outgoing, B = u_image_b = incoming):
+ *  fade     → crossfade:   result = A*(1-p)+B*p               (CROSSFADE / DREAMFADE)
+ *  wipeleft → horizontal wipe, incoming reveals left→right     (HORIZONTAL_WIPE)
+ *  wipeup   → vertical wipe, incoming reveals top→bottom       (VERTICAL_WIPE)
+ *  radial   → 8-blade star wipe, exact GLSL triangle port      (STAR_WIPE)
+ *  dissolve → static noise dissolve matching VideoContext hash  (STATIC/RANDOM_DISSOLVE)
+ */
+function buildBlendExpr(effectType: string, progress: string): string {
+  switch (effectType) {
+    case 'wipeleft':
+      // GLSL: if(texCoord.x > mix) show A (outgoing) else show B (incoming)
+      return `if(lt(X/W,${progress}),B,A)`
+    case 'wiperight':
+      return `if(gt(X/W,1-${progress}),B,A)`
+    case 'wipeup':
+      // GLSL: if(texCoord.y > mix) show A else show B
+      return `if(lt(Y/H,${progress}),B,A)`
+    case 'wipedown':
+      return `if(gt(Y/H,1-${progress}),B,A)`
+    case 'radial': {
+      // 8-blade star wipe — direct translation of the VideoContext STAR_WIPE GLSL shader.
+      //
+      // GLSL: 8 isosceles triangles at 45° intervals, rotating around the frame centre.
+      // Each triangle (blade i) has vertices (relative to centre, scale = mix):
+      //   p0 = (0, +0.5m)   p1 = (0, -0.5m)   p2 = (2m, 0)
+      //
+      // Pixel (dx,dy) is inside blade i if (after rotating by −α_i):
+      //   rx = dx·cos(α_i) + dy·sin(α_i)
+      //   ry = −dx·sin(α_i) + dy·cos(α_i)
+      //   rx > 0  AND  p > rx/2 + 2·|ry|
+      // (derived from the GLSL sign()/pointInTriangle() cross-product test)
+      //
+      // Special cases (from GLSL): p < 0.01 → show outgoing (A), p > 0.99 → show incoming (B)
+      const dx = '(X/W-0.5)'
+      const dy = '(Y/H-0.5)'
+      const p = progress
+      // cos(π/4)/2 ≈ 0.3536,  2·sin(π/4) ≈ 1.4142
+      const blades = [
+        // i=0  α=0      cos=1,      sin=0
+        `gt(${dx},0)*gt(${p},${dx}/2+2*abs(${dy}))`,
+        // i=1  α=π/4    cos=0.7071, sin=0.7071
+        `gt(${dx}+${dy},0)*gt(${p},(${dx}+${dy})*0.3536+1.4142*abs(${dy}-${dx}))`,
+        // i=2  α=π/2    cos=0,      sin=1
+        `gt(${dy},0)*gt(${p},${dy}/2+2*abs(${dx}))`,
+        // i=3  α=3π/4   cos=-0.7071,sin=0.7071
+        `gt(${dy}-${dx},0)*gt(${p},(${dy}-${dx})*0.3536+1.4142*abs(${dy}+${dx}))`,
+        // i=4  α=π      cos=-1,     sin=0
+        `gt(-(${dx}),0)*gt(${p},-(${dx})/2+2*abs(${dy}))`,
+        // i=5  α=5π/4   cos=-0.7071,sin=-0.7071
+        `gt(-(${dx}+${dy}),0)*gt(${p},-(${dx}+${dy})*0.3536+1.4142*abs(${dx}-${dy}))`,
+        // i=6  α=3π/2   cos=0,      sin=-1
+        `gt(-(${dy}),0)*gt(${p},-(${dy})/2+2*abs(${dx}))`,
+        // i=7  α=7π/4   cos=0.7071, sin=-0.7071
+        `gt(${dx}-${dy},0)*gt(${p},(${dx}-${dy})*0.3536+1.4142*abs(${dx}+${dy}))`,
+      ]
+      return `if(gt(${p},0.99),B,if(lt(${p},0.01),A,if(gt(${blades.join('+')},0),B,A)))`
+    }
+    case 'dissolve':
+      // Matches VideoContext RANDOM_DISSOLVE rand() hash shader
+      return `if(lte(frac(sin(X/W*12.9898+Y/H*78.233)*43758.5453),${progress}),B,A)`
+    case 'fade':
+    default:
+      // CROSSFADE GLSL: color_a*(1-mix) + color_b*mix
+      return `A*(1-${progress})+B*${progress}`
+  }
+}
 
 const uploadDir = process.env.UPLOAD_DIR || './uploads'
 const outputDir = path.join(uploadDir, 'output')
@@ -310,13 +403,6 @@ async function processComposite(job: Job, processor: VideoProcessor): Promise<an
   })
 }
 
-interface VideoSlot {
-  sourceUrl: string
-  startMs: number
-  endMs: number
-  fromMs: number
-  toMs: number
-}
 
 interface AudioSlot {
   sourceUrl: string
@@ -332,36 +418,10 @@ function msToSec(ms: number): string {
   return (ms / 1000).toFixed(3)
 }
 
-function normalizeVideoSlots(trackInfo: ITrackInfo): VideoSlot[] {
-  const slots: VideoSlot[] = []
-  const videoTracks = trackInfo.tracks.filter((track) => track.trackType === MATERIAL_TYPE.VIDEO && !track.hide)
-
-  videoTracks.forEach((track) => {
-    track.children.forEach((item) => {
-      const videoItem = item as IVideoTrackItem
-      if (videoItem.hide || !videoItem.url) return
-
-      const slotStartMs = Math.max(0, videoItem.startTime)
-      const slotEndMs = Math.max(slotStartMs, videoItem.endTime)
-      const sourceFromMs = Math.max(0, videoItem.fromTime ?? 0)
-      const sourceToMs = Math.max(sourceFromMs, videoItem.toTime ?? sourceFromMs + (slotEndMs - slotStartMs))
-      const slotDurationMs = slotEndMs - slotStartMs
-      const sourceDurationMs = sourceToMs - sourceFromMs
-      const actualDurationMs = Math.min(slotDurationMs, sourceDurationMs)
-
-      if (actualDurationMs <= 0) return
-
-      slots.push({
-        sourceUrl: videoItem.url,
-        startMs: slotStartMs,
-        endMs: slotStartMs + actualDurationMs,
-        fromMs: sourceFromMs,
-        toMs: sourceFromMs + actualDurationMs
-      })
-    })
-  })
-
-  return slots.sort((a, b) => a.startMs - b.startMs)
+function itemInputIdx(item: IVideoTrackItem, map: Map<string, number>): number {
+  const idx = map.get(item.id)
+  if (idx === undefined) throw new Error(`Video item ${item.id} not found in input map`)
+  return idx
 }
 
 function normalizeAudioSlots(trackInfo: ITrackInfo): AudioSlot[] {
@@ -407,41 +467,161 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
   const durationMs = Math.max(1, Math.floor(trackInfo.duration || 10000))
   const durationSec = msToSec(durationMs)
   const fps = Math.max(1, Math.floor(trackInfo.fps || 25))
-  const videoSlots = normalizeVideoSlots(trackInfo)
   const audioSlots = normalizeAudioSlots(trackInfo)
 
-  if (videoSlots.length === 0) {
+  // Collect all video items per track (preserving track adjacency for transition detection)
+  const videoTracks = trackInfo.tracks.filter(
+    (t) => t.trackType === MATERIAL_TYPE.VIDEO && !t.hide
+  )
+  const allVideoItems: IVideoTrackItem[] = []
+  videoTracks.forEach((track) => {
+    const items = (track.children as IVideoTrackItem[]).filter((item) => !item.hide && !!item.url)
+    allVideoItems.push(...items)
+  })
+
+  if (allVideoItems.length === 0) {
     throw new Error('当前未找到可导出的有效视频轨道片段')
   }
 
+  // Build ffmpeg command: all video inputs first, then audio inputs
   let command = ffmpeg()
-  videoSlots.forEach((slot) => {
-    command = command.input(slot.sourceUrl)
-  })
-  // 添加音频输入（视频输入之后）
-  audioSlots.forEach((slot) => {
-    command = command.input(slot.sourceUrl)
-  })
+  allVideoItems.forEach((item) => { command = command.input(item.url!) })
+  audioSlots.forEach((slot) => { command = command.input(slot.sourceUrl) })
+
+  // Map each item to its ffmpeg input index
+  const itemToInputIdx = new Map(allVideoItems.map((item, i) => [item.id, i]))
 
   const filters: string[] = []
   filters.push(`color=c=black:s=${width}x${height}:d=${durationSec}[base]`)
 
-  videoSlots.forEach((slot, inputIndex) => {
-    filters.push(
-      `[${inputIndex}:v]trim=start=${msToSec(slot.fromMs)}:end=${msToSec(slot.toMs)},` +
-      `setpts=PTS-STARTPTS+${msToSec(slot.startMs)}/TB,scale=${width}:${height},setsar=1[v${inputIndex}]`
-    )
+  const overlaySegments: { label: string; startMs: number }[] = []
+  const consumed = new Set<string>() // item IDs already handled as part of a transition pair
+
+  videoTracks.forEach((track) => {
+    const items = (track.children as IVideoTrackItem[])
+      .filter((item) => !item.hide && !!item.url)
+      .sort((a, b) => a.startTime - b.startTime)
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      if (consumed.has(item.id)) continue
+
+      const iIdx = itemInputIdx(item, itemToInputIdx)
+      const nextItem = i + 1 < items.length ? items[i + 1] : null
+      const resolved = nextItem ? resolveTransitionBetweenItems(item, nextItem) : null
+
+      if (resolved && nextItem && !consumed.has(nextItem.id)) {
+        // ── Transition pair: blend filter approach ─────────────────────────
+        //
+        //  Strategy: split the clip pair into three timeline segments:
+        //    1. clip1 pre-transition  (clip1 playing normally before the overlap window)
+        //    2. blend segment         (FFmpeg `blend` merges clip1 tail + clip2 head
+        //                              using the GLSL-equivalent per-pixel expression)
+        //    3. clip2 post-transition (clip2 playing normally after the overlap window)
+        //
+        //  blend=all_expr directly returns pixel values from either A (outgoing)
+        //  or B (incoming) — no alpha channel / no overlay alpha compositing needed,
+        //  which makes this work reliably across all FFmpeg builds.
+
+        const jIdx = itemInputIdx(nextItem, itemToInputIdx)
+
+        const prevSrcStart  = item.fromTime / 1000
+        const prevSrcEnd    = item.toTime   / 1000
+        const prevTlStart   = item.startTime / 1000
+
+        const nextSrcStart  = nextItem.fromTime / 1000
+        const nextSrcEnd    = nextItem.toTime   / 1000
+
+        const overlapStart  = nextItem.startTime / 1000   // = transition window start (timeline)
+        const transitionDur = resolved.transition.duration / 1000
+        const overlapEnd    = overlapStart + transitionDur
+
+        const effectType    = getEffectType(resolved.transition.effectId)
+
+        // Source offset into clip1 where the transition begins
+        const prevTrSrcStart  = prevSrcStart + (overlapStart - prevTlStart)
+        const prevTrSrcEnd    = Math.min(prevSrcEnd, prevTrSrcStart + transitionDur)
+        const actualTrDur     = prevTrSrcEnd - prevTrSrcStart  // may be < transitionDur
+
+        // ── 1. clip1 pre-transition (before the overlap) ─────────────────
+        if (prevTrSrcStart > prevSrcStart) {
+          const lblPre = `vp${iIdx}`
+          filters.push(
+            `[${iIdx}:v]trim=start=${prevSrcStart.toFixed(3)}:end=${prevTrSrcStart.toFixed(3)},` +
+            `setpts=PTS-STARTPTS+${prevTlStart.toFixed(3)}/TB,` +
+            `fps=${fps},scale=${width}:${height},setsar=1[${lblPre}]`
+          )
+          overlaySegments.push({ label: lblPre, startMs: item.startTime })
+        }
+
+        // ── 2. blend segment (both clips trimmed to [0, actualTrDur], PTS from 0) ──
+        const lblTrA = `ta${iIdx}`
+        const lblTrB = `tb${jIdx}`
+        const lblTrOut = `tm${iIdx}`
+
+        filters.push(
+          `[${iIdx}:v]trim=start=${prevTrSrcStart.toFixed(3)}:end=${prevTrSrcEnd.toFixed(3)},` +
+          `setpts=PTS-STARTPTS,fps=${fps},scale=${width}:${height},setsar=1[${lblTrA}]`
+        )
+
+        const nextTrSrcEnd = nextSrcStart + actualTrDur
+        filters.push(
+          `[${jIdx}:v]trim=start=${nextSrcStart.toFixed(3)}:end=${nextTrSrcEnd.toFixed(3)},` +
+          `setpts=PTS-STARTPTS,fps=${fps},scale=${width}:${height},setsar=1[${lblTrB}]`
+        )
+
+        // In blend: T = PTS of first input (0 → actualTrDur), so progress = T / actualTrDur
+        const progress  = `min(1,max(0,T/${actualTrDur.toFixed(3)}))`
+        const blendExpr = buildBlendExpr(effectType, progress)
+        filters.push(
+          `[${lblTrA}][${lblTrB}]blend=all_expr='${blendExpr}',` +
+          `setpts=PTS+${overlapStart.toFixed(3)}/TB[${lblTrOut}]`
+        )
+        overlaySegments.push({ label: lblTrOut, startMs: overlapStart * 1000 })
+
+        // ── 3. clip2 post-transition (after the overlap) ──────────────────
+        const nextPostSrcStart = nextSrcStart + actualTrDur
+        if (nextPostSrcStart < nextSrcEnd) {
+          const lblPost = `vq${jIdx}`
+          filters.push(
+            `[${jIdx}:v]trim=start=${nextPostSrcStart.toFixed(3)}:end=${nextSrcEnd.toFixed(3)},` +
+            `setpts=PTS-STARTPTS+${overlapEnd.toFixed(3)}/TB,` +
+            `fps=${fps},scale=${width}:${height},setsar=1[${lblPost}]`
+          )
+          overlaySegments.push({ label: lblPost, startMs: overlapEnd * 1000 })
+        }
+
+        consumed.add(nextItem.id)
+      } else {
+        // ── Standalone clip: plain trim + time-shift ───────────────────────
+        const srcStart = item.fromTime / 1000
+        const srcEnd   = item.toTime   / 1000
+        const tlStart  = item.startTime / 1000
+        const lblV     = `vs${iIdx}`
+
+        filters.push(
+          `[${iIdx}:v]trim=start=${srcStart.toFixed(3)}:end=${srcEnd.toFixed(3)},` +
+          `setpts=PTS-STARTPTS+${tlStart.toFixed(3)}/TB,` +
+          `fps=${fps},scale=${width}:${height},setsar=1[${lblV}]`
+        )
+
+        overlaySegments.push({ label: lblV, startMs: item.startTime })
+      }
+    }
   })
 
+  // Sort segments by timeline start, then build the overlay chain.
+  // All segments are plain YUV — blend outputs are already composited, no alpha needed.
+  overlaySegments.sort((a, b) => a.startMs - b.startMs)
   let currentVideoLabel = '[base]'
-  videoSlots.forEach((_, index) => {
-    const nextLabel = index === videoSlots.length - 1 ? '[vout]' : `[vo${index}]`
-    filters.push(`${currentVideoLabel}[v${index}]overlay=eof_action=pass:shortest=0${nextLabel}`)
+  overlaySegments.forEach(({ label }, index) => {
+    const nextLabel = index === overlaySegments.length - 1 ? '[vout]' : `[vo${index}]`
+    filters.push(`${currentVideoLabel}[${label}]overlay=eof_action=pass:shortest=0${nextLabel}`)
     currentVideoLabel = nextLabel
   })
 
   // 处理背景音频轨道
-  const videoInputCount = videoSlots.length
+  const videoInputCount = allVideoItems.length
   const audioOutLabels: string[] = []
 
   audioSlots.forEach((slot, i) => {
@@ -481,8 +661,6 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
     hasAudio = true
   }
 
-  command = command.complexFilter(filters)
-
   const outputOptions = [
     '-map', '[vout]',
     ...(hasAudio ? ['-map', '[aout]'] : []),
@@ -496,10 +674,19 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
     ...(hasAudio ? ['-c:a', 'aac', '-b:a', '192k'] : ['-an'])
   ]
 
-  command = command.output(outputPath).outputOptions(outputOptions)
+  command = command.complexFilter(filters).output(outputPath).outputOptions(outputOptions)
+
+  const filterStr = filters.join(';\n  ')
+  console.log('[composite] complex filter:\n  ' + filterStr)
 
   command.on('start', (commandLine) => {
-    console.log('FFmpeg 命令:', commandLine)
+    console.log('[composite] ffmpeg command:', commandLine)
+  })
+  command.on('stderr', (line: string) => {
+    // Only log actual errors, not the normal progress lines
+    if (/Error|Invalid|Cannot|No such|failed|undefined/i.test(line)) {
+      console.error('[composite] ffmpeg stderr:', line)
+    }
   })
 
   return command
