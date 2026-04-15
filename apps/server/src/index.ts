@@ -9,6 +9,8 @@ import { jobRouter } from './routes/job.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { graphRouter } from './routes/graph.js'
 import { projectRouter } from './routes/project.js'
+import { materialRouter } from './routes/material.js'
+import { audioRouter } from './routes/audio.js'
 
 dotenv.config()
 
@@ -38,6 +40,8 @@ app.use('/api/video', videoRouter)
 app.use('/api/job', jobRouter)
 app.use('/api/graph', graphRouter)  // 合成视频
 app.use('/api/project', projectRouter)  // 项目管理
+app.use('/api/material', materialRouter) // 素材管理
+app.use('/api/audio', audioRouter)      // 音频管理
 
 
 

@@ -1,0 +1,175 @@
+.material-editor {
+  flex: 2;
+  min-width: 180px;
+  height: 100%;
+  background: var(--color-surface-container);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &--empty {
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__empty-hint {
+    font-size: var(--font-size-sm);
+    color: var(--color-on-surface-muted);
+    text-align: center;
+    padding: var(--spacing-8);
+    line-height: var(--line-height-loose);
+  }
+
+  &__header {
+    padding: 0 var(--spacing-4);
+    height: 40px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-on-surface);
+  }
+
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-4);
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Section title acts like a group header
+  &__section-title {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-on-surface-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: var(--spacing-3) 0 var(--spacing-1);
+    margin-top: var(--spacing-2);
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  // Horizontal field row: label left, control right
+  // Negative horizontal margins let the hover bg extend to panel edges
+  // while content stays inset by the body's 16px padding.
+  &__field-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    margin: 0 calc(-1 * var(--spacing-4));
+    min-height: 32px;
+    border-radius: var(--radius-sm);
+
+    &:hover {
+      background: var(--color-surface-container-high);
+    }
+  }
+
+  &__field-label {
+    flex-shrink: 0;
+    width: 68px;
+    font-size: var(--font-size-xs);
+    color: var(--color-on-surface-variant);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__field-control {
+    flex: 1;
+    min-width: 0;
+
+    // Slider needs extra vertical space
+    .ant-slider {
+      margin: 4px 0;
+    }
+
+    // Ant Design overrides for dark theme
+    :global {
+      .ant-input,
+      .ant-input-number,
+      .ant-input-number-input,
+      .ant-select-selector {
+        background: transparent !important;
+        border-color: var(--color-border) !important;
+        color: var(--color-on-surface) !important;
+        font-size: var(--font-size-sm) !important;
+      }
+
+      .ant-input-number {
+        background: var(--color-surface-container-high) !important;
+      }
+
+      .ant-select-selector {
+        background: var(--color-surface-container-high) !important;
+      }
+
+      .ant-input {
+        background: var(--color-surface-container-high) !important;
+      }
+
+      .ant-input-affix-wrapper {
+        background: var(--color-surface-container-high) !important;
+        border-color: var(--color-border) !important;
+      }
+
+      .ant-slider-rail {
+        background: var(--color-surface-container-high);
+      }
+
+      .ant-slider-track {
+        background: var(--color-primary-container);
+      }
+
+      .ant-slider-handle::after {
+        box-shadow: 0 0 0 2px var(--color-primary-container) !important;
+      }
+
+      .ant-switch {
+        background: var(--color-surface-container-high);
+
+        &.ant-switch-checked {
+          background: var(--color-primary-container);
+        }
+      }
+    }
+  }
+
+  &__color-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+  }
+
+  &__color-input {
+    width: 28px;
+    height: 22px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  &__color-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-on-surface-variant);
+    font-family: var(--font-mono);
+  }
+}

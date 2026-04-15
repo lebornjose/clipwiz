@@ -84,6 +84,7 @@ export const convertTrackInfoToTimelineRow = (trackInfo: ITrackInfo): CustomTime
             ...(child as any),
             _transitionMeta: transitionMeta,
             _transitionSide: transitionSide,
+            _trackId: item.trackId,
           } satisfies TimelineVideoActionData,
         }
       }),

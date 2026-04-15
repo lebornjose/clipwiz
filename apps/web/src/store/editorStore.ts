@@ -7,19 +7,24 @@ interface EditorState {
   /** Incremented each time trackInfo is committed (drag end / delete / load). VideoPlayer watches this. */
   trackInfoVersion: number
   selectedActionId: string | null
+  selectedTrackId: string | null
   selectedTransitionKey: string | null
 
   setTrackInfo: (info: ITrackInfo) => void
   setSelectedActionId: (id: string | null) => void
+  setSelectedAction: (trackId: string, actionId: string) => void
   setSelectedTransitionKey: (key: string | null) => void
   deleteSelectedAction: () => void
   deleteSelectedTransition: () => void
+  updateTrackItemById: (id: string, patch: Record<string, any>) => void
+  updateSelectedTransition: (patch: Record<string, any>) => void
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
   trackInfo: null,
   trackInfoVersion: 0,
   selectedActionId: null,
+  selectedTrackId: null,
   selectedTransitionKey: null,
 
   setTrackInfo: (info) =>
@@ -28,9 +33,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       trackInfoVersion: state.trackInfoVersion + 1,
     })),
 
-  setSelectedActionId: (id) => set({ selectedActionId: id, selectedTransitionKey: null }),
+  setSelectedActionId: (id) => set({ selectedActionId: id, selectedTrackId: null, selectedTransitionKey: null }),
 
-  setSelectedTransitionKey: (key) => set({ selectedTransitionKey: key, selectedActionId: null }),
+  setSelectedAction: (trackId, actionId) => set({ selectedActionId: actionId, selectedTrackId: trackId, selectedTransitionKey: null }),
+
+  setSelectedTransitionKey: (key) => set({ selectedTransitionKey: key, selectedActionId: null, selectedTrackId: null }),
 
   deleteSelectedAction: () => {
     const { trackInfo, selectedActionId } = get()
@@ -90,5 +97,44 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       trackInfoVersion: state.trackInfoVersion + 1,
       selectedTransitionKey: null,
     }))
+  },
+
+  updateTrackItemById: (id, patch) => {
+    const { trackInfo } = get()
+    if (!trackInfo) return
+    const newTracks = trackInfo.tracks.map((track) => ({
+      ...track,
+      children: (track.children as any[]).map((child) =>
+        child.id === id ? { ...child, ...patch } : child
+      ),
+    }))
+    set({ trackInfo: { ...trackInfo, tracks: newTracks as ITrackInfo['tracks'] } })
+  },
+
+  updateSelectedTransition: (patch) => {
+    const { trackInfo, selectedTransitionKey } = get()
+    if (!trackInfo || !selectedTransitionKey) return
+    const newTracks = trackInfo.tracks.map((track) => {
+      if (track.trackType !== MATERIAL_TYPE.VIDEO) return track
+      const children = (track.children as IVideoTrackItem[]).map((child) => {
+        const updated = { ...child }
+        if (child.transitionOut) {
+          const key = resolveTransitionBetweenItems(child, child)?.key ??
+            [...(child.transitionOut.layerList || [])].sort().join('_')
+          if (key === selectedTransitionKey) {
+            updated.transitionOut = { ...child.transitionOut, ...patch }
+          }
+        }
+        if (child.transitionIn) {
+          const key = [...(child.transitionIn.layerList || [])].sort().join('_')
+          if (key === selectedTransitionKey) {
+            updated.transitionIn = { ...child.transitionIn, ...patch }
+          }
+        }
+        return updated
+      })
+      return { ...track, children }
+    })
+    set({ trackInfo: { ...trackInfo, tracks: newTracks as ITrackInfo['tracks'] } })
   },
 }))
