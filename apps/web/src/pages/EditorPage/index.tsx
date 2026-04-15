@@ -10,6 +10,7 @@ import {
 import LeftCon from '../../components/leftCon'
 import TimeLine from '../../components/timeLine'
 import VideoPlayer from '../../components/videoPlayer'
+import MaterialEditor from '../../components/materialEditor'
 import { POST, GET, PUT, downloadFile } from '../../utils'
 import { useEditorStore } from '../../store/editorStore'
 import { useShortcuts } from '../../hooks/useShortcuts'
@@ -220,6 +221,7 @@ export default function EditorPage() {
       >
         <LeftCon />
         <VideoPlayer />
+        <MaterialEditor />
       </Layout>
 
       <div

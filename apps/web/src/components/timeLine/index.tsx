@@ -50,8 +50,8 @@ const TimeLine = () => {
     trackInfo,
     trackInfoVersion,
     setTrackInfo,
-    selectedActionId,
     setSelectedActionId,
+    setSelectedAction,
     selectedTransitionKey,
     setSelectedTransitionKey,
   } = useEditorStore();
@@ -65,6 +65,41 @@ const TimeLine = () => {
     if (!trackInfo) return;
     setEditorData(convertTrackInfoToTimelineRow(trackInfo));
   }, [trackInfoVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const timelineContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // DOM event delegation: click on .timeline-editor-action -> add active class
+  useEffect(() => {
+    const container = timelineContainerRef.current;
+    if (!container) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const actionEl = target.closest('.timeline-editor-action') as HTMLElement | null;
+
+      // Remove old active
+      container.querySelectorAll('.timeline-editor-action--active').forEach((el) => {
+        el.classList.remove('timeline-editor-action--active');
+      });
+
+      if (actionEl) {
+        actionEl.classList.add('timeline-editor-action--active');
+        const actionContent = actionEl.querySelector('[data-action-id]') as HTMLElement | null;
+        const actionId = actionContent?.dataset.actionId;
+        const trackId = actionContent?.dataset.trackId;
+        if (actionId && trackId) {
+          setSelectedAction(trackId, actionId);
+        } else if (actionId) {
+          setSelectedActionId(actionId);
+        }
+      } else {
+        setSelectedActionId(null);
+      }
+    };
+
+    container.addEventListener('click', handleClick);
+    return () => container.removeEventListener('click', handleClick);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Timeline engine event wiring
   useEffect(() => {
@@ -146,15 +181,8 @@ const TimeLine = () => {
 
   return (
     <div
+      ref={timelineContainerRef}
       className="time-line"
-      onClick={(e) => {
-        // Clear selection when clicking the bare timeline background (not an action)
-        const target = e.target as HTMLElement
-        if (!target.closest('.timeline-editor-action')) {
-          setSelectedActionId(null)
-          setSelectedTransitionKey(null)
-        }
-      }}
     >
       <div
         ref={domRef}
@@ -218,15 +246,8 @@ const TimeLine = () => {
           setEditorData(updated);
           commitToStore(updated, true);
         }}
-        onClickAction={(_e, { action }) => {
-          setSelectedActionId(action.id);
-          setSelectedTransitionKey(null);
-        }}
-        onClickRow={(_e, { row: _row }) => {
-          // Only clear when clicking truly empty row area (not on an action).
-          // Because the library fires onClickRow even when an action is clicked
-          // (event bubbles), we clear selection via the timeline container instead.
-        }}
+        onClickAction={undefined}
+        onClickRow={undefined}
         getActionRender={(action) => {
           const trackItem = (action as CustomTimelineAction).data as
             | IVideoTrackItem
@@ -234,12 +255,13 @@ const TimeLine = () => {
             | IPhotoTrackItem
             | null;
           const effectId = action.effectId as string;
-          const isSelected = action.id === selectedActionId;
-          const selCls = isSelected ? 'action-content--selected' : '';
+
+          const trackId = ((action as CustomTimelineAction).data as any)?._trackId as string | undefined;
+          const actionAttrs = { 'data-action-id': action.id, 'data-track-id': trackId };
 
           const renderers: Record<string, () => React.ReactNode> = {
             [MATERIAL_TYPE.VIDEO]: () => (
-              <div className={`action-content ${selCls}`}>
+              <div className="action-content" {...actionAttrs}>
                 <VideoTrackImg
                   videoTrackItem={trackItem as IVideoTrackItem}
                   selectedTransitionKey={selectedTransitionKey}
@@ -248,31 +270,31 @@ const TimeLine = () => {
               </div>
             ),
             [MATERIAL_TYPE.BGM_AUDIO]: () => (
-              <div className={`effect-item-audio action-content ${selCls}`}>
+              <div className="effect-item-audio action-content" {...actionAttrs}>
                 <AudioOutlined />
                 {(trackItem as IAudioTrackItem)?.title}
               </div>
             ),
             [MATERIAL_TYPE.PHOTO]: () => (
-              <div className={`effect-item-photo action-content ${selCls}`}>
+              <div className="effect-item-photo action-content" {...actionAttrs}>
                 <FileImageOutlined />
                 {(trackItem as IPhotoTrackItem)?.desc || '图片'}
               </div>
             ),
             [MATERIAL_TYPE.SUBTITLE]: () => (
-              <div className={`effect-item-subtitle action-content ${selCls}`}>
+              <div className="effect-item-subtitle action-content" {...actionAttrs}>
                 <FileTextOutlined />
                 {(trackItem as unknown as ISubtitleTrackItem)?.text || '字幕'}
               </div>
             ),
             [MATERIAL_TYPE.TEXT]: () => (
-              <div className={`effect-item-text action-content ${selCls}`}>
+              <div className="effect-item-text action-content" {...actionAttrs}>
                 <FontSizeOutlined />
                 {(trackItem as unknown as ITextTrackItem)?.text || '文本'}
               </div>
             ),
             [MATERIAL_TYPE.FILTER]: () => (
-              <div className={`effect-item-filter action-content ${selCls}`}>
+              <div className="effect-item-filter action-content" {...actionAttrs}>
                 <FilterOutlined />
                 {(trackItem as unknown as IFilterTrackItem)?.name || '滤镜'}
               </div>

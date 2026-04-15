@@ -22,7 +22,6 @@ const LeftCon = () => {
     <div className='left-con'>
       <Tabs
         defaultActiveKey="1"
-        centered
         items={items}
         indicator={{ size: 0 }}
         size="small"
