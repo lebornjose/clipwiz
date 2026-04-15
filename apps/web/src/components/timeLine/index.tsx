@@ -1,17 +1,29 @@
-
-import { Timeline, TimelineState, TimelineEngine } from '@xzdarcy/react-timeline-editor';
-import { VideoCameraOutlined, AudioOutlined, FileImageOutlined, FileTextOutlined, FontSizeOutlined, FilterOutlined} from '@ant-design/icons';
-import { MATERIAL_TYPE, IVideoTrackItem, IAudioTrackItem, IPhotoTrackItem, ISubtitleTrackItem, ITextTrackItem, IFilterTrackItem } from '@clipwiz/shared';
-import { convertTrackInfoToTimelineRow } from './convert';
+import { Timeline, TimelineState } from '@xzdarcy/react-timeline-editor';
+import {
+  VideoCameraOutlined,
+  AudioOutlined,
+  FileImageOutlined,
+  FileTextOutlined,
+  FontSizeOutlined,
+  FilterOutlined,
+} from '@ant-design/icons';
+import {
+  MATERIAL_TYPE,
+  IVideoTrackItem,
+  IAudioTrackItem,
+  IPhotoTrackItem,
+  ISubtitleTrackItem,
+  ITextTrackItem,
+  IFilterTrackItem,
+} from '@clipwiz/shared';
+import { convertTrackInfoToTimelineRow, convertTimelineRowsToTrackInfo } from './convert';
 import './index.less';
-import { CustomTimelineAction, CustomTimelineRow } from './mock';
-import { mockEffect } from './mock';
+import { CustomTimelineAction, CustomTimelineRow, mockEffect } from './mock';
 import { useRef, useState, useEffect } from 'react';
-import trackInfo from '../../mock'
 import { VideoTrackImg } from './videoTrackImg';
 import { eventBus } from '../../utils';
+import { useEditorStore } from '../../store/editorStore';
 
-// 轨道类型到图标的映射
 const TRACK_TYPE_ICON_MAP: Record<string, React.ReactNode> = {
   [MATERIAL_TYPE.VIDEO]: <VideoCameraOutlined />,
   [MATERIAL_TYPE.BGM_AUDIO]: <AudioOutlined />,
@@ -21,7 +33,6 @@ const TRACK_TYPE_ICON_MAP: Record<string, React.ReactNode> = {
   [MATERIAL_TYPE.FILTER]: <FilterOutlined />,
 };
 
-// 轨道类型到样式类名的映射
 const TRACK_TYPE_CLASS_MAP: Record<string, string> = {
   [MATERIAL_TYPE.VIDEO]: 'video-item',
   [MATERIAL_TYPE.BGM_AUDIO]: 'bgm-item',
@@ -29,120 +40,250 @@ const TRACK_TYPE_CLASS_MAP: Record<string, string> = {
   [MATERIAL_TYPE.SUBTITLE]: 'subtitle-item',
   [MATERIAL_TYPE.TEXT]: 'text-item',
   [MATERIAL_TYPE.FILTER]: 'filter-item',
-} as const;
+};
 
 const TimeLine = () => {
   const timelineState = useRef<TimelineState | null>(null);
   const domRef = useRef<HTMLDivElement | null>(null);
-  const listData = convertTrackInfoToTimelineRow(trackInfo);
-  const [editorData, setEditorData] = useState<CustomTimelineRow[]>(listData);
 
+  const {
+    trackInfo,
+    trackInfoVersion,
+    setTrackInfo,
+    selectedActionId,
+    setSelectedActionId,
+    selectedTransitionKey,
+    setSelectedTransitionKey,
+  } = useEditorStore();
+
+  const [editorData, setEditorData] = useState<CustomTimelineRow[]>(() =>
+    trackInfo ? convertTrackInfoToTimelineRow(trackInfo) : []
+  );
+
+  // Re-derive editorData whenever the committed protocol changes (load / delete / external update)
   useEffect(() => {
+    if (!trackInfo) return;
+    setEditorData(convertTrackInfoToTimelineRow(trackInfo));
+  }, [trackInfoVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    eventBus.on('video:pause', (time: number) => {
-      timelineState.current?.pause();
-    });
-    eventBus.on('video:play', () => {
-      const endTime = trackInfo.duration / 1000
-      timelineState.current?.play({ endTime });
-    });
-    eventBus.on('video:seek', (time: number) => {
-      timelineState.current?.setTime(time);
-    })
+  // Timeline engine event wiring
+  useEffect(() => {
+    const onPause = () => timelineState.current?.pause();
+    const onPlay = () => {
+      if (!trackInfo) return;
+      timelineState.current?.play({ endTime: trackInfo.duration / 1000 } as any);
+    };
+    const onSeek = (time: number) => timelineState.current?.setTime(time);
 
-    if (!timelineState.current) return;
-    const { listener } = timelineState.current;
-    listener.on('afterSetTime', ({ time }) => {
-      console.log('time', time);
-      eventBus.emit('time:update', time);
+    eventBus.on('video:pause', onPause);
+    eventBus.on('video:play', onPlay);
+    eventBus.on('video:seek', onSeek);
+
+    if (timelineState.current) {
+      timelineState.current.listener.on('afterSetTime', ({ time }: { time: number }) => {
+        eventBus.emit('time:update', time);
+      });
+    }
+
+    return () => {
+      eventBus.off('video:pause', onPause);
+      eventBus.off('video:play', onPlay);
+      eventBus.off('video:seek', onSeek);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const commitToStore = (rows: CustomTimelineRow[], clearVideoTransitions = false) => {
+    if (!trackInfo) return;
+    const newInfo = convertTimelineRowsToTrackInfo(rows, trackInfo);
+    if (!clearVideoTransitions) {
+      setTrackInfo(newInfo);
+      return;
+    }
+    setTrackInfo({
+      ...newInfo,
+      tracks: newInfo.tracks.map((track) => {
+        if (track.trackType !== MATERIAL_TYPE.VIDEO) return track;
+        return {
+          ...track,
+          children: (track.children as IVideoTrackItem[]).map((child) => ({
+            ...child,
+            transitionIn: undefined,
+            transitionOut: undefined,
+          })),
+        };
+      }) as typeof newInfo.tracks,
     });
-  }, []);
+  };
+
+  /**
+   * After a video clip is moved or resized, sort all clips by start time and
+   * close every gap/overlap so that clip[i].end === clip[i+1].start for all i.
+   * Each clip's duration is preserved; only its position shifts.
+   * The first clip (leftmost) keeps its current start position as the anchor.
+   */
+  const normalizeVideoTrack = (
+    rows: CustomTimelineRow[],
+    changedRowId: string,
+  ): CustomTimelineRow[] => {
+    return rows.map((row) => {
+      if (row.id !== changedRowId) return row;
+      if (!row.actions.some((a) => a.effectId === MATERIAL_TYPE.VIDEO)) return row;
+
+      const sorted = [...row.actions].sort((a, b) => a.start - b.start);
+
+      for (let i = 1; i < sorted.length; i++) {
+        const prev = sorted[i - 1];
+        const curr = sorted[i];
+        const duration = curr.end - curr.start;
+        sorted[i] = { ...curr, start: prev.end, end: prev.end + duration };
+      }
+
+      return { ...row, actions: sorted };
+    });
+  };
+
+  if (!trackInfo) return null;
 
   return (
-    <div className="time-line">
-      <div ref={domRef}
-        style={{ overflow: 'overlay' }}
-        onScroll={(e) => {
-          const target = e.target as HTMLDivElement;
-          timelineState.current?.setScrollTop(target.scrollTop);
-        }}
-        className={'timeline-list'}
-      >
-        {
-          trackInfo.tracks.map((item) => {
-            const trackType = item.trackType as MATERIAL_TYPE;
-            return (
-              <div
-                key={item.trackId}
-                className={`timeline-list-item ${TRACK_TYPE_CLASS_MAP[trackType as keyof typeof TRACK_TYPE_CLASS_MAP] || ''}`}
-              >
-                {TRACK_TYPE_ICON_MAP[trackType as keyof typeof TRACK_TYPE_ICON_MAP] || null}
-              </div>
-            )
-          })
+    <div
+      className="time-line"
+      onClick={(e) => {
+        // Clear selection when clicking the bare timeline background (not an action)
+        const target = e.target as HTMLElement
+        if (!target.closest('.timeline-editor-action')) {
+          setSelectedActionId(null)
+          setSelectedTransitionKey(null)
         }
+      }}
+    >
+      <div
+        ref={domRef}
+        style={{ overflow: 'overlay' as any }}
+        onScroll={(e) => {
+          timelineState.current?.setScrollTop((e.target as HTMLDivElement).scrollTop);
+        }}
+        className="timeline-list"
+      >
+        {trackInfo.tracks.map((item) => {
+          const trackType = item.trackType as MATERIAL_TYPE;
+          return (
+            <div
+              key={item.trackId}
+              className={`timeline-list-item ${TRACK_TYPE_CLASS_MAP[trackType] || ''}`}
+            >
+              {TRACK_TYPE_ICON_MAP[trackType] || null}
+            </div>
+          );
+        })}
       </div>
+
       <Timeline
         ref={timelineState}
         autoScroll={true}
-        style={{
-          width: '100%',
-          height: '400px',
-        }}
+        style={{ width: '100%', height: '400px' }}
         scale={1}
-        scaleSplitCount={25} // 25 帧视频
+        scaleSplitCount={25}
         editorData={editorData}
         effects={mockEffect}
         onChange={(data) => {
           setEditorData(data as CustomTimelineRow[]);
         }}
+        onActionMoveEnd={({ row, action, start, end }) => {
+          const patched = editorData.map((r) =>
+            r.id !== row.id
+              ? r
+              : {
+                  ...r,
+                  actions: r.actions.map((a) =>
+                    a.id !== action.id ? a : { ...a, start, end }
+                  ),
+                }
+          );
+          const updated = normalizeVideoTrack(patched, row.id);
+          setEditorData(updated);
+          commitToStore(updated, true);
+        }}
+        onActionResizeEnd={({ row, action, start, end }) => {
+          const patched = editorData.map((r) =>
+            r.id !== row.id
+              ? r
+              : {
+                  ...r,
+                  actions: r.actions.map((a) =>
+                    a.id !== action.id ? a : { ...a, start, end }
+                  ),
+                }
+          );
+          const updated = normalizeVideoTrack(patched, row.id);
+          setEditorData(updated);
+          commitToStore(updated, true);
+        }}
+        onClickAction={(_e, { action }) => {
+          setSelectedActionId(action.id);
+          setSelectedTransitionKey(null);
+        }}
+        onClickRow={(_e, { row: _row }) => {
+          // Only clear when clicking truly empty row area (not on an action).
+          // Because the library fires onClickRow even when an action is clicked
+          // (event bubbles), we clear selection via the timeline container instead.
+        }}
         getActionRender={(action) => {
-          const trackItem = (action as CustomTimelineAction).data as IVideoTrackItem | IAudioTrackItem | IPhotoTrackItem | null;
+          const trackItem = (action as CustomTimelineAction).data as
+            | IVideoTrackItem
+            | IAudioTrackItem
+            | IPhotoTrackItem
+            | null;
           const effectId = action.effectId as string;
+          const isSelected = action.id === selectedActionId;
+          const selCls = isSelected ? 'action-content--selected' : '';
 
-          // 使用对象映射来渲染不同类型的轨道
-          const actionRenderers: Record<string, () => React.ReactNode> = {
+          const renderers: Record<string, () => React.ReactNode> = {
             [MATERIAL_TYPE.VIDEO]: () => (
-              <VideoTrackImg key={action.id} videoTrackItem={trackItem as IVideoTrackItem} />
+              <div className={`action-content ${selCls}`}>
+                <VideoTrackImg
+                  videoTrackItem={trackItem as IVideoTrackItem}
+                  selectedTransitionKey={selectedTransitionKey}
+                  onTransitionClick={(key) => setSelectedTransitionKey(key)}
+                />
+              </div>
             ),
             [MATERIAL_TYPE.BGM_AUDIO]: () => (
-              <div key={action.id} className='effect-item-audio'>
+              <div className={`effect-item-audio action-content ${selCls}`}>
                 <AudioOutlined />
                 {(trackItem as IAudioTrackItem)?.title}
               </div>
             ),
             [MATERIAL_TYPE.PHOTO]: () => (
-              <div key={action.id} className='effect-item-photo'>
+              <div className={`effect-item-photo action-content ${selCls}`}>
                 <FileImageOutlined />
                 {(trackItem as IPhotoTrackItem)?.desc || '图片'}
               </div>
             ),
             [MATERIAL_TYPE.SUBTITLE]: () => (
-              <div key={action.id} className='effect-item-subtitle'>
+              <div className={`effect-item-subtitle action-content ${selCls}`}>
                 <FileTextOutlined />
                 {(trackItem as unknown as ISubtitleTrackItem)?.text || '字幕'}
               </div>
             ),
             [MATERIAL_TYPE.TEXT]: () => (
-              <div key={action.id} className='effect-item-text'>
+              <div className={`effect-item-text action-content ${selCls}`}>
                 <FontSizeOutlined />
                 {(trackItem as unknown as ITextTrackItem)?.text || '文本'}
               </div>
             ),
             [MATERIAL_TYPE.FILTER]: () => (
-              <div key={action.id} className='effect-item-filter'>
+              <div className={`effect-item-filter action-content ${selCls}`}>
                 <FilterOutlined />
                 {(trackItem as unknown as IFilterTrackItem)?.name || '滤镜'}
               </div>
             ),
           };
 
-          return actionRenderers[effectId]?.() || null;
+          return renderers[effectId]?.() || null;
         }}
       />
     </div>
-  )
-}
+  );
+};
 
-
-export default TimeLine
+export default TimeLine;

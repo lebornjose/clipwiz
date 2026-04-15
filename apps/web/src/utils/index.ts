@@ -1,3 +1,3 @@
 export { eventBus, default as EventBus } from './eventBus'
-export { POST } from './request'
+export { GET, POST, PUT, DELETE } from './request'
 export { downloadFile } from './downloadFile'

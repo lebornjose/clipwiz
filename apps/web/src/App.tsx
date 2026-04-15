@@ -1,128 +1,14 @@
-import { useState, useRef, useEffect } from 'react'
-import { Layout, Button, message } from 'antd'
-import { ScissorOutlined, DownloadOutlined } from '@ant-design/icons'
-import LeftCon from './components/leftCon'
-import TimeLine from './components/timeLine'
-import VideoPlayer from './components/videoPlayer'
-import { POST, downloadFile } from './utils'
-import trackInfo from './mock'
-import './App.css'
-
-const { Header } = Layout
+import { Routes, Route, Navigate } from 'react-router-dom'
+import HomePage from './pages/HomePage'
+import EditorPage from './pages/EditorPage'
 
 function App() {
-  const [timelineHeight, setTimelineHeight] = useState(300) // 默认时间轴高度
-  const [isDragging, setIsDragging] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const rafRef = useRef<number | null>(null)
-
-  // 处理拖动开始
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-    // 禁用文本选择
-    document.body.style.userSelect = 'none'
-  }
-
-  // 处理拖动
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging || !containerRef.current) return
-
-      // 使用 requestAnimationFrame 优化性能
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-      }
-
-      rafRef.current = requestAnimationFrame(() => {
-        if (!containerRef.current) return
-
-        const containerRect = containerRef.current.getBoundingClientRect()
-        const bottomPosition = containerRect.bottom
-        const newHeight = bottomPosition - e.clientY
-
-        // 限制最小和最大高度
-        const minHeight = 150
-        const maxHeight = containerRect.height - 300 // 预留至少 300px 给 VideoPlayer
-
-        if (newHeight >= minHeight && newHeight <= maxHeight) {
-          setTimelineHeight(newHeight)
-        }
-      })
-    }
-
-    const handleMouseUp = () => {
-      setIsDragging(false)
-      // 恢复文本选择
-      document.body.style.userSelect = ''
-      // 清理 RAF
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-        rafRef.current = null
-      }
-    }
-
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-      // 清理 RAF
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-      }
-    }
-  }, [isDragging])
-
-  const handleExportVideo = async () => {
-    const data = await POST('/api/graph', { trackInfo })
-    const url = data.data.downloadUrl;
-    downloadFile(url, 'exported-video.mp4')
-    message.success('导出视频成功')
-  }
-
   return (
-    <Layout style={{ minHeight: '100vh' }} ref={containerRef}>
-      <Header className='app-header'>
-        <div className='header-left'>
-          <ScissorOutlined />
-          ClipWiz 视频编辑器
-        </div>
-
-        <div className='header-right'>
-          <Button icon={<DownloadOutlined />} type="primary" size="small" onClick={() => handleExportVideo()}>
-            导出视频
-          </Button>
-        </div>
-      </Header>
-
-      <Layout
-        className={`app-layout ${isDragging ? 'dragging' : ''}`}
-        style={{
-          height: `calc(100vh - var(--layout-header-height) - ${timelineHeight}px)`,
-          overflow: 'hidden'
-        }}
-      >
-        <LeftCon />
-        <VideoPlayer />
-      </Layout>
-
-      {/* 可拖动的分隔条 */}
-      <div
-        className={`timeline-resizer ${isDragging ? 'dragging' : ''}`}
-        onMouseDown={handleMouseDown}
-      >
-        <div className="resizer-handle" />
-      </div>
-
-      {/* TimeLine 区域 */}
-      <div style={{ height: `${timelineHeight}px`, overflow: 'hidden' }}>
-        <TimeLine />
-      </div>
-    </Layout>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/editor/:id" element={<EditorPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
