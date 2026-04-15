@@ -3,6 +3,18 @@
   height: 100%;
 }
 
+.editor-page__title {
+  cursor: pointer;
+  color: var(--color-on-surface);
+  border-radius: var(--radius-sm);
+  padding: 2px var(--spacing-1);
+  transition: background var(--transition-fast);
+
+  &:hover {
+    background: var(--color-surface-container-high);
+  }
+}
+
 .app-header {
   display: flex;
   justify-content: space-between;

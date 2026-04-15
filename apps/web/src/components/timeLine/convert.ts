@@ -1,10 +1,45 @@
-import { ITrack, ITrackInfo, MATERIAL_TYPE, TrackItem, IVideoTrackItem, resolveTransitionBetweenItems, ResolvedTransition } from '@clipwiz/shared'
-import { TIME_CONFIG } from '@clipwiz/shared';
+import { ITrack, ITrackInfo, MATERIAL_TYPE, TrackItem, IVideoTrackItem, resolveTransitionBetweenItems, ResolvedTransition, TIME_CONFIG } from '@clipwiz/shared'
 import { CustomTimelineRow } from './mock';
 
 export type TimelineVideoActionData = IVideoTrackItem & {
   _transitionMeta?: ResolvedTransition | null
   _transitionSide?: 'left' | 'right' | null
+}
+
+/**
+ * Convert timeline editor rows back to ITrackInfo after drag/resize.
+ * Only startTime, endTime, and duration are updated; all other fields are preserved.
+ */
+export const convertTimelineRowsToTrackInfo = (
+  rows: CustomTimelineRow[],
+  originalTrackInfo: ITrackInfo
+): ITrackInfo => {
+  const rowMap = new Map(rows.map((row) => [row.id, row]))
+
+  const newTracks = originalTrackInfo.tracks.map((track) => {
+    const row = rowMap.get(track.trackId)
+    if (!row) return track
+
+    const actionMap = new Map(row.actions.map((a) => [a.id, a]))
+    const newChildren = track.children.map((child) => {
+      const action = actionMap.get(child.id)
+      if (!action) return child
+
+      const newStartTime = Math.round(action.start * TIME_CONFIG.MILL_TIME_CONVERSION)
+      const newEndTime = Math.round(action.end * TIME_CONFIG.MILL_TIME_CONVERSION)
+
+      return {
+        ...child,
+        startTime: newStartTime,
+        endTime: newEndTime,
+        duration: newEndTime - newStartTime,
+      } as unknown as TrackItem
+    })
+
+    return { ...track, children: newChildren as any }
+  })
+
+  return { ...originalTrackInfo, tracks: newTracks as ITrackInfo['tracks'] }
 }
 
 // 把 trackInfo 转换为 TimelineRow

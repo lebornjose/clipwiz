@@ -2,16 +2,25 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
+import mongoose from 'mongoose'
 import { uploadRouter } from './routes/upload.js'
 import { videoRouter } from './routes/video.js'
 import { jobRouter } from './routes/job.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { graphRouter } from './routes/graph.js'
+import { projectRouter } from './routes/project.js'
 
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 4000
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/clip_wiz'
+
+mongoose.connect(MONGO_URI).then(() => {
+  console.log('✅ MongoDB connected:', MONGO_URI)
+}).catch((err) => {
+  console.error('❌ MongoDB connection failed:', err)
+})
 
 // Middleware
 app.use(cors())
@@ -28,6 +37,7 @@ app.use('/api/upload', uploadRouter)
 app.use('/api/video', videoRouter)
 app.use('/api/job', jobRouter)
 app.use('/api/graph', graphRouter)  // 合成视频
+app.use('/api/project', projectRouter)  // 项目管理
 
 
 

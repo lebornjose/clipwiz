@@ -1,9 +1,9 @@
 import { Editor } from '@clipwiz/videoPlayer'
-import trackInfo from '../../mock'
 import { useEffect, useRef, useState } from 'react'
 import VideoControls from './VideoControls'
 import './index.less'
 import { eventBus } from '../../utils'
+import { useEditorStore } from '../../store/editorStore'
 
 const gcd = (a: number, b: number): number => {
   let x = Math.abs(a)
@@ -19,37 +19,48 @@ const gcd = (a: number, b: number): number => {
 const VideoPlayer = () => {
   const editorRef = useRef<Editor | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const initializedRef = useRef(false)  // ✅ 添加初始化标志
-  const isPlayingRef = useRef(false)    // 用 ref 避免 setProgress 闭包中读到过期 state
+  const isPlayingRef = useRef(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(1)
   const [isMuted, setIsMuted] = useState(false)
-  const ratio = gcd(trackInfo.width, trackInfo.height)
-  const aspectRatioLabel = `${trackInfo.width / ratio}:${trackInfo.height / ratio}`
 
+  const { trackInfo, trackInfoVersion } = useEditorStore()
+
+  // Wire time:update once (editorRef is always current via ref)
   useEffect(() => {
-    eventBus.on('time:update', (time) => {
-      if(editorRef.current) {
-        editorRef.current.seek(time);
-      }
-    })
-    // ✅ 如果已经初始化过，直接返回
-    if (!canvasRef.current || initializedRef.current) {
-      console.log('跳过重复初始化')
-      return
+    const onTimeUpdate = (time: number) => {
+      editorRef.current?.seek(time)
     }
+    eventBus.on('time:update', onTimeUpdate)
+    return () => eventBus.off('time:update', onTimeUpdate)
+  }, [])
+
+  // Reinitialize editor whenever the committed protocol version changes
+  useEffect(() => {
+    if (!canvasRef.current || !trackInfo) return
+
+    // Destroy previous editor
+    if (editorRef.current) {
+      try { (editorRef.current.videoCtx as any).destroy() } catch { /* ignore */ }
+      editorRef.current = null
+    }
+
+    isPlayingRef.current = false
+    setIsPlaying(false)
+    setCurrentTime(0)
+    setDuration(trackInfo.duration / 1000)
+
+    // Spread tracks into a new array so the Editor's in-place .reverse() call
+    // does not mutate the shared store object.
     const editor = new Editor({
       canvas: canvasRef.current,
-      trackInfo,
-      setState: (state: any) => {
-        console.log('Editor state:', state)
-      },
+      trackInfo: { ...trackInfo, tracks: [...trackInfo.tracks] },
+      setState: () => { /* intentionally empty */ },
       setProgress: (time: number) => {
         setCurrentTime(time)
         const totalDuration = trackInfo.duration / 1000
-        // 视频播放结束：同步停止时间轴
         if (isPlayingRef.current && time >= totalDuration) {
           isPlayingRef.current = false
           setIsPlaying(false)
@@ -59,10 +70,7 @@ const VideoPlayer = () => {
     })
 
     editorRef.current = editor
-    initializedRef.current = true  // ✅ 标记已初始化
-    setDuration(trackInfo.duration / 1000) // 转换为秒
-
-  }, [])
+  }, [trackInfoVersion]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 播放/暂停
   const togglePlay = () => {
@@ -120,19 +128,24 @@ const VideoPlayer = () => {
     // editorRef.current.setProcess(value)
   }
 
+  const width = trackInfo?.width ?? 1280
+  const height = trackInfo?.height ?? 720
+  const ratio = gcd(width, height)
+  const aspectRatioLabel = `${width / ratio}:${height / ratio}`
+
   return (
     <div className='video-player-container'>
       <div className='video-wrapper'>
         <div className='video-stage'>
           <div
             className='video-frame'
-            style={{ aspectRatio: `${trackInfo.width} / ${trackInfo.height}` }}
+            style={{ aspectRatio: `${width} / ${height}` }}
           >
             <canvas
               ref={canvasRef}
               className='video-canvas'
-              width={trackInfo.width}
-              height={trackInfo.height}
+              width={width}
+              height={height}
             />
           </div>
         </div>

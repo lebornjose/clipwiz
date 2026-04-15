@@ -3,6 +3,8 @@ import { TimelineVideoActionData } from './convert';
 
 interface VideoTrackImgProps {
   videoTrackItem: TimelineVideoActionData | null;
+  selectedTransitionKey?: string | null;
+  onTransitionClick?: (key: string, e: React.MouseEvent) => void;
 }
 
 const getTransitionBadge = (videoTrackItem: TimelineVideoActionData | null) => {
@@ -12,16 +14,18 @@ const getTransitionBadge = (videoTrackItem: TimelineVideoActionData | null) => {
   if (!transitionMeta || !transitionSide) return null
 
   return {
+    key: transitionMeta.key,
     label: transitionMeta.transition.alias || transitionMeta.transition.name || '转场',
     duration: `${(transitionMeta.duration / 1000).toFixed(2)}s`,
     placement: transitionSide,
   }
 }
 
-export const VideoTrackImg = ({ videoTrackItem }: VideoTrackImgProps) => {
+export const VideoTrackImg = ({ videoTrackItem, selectedTransitionKey, onTransitionClick }: VideoTrackImgProps) => {
   const videoUrl = videoTrackItem?.url || '';
   const count = 5;
   const transitionBadge = getTransitionBadge(videoTrackItem)
+  const isTransitionSelected = transitionBadge ? transitionBadge.key === selectedTransitionKey : false
 
   return (
     <div className='effect-item-video'>
@@ -45,8 +49,12 @@ export const VideoTrackImg = ({ videoTrackItem }: VideoTrackImgProps) => {
 
       {transitionBadge && (
         <div
-          className={`effect-item-transition-chip effect-item-transition-chip--${transitionBadge.placement}`}
+          className={`effect-item-transition-chip effect-item-transition-chip--${transitionBadge.placement}${isTransitionSelected ? ' effect-item-transition-chip--selected' : ''}`}
           title={`${transitionBadge.label} · ${transitionBadge.duration}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            onTransitionClick?.(transitionBadge.key, e)
+          }}
         >
           <ColumnWidthOutlined />
           <span>{transitionBadge.label}</span>
