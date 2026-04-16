@@ -6,6 +6,7 @@
     gap: var(--spacing-2);
 
     .photo-list-item {
+      position: relative;
       width: 120px;
       height: 80px;
       border-radius: var(--radius-md);
@@ -16,7 +17,20 @@
 
       &:hover {
         border-color: var(--color-primary-container);
+
+        .photo-list-item-add {
+          opacity: 1;
+        }
       }
+    }
+
+    .photo-list-item-add {
+      position: absolute;
+      bottom: var(--spacing-1);
+      right: var(--spacing-1);
+      opacity: 0;
+      transition: opacity var(--transition-fast);
+      z-index: var(--z-raised);
     }
 
     .photo-list-item-img {
@@ -28,7 +42,7 @@
       img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
         display: block;
       }
     }
