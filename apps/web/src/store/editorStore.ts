@@ -1,6 +1,8 @@
 import { create } from 'zustand'
-import type { ITrackInfo, IVideoTrackItem } from '@clipwiz/shared'
+import type { ITrackInfo, IVideoTrackItem, ITrack } from '@clipwiz/shared'
 import { MATERIAL_TYPE, resolveTransitionBetweenItems } from '@clipwiz/shared'
+
+const genId = () => Math.random().toString(36).slice(2, 10)
 
 interface EditorState {
   trackInfo: ITrackInfo | null
@@ -18,6 +20,7 @@ interface EditorState {
   deleteSelectedTransition: () => void
   updateTrackItemById: (id: string, patch: Record<string, any>) => void
   updateSelectedTransition: (patch: Record<string, any>) => void
+  addTrackItem: (trackType: MATERIAL_TYPE, item: Record<string, any>) => void
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -109,6 +112,28 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       ),
     }))
     set({ trackInfo: { ...trackInfo, tracks: newTracks as ITrackInfo['tracks'] } })
+  },
+
+  addTrackItem: (trackType, item) => {
+    const { trackInfo } = get()
+    if (!trackInfo) return
+    const newItem = { id: genId(), hide: false, startTime: 0, endTime: trackInfo.duration, ...item }
+    const existingTrack = trackInfo.tracks.find((t) => t.trackType === trackType)
+    let newTracks: ITrack[]
+    if (existingTrack) {
+      newTracks = trackInfo.tracks.map((t) =>
+        t.trackType === trackType
+          ? { ...t, children: [...(t.children as any[]), newItem] }
+          : t
+      ) as ITrack[]
+    } else {
+      const newTrack = { trackId: genId(), trackType, hide: false, children: [newItem] } as ITrack
+      newTracks = [...trackInfo.tracks, newTrack]
+    }
+    set((state) => ({
+      trackInfo: { ...trackInfo, tracks: newTracks },
+      trackInfoVersion: state.trackInfoVersion + 1,
+    }))
   },
 
   updateSelectedTransition: (patch) => {

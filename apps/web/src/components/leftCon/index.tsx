@@ -6,6 +6,8 @@ import {
 import MaterialList from './material'
 import AudioList from './audio'
 import PhotoList from './photo'
+import FilterList from './filter'
+import TransitionList from './transition'
 import './index.less'
 
 const LeftCon = () => {
@@ -14,9 +16,9 @@ const LeftCon = () => {
       {key: '2', icon: <AudioOutlined />, label: '音频', children: <AudioList />},
       // {key: '3', icon: <FileTextOutlined />, label: '文本', children: <div>图片</div>},
       {key: '4', icon: <FileImageOutlined />, label: '贴纸', children: <PhotoList />},
-      {key: '5', icon: <FontSizeOutlined />, label: '特效', children: <div>形状</div>},
-      {key: '6', icon: <SwapOutlined />, label: '转场', children: <div>其他</div>},
-      {key: '7', icon: <FilterOutlined />, label: '滤镜', children: <div>其他</div>},
+      // {key: '5', icon: <FontSizeOutlined />, label: '特效', children: <div>形状</div>},
+      {key: '7', icon: <FilterOutlined />, label: '滤镜', children: <FilterList />},
+      {key: '6', icon: <SwapOutlined />, label: '转场', children: <TransitionList />},
   ]
   return (
     <div className='left-con'>

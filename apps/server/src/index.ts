@@ -11,6 +11,8 @@ import { graphRouter } from './routes/graph.js'
 import { projectRouter } from './routes/project.js'
 import { materialRouter } from './routes/material.js'
 import { audioRouter } from './routes/audio.js'
+import { filterRouter } from './routes/filter.js'
+import { transitionRouter } from './routes/transition.js'
 
 dotenv.config()
 
@@ -42,6 +44,8 @@ app.use('/api/graph', graphRouter)  // 合成视频
 app.use('/api/project', projectRouter)  // 项目管理
 app.use('/api/material', materialRouter) // 素材管理
 app.use('/api/audio', audioRouter)      // 音频管理
+app.use('/api/filter', filterRouter)    // 滤镜管理
+app.use('/api/transition', transitionRouter) // 转场管理
 
 
 
