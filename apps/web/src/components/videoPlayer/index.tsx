@@ -4,6 +4,7 @@ import VideoControls from './VideoControls'
 import './index.less'
 import { eventBus } from '../../utils'
 import { useEditorStore } from '../../store/editorStore'
+import type { Transform } from '@clipwiz/shared'
 
 const gcd = (a: number, b: number): number => {
   let x = Math.abs(a)
@@ -35,6 +36,14 @@ const VideoPlayer = () => {
     }
     eventBus.on('time:update', onTimeUpdate)
     return () => eventBus.off('time:update', onTimeUpdate)
+  }, [])
+
+  useEffect(() => {
+    const onTransformUpdate = ({ id, transform }: { id: string; transform: Transform }) => {
+      editorRef.current?.setNodeTransform(id, transform)
+    }
+    eventBus.on('transform:update', onTransformUpdate)
+    return () => eventBus.off('transform:update', onTransformUpdate)
   }, [])
 
   // Reinitialize editor whenever the committed protocol version changes

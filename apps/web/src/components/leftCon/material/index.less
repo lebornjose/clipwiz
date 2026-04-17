@@ -69,6 +69,7 @@
       &:hover {
         border-color: var(--color-primary-container);
 
+        .material-list-item-add,
         .material-list-item-delete {
           opacity: 1;
         }
@@ -142,6 +143,33 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         max-width: 120px;
+      }
+
+      .material-list-item-add {
+        position: absolute;
+        bottom: var(--spacing-1);
+        right: var(--spacing-1);
+        width: 20px;
+        height: 20px;
+        border: none;
+        border-radius: var(--radius-sm);
+        background: var(--color-primary);
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+        padding: 0;
+
+        .anticon {
+          font-size: var(--font-size-xs);
+        }
+
+        &:hover {
+          background: var(--color-primary-container);
+        }
       }
 
       .material-list-item-delete {

@@ -40,33 +40,18 @@ export const addVideoNode = (editor: Editor, trackId: string, item: IVideoTrackI
   videoNode.format = item.format
   videoNode.type = MATERIAL_TYPE.VIDEO
   videoNode.trackId = trackId
-  // if(item.transitionIn) { // 入场转场
-  //   const crossFadeEffect = editor.videoCtx.transition(VideoContext.DEFINITIONS.DREAMFADE);
-  //   const startTime = (item.endTime - 1000) / TIME_CONFIG.MILL_TIME_CONVERSION
-  //   const endtime = (item.endTime) / TIME_CONFIG.MILL_TIME_CONVERSION
-  //   crossFadeEffect.transition(startTime, endtime, 0.0, 1.0, "mix");
-  //   editor.transitionMap.set(item.transitionIn.layerList.join('_'), crossFadeEffect)
-  // }
-  // if(item.transitionIn || item.transitionOut) {
-  //   const transitionId = item.transitionOut?.layerList.join('_') || item.transitionIn?.layerList.join('_')
-  //   videoNode.connect(editor.transitionMap.get(transitionId!))
-  // } else {
-    // zIndex=0 keeps video as background so overlays (photo/subtitle/text) render on top
-    ;(videoNode as any).connect(editor.videoCtx.destination, 0)
-  // }
-  // if(item.transitionOut) {
-  //   editor.transitionMap.get(item.transitionOut.layerList.join('_')).connect(editor.videoCtx.destination as DestinationNode)
-  // }
-  // videoNode.registerCallback('waiting', () => {
-  //   if (editor.videoCtx.state !== STATE.PLAYING) {
-  //     return
-  //   }
 
-  //   // videoWaiting = performance.now()
-  //   editor.isWaiting = true
-  //   editor.videoCtx.pause()
-  //   // editor.setState({ loading: true })
-  // })
+  if (item.transform) {
+    const halfW = (item.width ?? 1920) / 2
+    const halfH = (item.height ?? 1080) / 2
+    ;(videoNode as any).setTransform({
+      scale: item.transform.scale[0] ?? 1,
+      x: (item.transform.translate[0] ?? 0) / halfW,
+      y: (item.transform.translate[1] ?? 0) / halfH,
+    })
+  }
+
+  ;(videoNode as any).connect(editor.videoCtx.destination, 0)
   videoNode.registerCallback('loaded', () => {
     if (editor.videoCtx.currentTime >= videoNode.startTime && editor.videoCtx.currentTime <= videoNode.stopTime) {
       if (editor.isWaiting) {

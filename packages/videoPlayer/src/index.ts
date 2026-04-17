@@ -1,6 +1,6 @@
 
 import VideoContext from './videocontext.js'
-import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, STATE, IPhotoTrackItem, IVideoNode, IVideoTrackItem, resolveTransitionBetweenItems, TransitionItem } from '@clipwiz/shared'
+import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, STATE, IPhotoTrackItem, IVideoNode, IVideoTrackItem, resolveTransitionBetweenItems, TransitionItem, Transform } from '@clipwiz/shared'
 import { addVideoNode } from './components/video'
 import { addBgm } from './components/audio'
 import { addPhotoNode } from './components/photo'
@@ -444,6 +444,20 @@ export class Editor {
     this.videoCtx.currentTime = time
     this.setProgress(time)
     this.draw()
+  }
+
+  setNodeTransform(id: string, transform: Transform) {
+    const node = this.videoNodeRegistry.get(id)
+    if (!node) return
+    const item = node.metaData
+    const halfW = (item.width ?? 1920) / 2
+    const halfH = (item.height ?? 1080) / 2
+    ;(node as any).setTransform({
+      scale: transform.scale[0] ?? 1,
+      x: (transform.translate[0] ?? 0) / halfW,
+      y: (transform.translate[1] ?? 0) / halfH,
+    })
+    void this.draw()
   }
 
   setVolume(volume: number) {
