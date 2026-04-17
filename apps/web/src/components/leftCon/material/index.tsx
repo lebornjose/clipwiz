@@ -8,6 +8,7 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons'
 import { useInfiniteList } from '../../../hooks/useInfiniteList'
+import { useEditorStore } from '../../../store/editorStore'
 import './index.less'
 
 interface Material {
@@ -16,6 +17,8 @@ interface Material {
   url: string
   type: 'video' | 'image'
   duration?: number
+  width?: number
+  height?: number
   size: number
 }
 
@@ -36,6 +39,20 @@ const MaterialList = () => {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const addVideoMaterial = useEditorStore((s) => s.addVideoMaterial)
+
+  const handleAddToTrack = (m: Material, e: React.MouseEvent) => {
+    e.stopPropagation()
+    addVideoMaterial({
+      url: m.url,
+      type: m.type,
+      duration: m.duration,
+      name: m.name,
+      width: m.width,
+      height: m.height,
+      materialId: m._id,
+    })
+  }
 
   const handleUpload = (file: File) => {
     const formData = new FormData()
@@ -92,7 +109,7 @@ const MaterialList = () => {
       <div className="material-list">
         {materials.map((m) => (
           <Tooltip key={m._id} title={m.name} placement="bottom" mouseEnterDelay={0.6}>
-            <div className="material-list-item">
+            <div className="material-list-item" onClick={(e) => handleAddToTrack(m, e)}>
               <div className="material-list-item-img">
                 <img
                   src={m.type === 'video' ? ossVideoThumbnail(m.url) : m.url}
@@ -107,6 +124,9 @@ const MaterialList = () => {
               <Tag icon={m.type === 'video' ? <VideoCameraOutlined /> : <FileImageOutlined />}>
                 {m.type === 'video' ? '视频' : '图片'}
               </Tag>
+              <button className="material-list-item-add" onClick={(e) => handleAddToTrack(m, e)}>
+                <PlusOutlined />
+              </button>
               <button className="material-list-item-delete" onClick={(e) => handleDelete(m._id, e)}>
                 <DeleteOutlined />
               </button>

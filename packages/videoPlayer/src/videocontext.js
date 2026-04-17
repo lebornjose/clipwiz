@@ -1,21 +1,33 @@
-const vertexShader$B = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$B = "precision mediump float;\nuniform sampler2D u_image;\nuniform float scaleX;\nuniform float scaleY;\nvarying vec2 v_texCoord;\nvarying float v_progress;\nvoid main(){\n    vec2 pos = vec2(v_texCoord[0]*1.0/scaleX - (1.0/scaleX/2.0 -0.5), v_texCoord[1]*1.0/scaleY - (1.0/scaleY/2.0 -0.5));\n    vec4 color = texture2D(u_image, pos);\n    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
+const vertexShader$C = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$C = "precision mediump float;\nuniform sampler2D u_image;\nuniform float scaleX;\nuniform float scaleY;\nvarying vec2 v_texCoord;\nvarying float v_progress;\nvoid main(){\n    vec2 pos = vec2(v_texCoord[0]*1.0/scaleX - (1.0/scaleX/2.0 -0.5), v_texCoord[1]*1.0/scaleY - (1.0/scaleY/2.0 -0.5));\n    vec4 color = texture2D(u_image, pos);\n    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
 let aaf_video_scale = {
   title: "AAF Video Scale Effect",
   description: "A scale effect based on the AAF spec.",
-  vertexShader: vertexShader$B,
-  fragmentShader: fragmentShader$B,
+  vertexShader: vertexShader$C,
+  fragmentShader: fragmentShader$C,
   properties: {
     scaleX: { type: "uniform", value: 1 },
     scaleY: { type: "uniform", value: 1 }
   },
   inputs: ["u_image"]
 };
-const vertexShader$A = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$A = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    color_a[0] *= (1.0 - mix);\n    color_a[1] *= (1.0 - mix);\n    color_a[2] *= (1.0 - mix);\n    color_a[3] *= (1.0 - mix);\n    color_b[0] *= mix;\n    color_b[1] *= mix;\n    color_b[2] *= mix;\n    color_b[3] *= mix;\n    gl_FragColor = color_a + color_b;\n}\n";
+const vertexShader$B = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$B = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    color_a[0] *= (1.0 - mix);\n    color_a[1] *= (1.0 - mix);\n    color_a[2] *= (1.0 - mix);\n    color_a[3] *= (1.0 - mix);\n    color_b[0] *= mix;\n    color_b[1] *= mix;\n    color_b[2] *= mix;\n    color_b[3] *= mix;\n    gl_FragColor = color_a + color_b;\n}\n";
 let crossfade = {
   title: "Cross-Fade",
   description: "A cross-fade effect. Typically used as a transistion.",
+  vertexShader: vertexShader$B,
+  fragmentShader: fragmentShader$B,
+  properties: {
+    mix: { type: "uniform", value: 0 }
+  },
+  inputs: ["u_image_a", "u_image_b"]
+};
+const vertexShader$A = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$A = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (v_texCoord[0] > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
+let horizontal_wipe = {
+  title: "Horizontal Wipe",
+  description: "A horizontal wipe effect. Typically used as a transistion.",
   vertexShader: vertexShader$A,
   fragmentShader: fragmentShader$A,
   properties: {
@@ -24,10 +36,10 @@ let crossfade = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$z = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$z = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (v_texCoord[0] > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
-let horizontal_wipe = {
-  title: "Horizontal Wipe",
-  description: "A horizontal wipe effect. Typically used as a transistion.",
+const fragmentShader$z = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (v_texCoord[1] > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
+let verticalWipe = {
+  title: "vertical Wipe",
+  description: "A vertical wipe effect. Typically used as a transistion.",
   vertexShader: vertexShader$z,
   fragmentShader: fragmentShader$z,
   properties: {
@@ -36,10 +48,10 @@ let horizontal_wipe = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$y = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$y = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (v_texCoord[1] > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
-let verticalWipe = {
-  title: "vertical Wipe",
-  description: "A vertical wipe effect. Typically used as a transistion.",
+const fragmentShader$y = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nfloat rand(vec2 co){\n    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);\n}\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (clamp(rand(v_texCoord),  0.01, 1.001) > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
+let randomDissolve = {
+  title: "Random Dissolve",
+  description: "A random dissolve effect. Typically used as a transistion.",
   vertexShader: vertexShader$y,
   fragmentShader: fragmentShader$y,
   properties: {
@@ -48,85 +60,85 @@ let verticalWipe = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$x = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$x = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nfloat rand(vec2 co){\n    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);\n}\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (clamp(rand(v_texCoord),  0.01, 1.001) > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
-let randomDissolve = {
-  title: "Random Dissolve",
-  description: "A random dissolve effect. Typically used as a transistion.",
-  vertexShader: vertexShader$x,
-  fragmentShader: fragmentShader$x,
-  properties: {
-    mix: { type: "uniform", value: 0 }
-  },
-  inputs: ["u_image_a", "u_image_b"]
-};
-const vertexShader$w = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$w = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nuniform vec4 color;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    float mix_amount = (mix *2.0) - 1.0;\n    if(mix_amount < 0.0){\n        gl_FragColor = abs(mix_amount) * color_a + (1.0 - abs(mix_amount)) * color;\n    } else {\n        gl_FragColor = mix_amount * color_b + (1.0 - mix_amount) * color;\n    }\n}\n";
+const fragmentShader$x = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nuniform vec4 color;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    float mix_amount = (mix *2.0) - 1.0;\n    if(mix_amount < 0.0){\n        gl_FragColor = abs(mix_amount) * color_a + (1.0 - abs(mix_amount)) * color;\n    } else {\n        gl_FragColor = mix_amount * color_b + (1.0 - mix_amount) * color;\n    }\n}\n";
 let toColorAndBackFade = {
   title: "To Color And Back Fade",
   description: "A fade to black and back effect. Setting mix to 0.5 is a fully solid color frame. Typically used as a transistion.",
-  vertexShader: vertexShader$w,
-  fragmentShader: fragmentShader$w,
+  vertexShader: vertexShader$x,
+  fragmentShader: fragmentShader$x,
   properties: {
     mix: { type: "uniform", value: 0 },
     color: { type: "uniform", value: [0, 0, 0, 0] }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const vertexShader$v = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$v = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nfloat sign (vec2 p1, vec2 p2, vec2 p3){\n    return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1]);\n}\nbool pointInTriangle(vec2 pt, vec2 v1, vec2 v2, vec2 v3){\n    bool b1, b2, b3;\n    b1 = sign(pt, v1, v2) < 0.0;\n    b2 = sign(pt, v2, v3) < 0.0;\n    b3 = sign(pt, v3, v1) < 0.0;\n    return ((b1 == b2) && (b2 == b3));\n}\nvec2 rotatePointAboutPoint(vec2 point, vec2 pivot, float angle){\n    float s = sin(angle);\n    float c = cos(angle);\n    float x = point[0] - pivot[0];\n    float y = point[1] - pivot[1];\n    float new_x = x * c - y * s;\n    float new_y = x * s + y * c;\n    return vec2(new_x + pivot[0], new_y+pivot[1]);\n}\n\nvoid main(){\n    vec4 color_a = texture2D(u_image_b, v_texCoord);\n    vec4 color_b = texture2D(u_image_a, v_texCoord);\n    vec2 t0_p0,t0_p1,t0_p2,t1_p0,t1_p1,t1_p2,t2_p0,t2_p1,t2_p2,t3_p0,t3_p1,t3_p2;\n    vec2 t4_p0,t4_p1,t4_p2,t5_p0,t5_p1,t5_p2,t6_p0,t6_p1,t6_p2,t7_p0,t7_p1,t7_p2;\n\n\n    t0_p0 = vec2(0.0, 0.25) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);\n    t0_p1 = vec2(0.0, -0.25) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);\n    t0_p2 = vec2(1.0, 0.0) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);\n\n    t1_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854);\n    t1_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854);\n    t1_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854);\n\n    t2_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 2.0);\n    t2_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 2.0);\n    t2_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 2.0);\n\n    t3_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 3.0);\n    t3_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 3.0);\n    t3_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 3.0);\n\n    t4_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 4.0);\n    t4_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 4.0);\n    t4_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 4.0);\n\n    t5_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 5.0);\n    t5_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 5.0);\n    t5_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 5.0);\n\n    t6_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 6.0);\n    t6_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 6.0);\n    t6_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 6.0);\n\n    t7_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 7.0);\n    t7_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 7.0);\n    t7_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 7.0);\n\n    if(mix > 0.99){\n        gl_FragColor = color_a;\n        return;\n    }\n    if(mix < 0.01){\n        gl_FragColor = color_b;\n        return;\n    }\n    if(pointInTriangle(v_texCoord, t0_p0, t0_p1, t0_p2) || pointInTriangle(v_texCoord, t1_p0, t1_p1, t1_p2) || pointInTriangle(v_texCoord, t2_p0, t2_p1, t2_p2) || pointInTriangle(v_texCoord, t3_p0, t3_p1, t3_p2) || pointInTriangle(v_texCoord, t4_p0, t4_p1, t4_p2) || pointInTriangle(v_texCoord, t5_p0, t5_p1, t5_p2) || pointInTriangle(v_texCoord, t6_p0, t6_p1, t6_p2) || pointInTriangle(v_texCoord, t7_p0, t7_p1, t7_p2)){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
+const vertexShader$w = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$w = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nfloat sign (vec2 p1, vec2 p2, vec2 p3){\n    return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1]);\n}\nbool pointInTriangle(vec2 pt, vec2 v1, vec2 v2, vec2 v3){\n    bool b1, b2, b3;\n    b1 = sign(pt, v1, v2) < 0.0;\n    b2 = sign(pt, v2, v3) < 0.0;\n    b3 = sign(pt, v3, v1) < 0.0;\n    return ((b1 == b2) && (b2 == b3));\n}\nvec2 rotatePointAboutPoint(vec2 point, vec2 pivot, float angle){\n    float s = sin(angle);\n    float c = cos(angle);\n    float x = point[0] - pivot[0];\n    float y = point[1] - pivot[1];\n    float new_x = x * c - y * s;\n    float new_y = x * s + y * c;\n    return vec2(new_x + pivot[0], new_y+pivot[1]);\n}\n\nvoid main(){\n    vec4 color_a = texture2D(u_image_b, v_texCoord);\n    vec4 color_b = texture2D(u_image_a, v_texCoord);\n    vec2 t0_p0,t0_p1,t0_p2,t1_p0,t1_p1,t1_p2,t2_p0,t2_p1,t2_p2,t3_p0,t3_p1,t3_p2;\n    vec2 t4_p0,t4_p1,t4_p2,t5_p0,t5_p1,t5_p2,t6_p0,t6_p1,t6_p2,t7_p0,t7_p1,t7_p2;\n\n\n    t0_p0 = vec2(0.0, 0.25) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);\n    t0_p1 = vec2(0.0, -0.25) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);\n    t0_p2 = vec2(1.0, 0.0) * clamp(mix,0.0,1.0) * 2.0 + vec2(0.5,0.5);\n\n    t1_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854);\n    t1_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854);\n    t1_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854);\n\n    t2_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 2.0);\n    t2_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 2.0);\n    t2_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 2.0);\n\n    t3_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 3.0);\n    t3_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 3.0);\n    t3_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 3.0);\n\n    t4_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 4.0);\n    t4_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 4.0);\n    t4_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 4.0);\n\n    t5_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 5.0);\n    t5_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 5.0);\n    t5_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 5.0);\n\n    t6_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 6.0);\n    t6_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 6.0);\n    t6_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 6.0);\n\n    t7_p0 = rotatePointAboutPoint(t0_p0, vec2(0.5,0.5), 0.7854 * 7.0);\n    t7_p1 = rotatePointAboutPoint(t0_p1, vec2(0.5,0.5), 0.7854 * 7.0);\n    t7_p2 = rotatePointAboutPoint(t0_p2, vec2(0.5,0.5), 0.7854 * 7.0);\n\n    if(mix > 0.99){\n        gl_FragColor = color_a;\n        return;\n    }\n    if(mix < 0.01){\n        gl_FragColor = color_b;\n        return;\n    }\n    if(pointInTriangle(v_texCoord, t0_p0, t0_p1, t0_p2) || pointInTriangle(v_texCoord, t1_p0, t1_p1, t1_p2) || pointInTriangle(v_texCoord, t2_p0, t2_p1, t2_p2) || pointInTriangle(v_texCoord, t3_p0, t3_p1, t3_p2) || pointInTriangle(v_texCoord, t4_p0, t4_p1, t4_p2) || pointInTriangle(v_texCoord, t5_p0, t5_p1, t5_p2) || pointInTriangle(v_texCoord, t6_p0, t6_p1, t6_p2) || pointInTriangle(v_texCoord, t7_p0, t7_p1, t7_p2)){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
 let starWipe = {
   title: "Star Wipe Fade",
   description: "A classic star wipe transistion. Typically used as a transistion.",
-  vertexShader: vertexShader$v,
-  fragmentShader: fragmentShader$v,
+  vertexShader: vertexShader$w,
+  fragmentShader: fragmentShader$w,
   properties: {
     mix: { type: "uniform", value: 1 }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const vertexShader$u = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$u = "precision mediump float;\nuniform sampler2D u_image;\nuniform float a;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    gl_FragColor = color;\n}\n";
+const vertexShader$v = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$v = "precision mediump float;\nuniform sampler2D u_image;\nuniform float a;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    gl_FragColor = color;\n}\n";
 let combine = {
   title: "Combine",
   description: "A basic effect which renders the input to the output, Typically used as a combine node for layering up media with alpha transparency.",
-  vertexShader: vertexShader$u,
-  fragmentShader: fragmentShader$u,
+  vertexShader: vertexShader$v,
+  fragmentShader: fragmentShader$v,
   properties: {
     a: { type: "uniform", value: 0 }
   },
   inputs: ["u_image"]
 };
-const vertexShader$t = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$t = "precision mediump float;\nuniform sampler2D u_image;\nuniform float a;\nuniform vec3 colorAlphaThreshold;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    if (color[0] > colorAlphaThreshold[0] && color[1]> colorAlphaThreshold[1] && color[2]> colorAlphaThreshold[2]){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
+const vertexShader$u = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$u = "precision mediump float;\nuniform sampler2D u_image;\nuniform float a;\nuniform vec3 colorAlphaThreshold;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    if (color[0] > colorAlphaThreshold[0] && color[1]> colorAlphaThreshold[1] && color[2]> colorAlphaThreshold[2]){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
 let colorThreshold = {
   title: "Color Threshold",
   description: "Turns all pixels with a greater value than the specified threshold transparent.",
-  vertexShader: vertexShader$t,
-  fragmentShader: fragmentShader$t,
+  vertexShader: vertexShader$u,
+  fragmentShader: fragmentShader$u,
   properties: {
     a: { type: "uniform", value: 0 },
     colorAlphaThreshold: { type: "uniform", value: [0, 0.55, 0] }
   },
   inputs: ["u_image"]
 };
-const vertexShader$s = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$s = "precision mediump float;\nuniform sampler2D u_image;\nuniform vec3 inputMix;\nuniform vec3 outputMix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    float mono = color[0]*inputMix[0] + color[1]*inputMix[1] + color[2]*inputMix[2];\n    color[0] = mono * outputMix[0];\n    color[1] = mono * outputMix[1];\n    color[2] = mono * outputMix[2];\n    gl_FragColor = color;\n}\n";
+const vertexShader$t = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$t = "precision mediump float;\nuniform sampler2D u_image;\nuniform vec3 inputMix;\nuniform vec3 outputMix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    float mono = color[0]*inputMix[0] + color[1]*inputMix[1] + color[2]*inputMix[2];\n    color[0] = mono * outputMix[0];\n    color[1] = mono * outputMix[1];\n    color[2] = mono * outputMix[2];\n    gl_FragColor = color;\n}\n";
 let monochrome = {
   title: "Monochrome",
   description: "Change images to a single chroma (e.g can be used to make a black & white filter). Input color mix and output color mix can be adjusted.",
-  vertexShader: vertexShader$s,
-  fragmentShader: fragmentShader$s,
+  vertexShader: vertexShader$t,
+  fragmentShader: fragmentShader$t,
   properties: {
     inputMix: { type: "uniform", value: [0.4, 0.6, 0.2] },
     outputMix: { type: "uniform", value: [1, 1, 1] }
   },
   inputs: ["u_image"]
 };
-const vertexShader$r = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nuniform float blurAmount;\nvarying vec2 v_texCoord;\nvarying vec2 v_blurTexCoords[14];\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n    v_blurTexCoords[ 0] = v_texCoord + vec2(-0.028 * blurAmount, 0.0);\n    v_blurTexCoords[ 1] = v_texCoord + vec2(-0.024 * blurAmount, 0.0);\n    v_blurTexCoords[ 2] = v_texCoord + vec2(-0.020 * blurAmount, 0.0);\n    v_blurTexCoords[ 3] = v_texCoord + vec2(-0.016 * blurAmount, 0.0);\n    v_blurTexCoords[ 4] = v_texCoord + vec2(-0.012 * blurAmount, 0.0);\n    v_blurTexCoords[ 5] = v_texCoord + vec2(-0.008 * blurAmount, 0.0);\n    v_blurTexCoords[ 6] = v_texCoord + vec2(-0.004 * blurAmount, 0.0);\n    v_blurTexCoords[ 7] = v_texCoord + vec2( 0.004 * blurAmount, 0.0);\n    v_blurTexCoords[ 8] = v_texCoord + vec2( 0.008 * blurAmount, 0.0);\n    v_blurTexCoords[ 9] = v_texCoord + vec2( 0.012 * blurAmount, 0.0);\n    v_blurTexCoords[10] = v_texCoord + vec2( 0.016 * blurAmount, 0.0);\n    v_blurTexCoords[11] = v_texCoord + vec2( 0.020 * blurAmount, 0.0);\n    v_blurTexCoords[12] = v_texCoord + vec2( 0.024 * blurAmount, 0.0);\n    v_blurTexCoords[13] = v_texCoord + vec2( 0.028 * blurAmount, 0.0);\n}\n";
-const fragmentShader$r = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvarying vec2 v_blurTexCoords[14];\nvoid main(){\n    gl_FragColor = vec4(0.0);\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 0])*0.0044299121055113265;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 1])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 2])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 3])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 4])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 5])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 6])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_texCoord         )*0.159576912161;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 7])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 8])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 9])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[10])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[11])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[12])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[13])*0.0044299121055113265;\n}\n";
+const vertexShader$s = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nuniform float blurAmount;\nvarying vec2 v_texCoord;\nvarying vec2 v_blurTexCoords[14];\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n    v_blurTexCoords[ 0] = v_texCoord + vec2(-0.028 * blurAmount, 0.0);\n    v_blurTexCoords[ 1] = v_texCoord + vec2(-0.024 * blurAmount, 0.0);\n    v_blurTexCoords[ 2] = v_texCoord + vec2(-0.020 * blurAmount, 0.0);\n    v_blurTexCoords[ 3] = v_texCoord + vec2(-0.016 * blurAmount, 0.0);\n    v_blurTexCoords[ 4] = v_texCoord + vec2(-0.012 * blurAmount, 0.0);\n    v_blurTexCoords[ 5] = v_texCoord + vec2(-0.008 * blurAmount, 0.0);\n    v_blurTexCoords[ 6] = v_texCoord + vec2(-0.004 * blurAmount, 0.0);\n    v_blurTexCoords[ 7] = v_texCoord + vec2( 0.004 * blurAmount, 0.0);\n    v_blurTexCoords[ 8] = v_texCoord + vec2( 0.008 * blurAmount, 0.0);\n    v_blurTexCoords[ 9] = v_texCoord + vec2( 0.012 * blurAmount, 0.0);\n    v_blurTexCoords[10] = v_texCoord + vec2( 0.016 * blurAmount, 0.0);\n    v_blurTexCoords[11] = v_texCoord + vec2( 0.020 * blurAmount, 0.0);\n    v_blurTexCoords[12] = v_texCoord + vec2( 0.024 * blurAmount, 0.0);\n    v_blurTexCoords[13] = v_texCoord + vec2( 0.028 * blurAmount, 0.0);\n}\n";
+const fragmentShader$s = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvarying vec2 v_blurTexCoords[14];\nvoid main(){\n    gl_FragColor = vec4(0.0);\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 0])*0.0044299121055113265;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 1])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 2])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 3])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 4])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 5])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 6])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_texCoord         )*0.159576912161;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 7])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 8])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 9])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[10])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[11])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[12])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[13])*0.0044299121055113265;\n}\n";
 let horizontal_blur = {
   title: "Horizontal Blur",
   description: "A horizontal blur effect. Adpated from http://xissburg.com/faster-gaussian-blur-in-glsl/",
+  vertexShader: vertexShader$s,
+  fragmentShader: fragmentShader$s,
+  properties: {
+    blurAmount: { type: "uniform", value: 1 }
+  },
+  inputs: ["u_image"]
+};
+const vertexShader$r = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nuniform float blurAmount;\nvarying vec2 v_blurTexCoords[14];\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n    v_blurTexCoords[ 0] = v_texCoord + vec2(0.0,-0.028 * blurAmount);\n    v_blurTexCoords[ 1] = v_texCoord + vec2(0.0,-0.024 * blurAmount);\n    v_blurTexCoords[ 2] = v_texCoord + vec2(0.0,-0.020 * blurAmount);\n    v_blurTexCoords[ 3] = v_texCoord + vec2(0.0,-0.016 * blurAmount);\n    v_blurTexCoords[ 4] = v_texCoord + vec2(0.0,-0.012 * blurAmount);\n    v_blurTexCoords[ 5] = v_texCoord + vec2(0.0,-0.008 * blurAmount);\n    v_blurTexCoords[ 6] = v_texCoord + vec2(0.0,-0.004 * blurAmount);\n    v_blurTexCoords[ 7] = v_texCoord + vec2(0.0, 0.004 * blurAmount);\n    v_blurTexCoords[ 8] = v_texCoord + vec2(0.0, 0.008 * blurAmount);\n    v_blurTexCoords[ 9] = v_texCoord + vec2(0.0, 0.012 * blurAmount);\n    v_blurTexCoords[10] = v_texCoord + vec2(0.0, 0.016 * blurAmount);\n    v_blurTexCoords[11] = v_texCoord + vec2(0.0, 0.020 * blurAmount);\n    v_blurTexCoords[12] = v_texCoord + vec2(0.0, 0.024 * blurAmount);\n    v_blurTexCoords[13] = v_texCoord + vec2(0.0, 0.028 * blurAmount);\n}\n";
+const fragmentShader$r = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvarying vec2 v_blurTexCoords[14];\nvoid main(){\n    gl_FragColor = vec4(0.0);\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 0])*0.0044299121055113265;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 1])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 2])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 3])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 4])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 5])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 6])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_texCoord         )*0.159576912161;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 7])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 8])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 9])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[10])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[11])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[12])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[13])*0.0044299121055113265;\n}\n";
+let verticalBlur = {
+  title: "Vertical Blur",
+  description: "A vertical blur effect. Adpated from http://xissburg.com/faster-gaussian-blur-in-glsl/",
   vertexShader: vertexShader$r,
   fragmentShader: fragmentShader$r,
   properties: {
@@ -134,58 +146,46 @@ let horizontal_blur = {
   },
   inputs: ["u_image"]
 };
-const vertexShader$q = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nuniform float blurAmount;\nvarying vec2 v_blurTexCoords[14];\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n    v_blurTexCoords[ 0] = v_texCoord + vec2(0.0,-0.028 * blurAmount);\n    v_blurTexCoords[ 1] = v_texCoord + vec2(0.0,-0.024 * blurAmount);\n    v_blurTexCoords[ 2] = v_texCoord + vec2(0.0,-0.020 * blurAmount);\n    v_blurTexCoords[ 3] = v_texCoord + vec2(0.0,-0.016 * blurAmount);\n    v_blurTexCoords[ 4] = v_texCoord + vec2(0.0,-0.012 * blurAmount);\n    v_blurTexCoords[ 5] = v_texCoord + vec2(0.0,-0.008 * blurAmount);\n    v_blurTexCoords[ 6] = v_texCoord + vec2(0.0,-0.004 * blurAmount);\n    v_blurTexCoords[ 7] = v_texCoord + vec2(0.0, 0.004 * blurAmount);\n    v_blurTexCoords[ 8] = v_texCoord + vec2(0.0, 0.008 * blurAmount);\n    v_blurTexCoords[ 9] = v_texCoord + vec2(0.0, 0.012 * blurAmount);\n    v_blurTexCoords[10] = v_texCoord + vec2(0.0, 0.016 * blurAmount);\n    v_blurTexCoords[11] = v_texCoord + vec2(0.0, 0.020 * blurAmount);\n    v_blurTexCoords[12] = v_texCoord + vec2(0.0, 0.024 * blurAmount);\n    v_blurTexCoords[13] = v_texCoord + vec2(0.0, 0.028 * blurAmount);\n}\n";
-const fragmentShader$q = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvarying vec2 v_blurTexCoords[14];\nvoid main(){\n    gl_FragColor = vec4(0.0);\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 0])*0.0044299121055113265;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 1])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 2])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 3])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 4])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 5])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 6])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_texCoord         )*0.159576912161;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 7])*0.147308056121;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 8])*0.115876621105;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[ 9])*0.0776744219933;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[10])*0.0443683338718;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[11])*0.0215963866053;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[12])*0.00895781211794;\n    gl_FragColor += texture2D(u_image, v_blurTexCoords[13])*0.0044299121055113265;\n}\n";
-let verticalBlur = {
-  title: "Vertical Blur",
-  description: "A vertical blur effect. Adpated from http://xissburg.com/faster-gaussian-blur-in-glsl/",
-  vertexShader: vertexShader$q,
-  fragmentShader: fragmentShader$q,
-  properties: {
-    blurAmount: { type: "uniform", value: 1 }
-  },
-  inputs: ["u_image"]
-};
-const vertexShader$p = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$p = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvoid main(){\n    vec2 coord = vec2(1.0 - v_texCoord[0] ,v_texCoord[1]);\n    vec4 color = texture2D(u_image, coord);\n    gl_FragColor = color;\n}\n";
+const vertexShader$q = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$q = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvoid main(){\n    vec2 coord = vec2(1.0 - v_texCoord[0] ,v_texCoord[1]);\n    vec4 color = texture2D(u_image, coord);\n    gl_FragColor = color;\n}\n";
 let aaf_video_flop = {
   title: "AAF Video Flop Effect",
   description: "A flop effect based on the AAF spec. Mirrors the image in the y-axis",
+  vertexShader: vertexShader$q,
+  fragmentShader: fragmentShader$q,
+  properties: {},
+  inputs: ["u_image"]
+};
+const vertexShader$p = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$p = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvoid main(){\n    vec2 coord = vec2(v_texCoord[0] ,1.0 - v_texCoord[1]);\n    vec4 color = texture2D(u_image, coord);\n    gl_FragColor = color;\n}\n";
+let aaf_video_flip = {
+  title: "AAF Video Flip Effect",
+  description: "A flip effect based on the AAF spec. Mirrors the image in the x-axis",
   vertexShader: vertexShader$p,
   fragmentShader: fragmentShader$p,
   properties: {},
   inputs: ["u_image"]
 };
 const vertexShader$o = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$o = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvoid main(){\n    vec2 coord = vec2(v_texCoord[0] ,1.0 - v_texCoord[1]);\n    vec4 color = texture2D(u_image, coord);\n    gl_FragColor = color;\n}\n";
-let aaf_video_flip = {
-  title: "AAF Video Flip Effect",
-  description: "A flip effect based on the AAF spec. Mirrors the image in the x-axis",
-  vertexShader: vertexShader$o,
-  fragmentShader: fragmentShader$o,
-  properties: {},
-  inputs: ["u_image"]
-};
-const vertexShader$n = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$n = "precision mediump float;\nuniform sampler2D u_image;\nuniform float positionOffsetX;\nuniform float positionOffsetY;\nvarying vec2 v_texCoord;\nvarying float v_progress;\nvoid main(){\n    vec2 pos = vec2(v_texCoord[0] - positionOffsetX/2.0, v_texCoord[1] -  positionOffsetY/2.0);\n    vec4 color = texture2D(u_image, pos);\n    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
+const fragmentShader$o = "precision mediump float;\nuniform sampler2D u_image;\nuniform float positionOffsetX;\nuniform float positionOffsetY;\nvarying vec2 v_texCoord;\nvarying float v_progress;\nvoid main(){\n    vec2 pos = vec2(v_texCoord[0] - positionOffsetX/2.0, v_texCoord[1] -  positionOffsetY/2.0);\n    vec4 color = texture2D(u_image, pos);\n    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
 let aaf_video_position = {
   title: "AAF Video Position Effect",
   description: "A position effect based on the AAF spec.",
-  vertexShader: vertexShader$n,
-  fragmentShader: fragmentShader$n,
+  vertexShader: vertexShader$o,
+  fragmentShader: fragmentShader$o,
   properties: {
     positionOffsetX: { type: "uniform", value: 0 },
     positionOffsetY: { type: "uniform", value: 0 }
   },
   inputs: ["u_image"]
 };
-const vertexShader$m = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$m = "precision mediump float;\nuniform sampler2D u_image;\nuniform float cropLeft;\nuniform float cropRight;\nuniform float cropTop;\nuniform float cropBottom;\nvarying vec2 v_texCoord;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    if (v_texCoord[0] < (cropLeft+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    if (v_texCoord[0] > (cropRight+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    if (v_texCoord[1] < (-cropBottom+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    if (v_texCoord[1] > (-cropTop+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    gl_FragColor = color;\n}\n";
+const vertexShader$n = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$n = "precision mediump float;\nuniform sampler2D u_image;\nuniform float cropLeft;\nuniform float cropRight;\nuniform float cropTop;\nuniform float cropBottom;\nvarying vec2 v_texCoord;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    if (v_texCoord[0] < (cropLeft+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    if (v_texCoord[0] > (cropRight+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    if (v_texCoord[1] < (-cropBottom+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    if (v_texCoord[1] > (-cropTop+1.0)/2.0) color = vec4(0.0,0.0,0.0,0.0);\n    gl_FragColor = color;\n}\n";
 let aaf_video_crop = {
   title: "AAF Video Crop Effect",
   description: "A crop effect based on the AAF spec.",
-  vertexShader: vertexShader$m,
-  fragmentShader: fragmentShader$m,
+  vertexShader: vertexShader$n,
+  fragmentShader: fragmentShader$n,
   properties: {
     cropLeft: { type: "uniform", value: -1 },
     cropRight: { type: "uniform", value: 1 },
@@ -194,62 +194,62 @@ let aaf_video_crop = {
   },
   inputs: ["u_image"]
 };
-const vertexShader$l = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$l = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nuniform float currentTime;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nfloat rand(vec2 co, float currentTime){\n    return fract(sin(dot(co.xy,vec2(12.9898,78.233))+currentTime) * 43758.5453);\n}\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (clamp(rand(v_texCoord, currentTime),  0.01, 1.001) > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
+const vertexShader$m = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$m = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nuniform float currentTime;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nfloat rand(vec2 co, float currentTime){\n    return fract(sin(dot(co.xy,vec2(12.9898,78.233))+currentTime) * 43758.5453);\n}\nvoid main(){\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    if (clamp(rand(v_texCoord, currentTime),  0.01, 1.001) > mix){\n        gl_FragColor = color_a;\n    } else {\n        gl_FragColor = color_b;\n    }\n}\n";
 let staticDissolve = {
   title: "Static Dissolve",
   description: "A static dissolve effect. Typically used as a transistion.",
-  vertexShader: vertexShader$l,
-  fragmentShader: fragmentShader$l,
+  vertexShader: vertexShader$m,
+  fragmentShader: fragmentShader$m,
   properties: {
     mix: { type: "uniform", value: 0 }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const vertexShader$k = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$k = "precision mediump float;\nuniform sampler2D u_image;\nuniform float currentTime;\nuniform float amount;\nvarying vec2 v_texCoord;\nuniform vec3 weight;\nfloat rand(vec2 co, float currentTime){\n    return fract(sin(dot(co.xy,vec2(12.9898,78.233))+currentTime) * 43758.5453);\n}\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    color[0] = color[0] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[0] * amount;\n    color[1] = color[1] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[1] * amount;\n    color[2] = color[2] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[2] *amount;\n    gl_FragColor = color;\n}\n";
+const vertexShader$l = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$l = "precision mediump float;\nuniform sampler2D u_image;\nuniform float currentTime;\nuniform float amount;\nvarying vec2 v_texCoord;\nuniform vec3 weight;\nfloat rand(vec2 co, float currentTime){\n    return fract(sin(dot(co.xy,vec2(12.9898,78.233))+currentTime) * 43758.5453);\n}\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    color[0] = color[0] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[0] * amount;\n    color[1] = color[1] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[1] * amount;\n    color[2] = color[2] + (2.0*(clamp(rand(v_texCoord, currentTime),  0.01, 1.001)-0.5)) * weight[2] *amount;\n    gl_FragColor = color;\n}\n";
 let staticEffect = {
   title: "Static",
   description: "A static effect to add pseudo random noise to a video",
-  vertexShader: vertexShader$k,
-  fragmentShader: fragmentShader$k,
+  vertexShader: vertexShader$l,
+  fragmentShader: fragmentShader$l,
   properties: {
     weight: { type: "uniform", value: [1, 1, 1] },
     amount: { type: "uniform", value: 1 }
   },
   inputs: ["u_image"]
 };
-const vertexShader$j = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$j = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    float wobble = 1.0 - abs((mix*2.0)-1.0);\n    vec2 pos = vec2(v_texCoord[0] + ((sin(v_texCoord[1]*(10.0*wobble*3.14) + wobble*10.0)/13.0)), v_texCoord[1]);\n    vec4 color_a = texture2D(u_image_a, pos);\n    vec4 color_b = texture2D(u_image_b, pos);\n    color_a[0] *= (1.0 - mix);\n    color_a[1] *= (1.0 - mix);\n    color_a[2] *= (1.0 - mix);\n    color_a[3] *= (1.0 - mix);\n    color_b[0] *= mix;\n    color_b[1] *= mix;\n    color_b[2] *= mix;\n    color_b[3] *= mix;\n    gl_FragColor = color_a + color_b;\n}\n";
+const vertexShader$k = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$k = "precision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvarying float v_mix;\nvoid main(){\n    float wobble = 1.0 - abs((mix*2.0)-1.0);\n    vec2 pos = vec2(v_texCoord[0] + ((sin(v_texCoord[1]*(10.0*wobble*3.14) + wobble*10.0)/13.0)), v_texCoord[1]);\n    vec4 color_a = texture2D(u_image_a, pos);\n    vec4 color_b = texture2D(u_image_b, pos);\n    color_a[0] *= (1.0 - mix);\n    color_a[1] *= (1.0 - mix);\n    color_a[2] *= (1.0 - mix);\n    color_a[3] *= (1.0 - mix);\n    color_b[0] *= mix;\n    color_b[1] *= mix;\n    color_b[2] *= mix;\n    color_b[3] *= mix;\n    gl_FragColor = color_a + color_b;\n}\n";
 let dreamfade = {
   title: "Dream-Fade",
   description: "A wobbly dream effect. Typically used as a transistion.",
-  vertexShader: vertexShader$j,
-  fragmentShader: fragmentShader$j,
+  vertexShader: vertexShader$k,
+  fragmentShader: fragmentShader$k,
   properties: {
     mix: { type: "uniform", value: 0 }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const vertexShader$i = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$i = "precision mediump float;\nuniform sampler2D u_image;\nuniform float opacity;\nvarying vec2 v_texCoord;\nvarying float v_opacity;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    color[3] *= opacity;\n    gl_FragColor = color;\n}\n";
+const vertexShader$j = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$j = "precision mediump float;\nuniform sampler2D u_image;\nuniform float opacity;\nvarying vec2 v_texCoord;\nvarying float v_opacity;\nvoid main(){\n    vec4 color = texture2D(u_image, v_texCoord);\n    color[3] *= opacity;\n    gl_FragColor = color;\n}\n";
 const opacity = {
   title: "Opacity",
   description: "Sets the opacity of an input.",
-  vertexShader: vertexShader$i,
-  fragmentShader: fragmentShader$i,
+  vertexShader: vertexShader$j,
+  fragmentShader: fragmentShader$j,
   properties: {
     opacity: { type: "uniform", value: 0.7 }
   },
   inputs: ["u_image"]
 };
-const vertexShader$h = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$h = "precision mediump float;\nuniform sampler2D u_image;\nuniform float x;\nuniform float y;\nuniform float width;\nuniform float height;\nvarying vec2 v_texCoord;\nvarying float v_progress;\nvoid main(){\n    vec2 pos = (((v_texCoord)*vec2(width, height)) + vec2(0, 1.0-height)) +vec2(x,-y);\n    vec4 color = texture2D(u_image, pos);\n    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
+const vertexShader$i = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$i = "precision mediump float;\nuniform sampler2D u_image;\nuniform float x;\nuniform float y;\nuniform float width;\nuniform float height;\nvarying vec2 v_texCoord;\nvarying float v_progress;\nvoid main(){\n    vec2 pos = (((v_texCoord)*vec2(width, height)) + vec2(0, 1.0-height)) +vec2(x,-y);\n    vec4 color = texture2D(u_image, pos);\n    if (pos[0] < 0.0 || pos[0] > 1.0 || pos[1] < 0.0 || pos[1] > 1.0){\n        color = vec4(0.0,0.0,0.0,0.0);\n    }\n    gl_FragColor = color;\n}\n";
 let crop = {
   title: "Primer Simple Crop",
   description: "A simple crop processors for primer",
-  vertexShader: vertexShader$h,
-  fragmentShader: fragmentShader$h,
+  vertexShader: vertexShader$i,
+  fragmentShader: fragmentShader$i,
   properties: {
     x: { type: "uniform", value: 0 },
     y: { type: "uniform", value: 0 },
@@ -258,11 +258,23 @@ let crop = {
   },
   inputs: ["u_image"]
 };
-const vertexShader$g = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$g = "// 推近：B 从中心向外放大覆盖 A\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    // A 保持不动，B 从中心缩放放大进入\n    vec2 center = vec2(0.5, 0.5);\n    float scale = mix < 0.001 ? 1000.0 : 1.0 / mix;\n    vec2 scaledCoord = (v_texCoord - center) * scale + center;\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b;\n    if (scaledCoord.x >= 0.0 && scaledCoord.x <= 1.0 &&\n        scaledCoord.y >= 0.0 && scaledCoord.y <= 1.0) {\n        color_b = texture2D(u_image_b, scaledCoord);\n    } else {\n        color_b = vec4(0.0);\n    }\n    gl_FragColor = mix(color_a, color_b, clamp(mix * 2.0, 0.0, 1.0));\n}\n";
+const vertexShader$h = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$h = "// 推近：B 从中心向外放大覆盖 A\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    // A 保持不动，B 从中心缩放放大进入\n    vec2 center = vec2(0.5, 0.5);\n    float scale = mix < 0.001 ? 1000.0 : 1.0 / mix;\n    vec2 scaledCoord = (v_texCoord - center) * scale + center;\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b;\n    if (scaledCoord.x >= 0.0 && scaledCoord.x <= 1.0 &&\n        scaledCoord.y >= 0.0 && scaledCoord.y <= 1.0) {\n        color_b = texture2D(u_image_b, scaledCoord);\n    } else {\n        color_b = vec4(0.0);\n    }\n    gl_FragColor = mix(color_a, color_b, clamp(mix * 2.0, 0.0, 1.0));\n}\n";
 let pushClose = {
   title: "Push Close",
   description: "B 从中心向外放大覆盖 A，产生镜头推近效果。",
+  vertexShader: vertexShader$h,
+  fragmentShader: fragmentShader$h,
+  properties: {
+    mix: { type: "uniform", value: 0 }
+  },
+  inputs: ["u_image_a", "u_image_b"]
+};
+const vertexShader$g = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$g = "// 拉远：A 从正常大小缩小消失，B 淡入\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec2 center = vec2(0.5, 0.5);\n    // A 缩小拉远\n    float scaleA = 1.0 + mix * 1.5;\n    vec2 coordA = (v_texCoord - center) * scaleA + center;\n    vec4 color_a;\n    if (coordA.x >= 0.0 && coordA.x <= 1.0 &&\n        coordA.y >= 0.0 && coordA.y <= 1.0) {\n        color_a = texture2D(u_image_a, coordA) * (1.0 - mix);\n    } else {\n        color_a = vec4(0.0);\n    }\n    vec4 color_b = texture2D(u_image_b, v_texCoord) * mix;\n    gl_FragColor = color_a + color_b;\n}\n";
+let pushAway = {
+  title: "Push Away",
+  description: "A 从中心向外放大消失，B 淡入，产生镜头拉远效果。",
   vertexShader: vertexShader$g,
   fragmentShader: fragmentShader$g,
   properties: {
@@ -271,10 +283,10 @@ let pushClose = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$f = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$f = "// 拉远：A 从正常大小缩小消失，B 淡入\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec2 center = vec2(0.5, 0.5);\n    // A 缩小拉远\n    float scaleA = 1.0 + mix * 1.5;\n    vec2 coordA = (v_texCoord - center) * scaleA + center;\n    vec4 color_a;\n    if (coordA.x >= 0.0 && coordA.x <= 1.0 &&\n        coordA.y >= 0.0 && coordA.y <= 1.0) {\n        color_a = texture2D(u_image_a, coordA) * (1.0 - mix);\n    } else {\n        color_a = vec4(0.0);\n    }\n    vec4 color_b = texture2D(u_image_b, v_texCoord) * mix;\n    gl_FragColor = color_a + color_b;\n}\n";
-let pushAway = {
-  title: "Push Away",
-  description: "A 从中心向外放大消失，B 淡入，产生镜头拉远效果。",
+const fragmentShader$f = "// 叠化：标准交叉淡入淡出（与 crossfade 等价，作为独立转场存在）\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    gl_FragColor = color_a * (1.0 - mix) + color_b * mix;\n}\n";
+let fadeio = {
+  title: "Fade IO",
+  description: "标准交叉叠化淡入淡出转场。",
   vertexShader: vertexShader$f,
   fragmentShader: fragmentShader$f,
   properties: {
@@ -283,10 +295,10 @@ let pushAway = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$e = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$e = "// 叠化：标准交叉淡入淡出（与 crossfade 等价，作为独立转场存在）\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    gl_FragColor = color_a * (1.0 - mix) + color_b * mix;\n}\n";
-let fadeio = {
-  title: "Fade IO",
-  description: "标准交叉叠化淡入淡出转场。",
+const fragmentShader$e = "// 泛光：过渡中心产生高亮泛光，再淡入 B\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    // 泛光强度在 mix=0.5 时最大\n    float bloom = 1.0 - abs(mix * 2.0 - 1.0);\n    bloom = pow(bloom, 1.5);\n    vec4 blended = color_a * (1.0 - mix) + color_b * mix;\n    // 叠加白色泛光\n    vec4 white = vec4(1.0, 1.0, 1.0, 1.0);\n    gl_FragColor = blended + white * bloom * 0.6;\n}\n";
+let floodLight = {
+  title: "Flood Light",
+  description: "过渡中心产生高亮泛光，再叠化到 B。",
   vertexShader: vertexShader$e,
   fragmentShader: fragmentShader$e,
   properties: {
@@ -295,10 +307,10 @@ let fadeio = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$d = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$d = "// 泛光：过渡中心产生高亮泛光，再淡入 B\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    // 泛光强度在 mix=0.5 时最大\n    float bloom = 1.0 - abs(mix * 2.0 - 1.0);\n    bloom = pow(bloom, 1.5);\n    vec4 blended = color_a * (1.0 - mix) + color_b * mix;\n    // 叠加白色泛光\n    vec4 white = vec4(1.0, 1.0, 1.0, 1.0);\n    gl_FragColor = blended + white * bloom * 0.6;\n}\n";
-let floodLight = {
-  title: "Flood Light",
-  description: "过渡中心产生高亮泛光，再叠化到 B。",
+const fragmentShader$d = "// 闪黑：A 快速淡出到黑，再从黑淡入 B\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    vec4 black = vec4(0.0, 0.0, 0.0, 1.0);\n    float t = mix * 2.0;\n    if (t < 1.0) {\n        // 前半段：A → 黑\n        gl_FragColor = mix(color_a, black, t);\n    } else {\n        // 后半段：黑 → B\n        gl_FragColor = mix(black, color_b, t - 1.0);\n    }\n}\n";
+let flashBlack = {
+  title: "Flash Black",
+  description: "A 快速淡出到黑色，再从黑色淡入 B。",
   vertexShader: vertexShader$d,
   fragmentShader: fragmentShader$d,
   properties: {
@@ -307,10 +319,10 @@ let floodLight = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$c = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$c = "// 闪黑：A 快速淡出到黑，再从黑淡入 B\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    vec4 black = vec4(0.0, 0.0, 0.0, 1.0);\n    float t = mix * 2.0;\n    if (t < 1.0) {\n        // 前半段：A → 黑\n        gl_FragColor = mix(color_a, black, t);\n    } else {\n        // 后半段：黑 → B\n        gl_FragColor = mix(black, color_b, t - 1.0);\n    }\n}\n";
-let flashBlack = {
-  title: "Flash Black",
-  description: "A 快速淡出到黑色，再从黑色淡入 B。",
+const fragmentShader$c = "// 闪白：A 快速淡出到白，再从白淡入 B\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    vec4 white = vec4(1.0, 1.0, 1.0, 1.0);\n    float t = mix * 2.0;\n    if (t < 1.0) {\n        gl_FragColor = mix(color_a, white, t);\n    } else {\n        gl_FragColor = mix(white, color_b, t - 1.0);\n    }\n}\n";
+let flashWhite = {
+  title: "Flash White",
+  description: "A 快速淡出到白色，再从白色淡入 B。",
   vertexShader: vertexShader$c,
   fragmentShader: fragmentShader$c,
   properties: {
@@ -319,10 +331,10 @@ let flashBlack = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$b = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$b = "// 闪白：A 快速淡出到白，再从白淡入 B\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    vec4 white = vec4(1.0, 1.0, 1.0, 1.0);\n    float t = mix * 2.0;\n    if (t < 1.0) {\n        gl_FragColor = mix(color_a, white, t);\n    } else {\n        gl_FragColor = mix(white, color_b, t - 1.0);\n    }\n}\n";
-let flashWhite = {
-  title: "Flash White",
-  description: "A 快速淡出到白色，再从白色淡入 B。",
+const fragmentShader$b = "// 顺时针旋转缩放：A 旋转放大消失，B 旋转缩小进入\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvec2 rotateUV(vec2 uv, float angle) {\n    vec2 center = vec2(0.5, 0.5);\n    float s = sin(angle);\n    float c = cos(angle);\n    vec2 p = uv - center;\n    return vec2(p.x * c - p.y * s, p.x * s + p.y * c) + center;\n}\nvoid main() {\n    // A：顺时针旋转 + 放大淡出\n    float angleA = mix * 1.2;\n    float scaleA = 1.0 + mix * 0.5;\n    vec2 center = vec2(0.5, 0.5);\n    vec2 coordA = rotateUV(v_texCoord, angleA);\n    coordA = (coordA - center) * scaleA + center;\n    // B：从缩小旋转进入\n    float angleB = (1.0 - mix) * -1.2;\n    float scaleB = 1.0 + (1.0 - mix) * 0.5;\n    vec2 coordB = rotateUV(v_texCoord, angleB);\n    coordB = (coordB - center) * scaleB + center;\n    vec4 color_a = vec4(0.0);\n    if (coordA.x >= 0.0 && coordA.x <= 1.0 && coordA.y >= 0.0 && coordA.y <= 1.0)\n        color_a = texture2D(u_image_a, coordA);\n    vec4 color_b = vec4(0.0);\n    if (coordB.x >= 0.0 && coordB.x <= 1.0 && coordB.y >= 0.0 && coordB.y <= 1.0)\n        color_b = texture2D(u_image_b, coordB);\n    gl_FragColor = color_a * (1.0 - mix) + color_b * mix;\n}\n";
+let dreamyZoom = {
+  title: "Dreamy Zoom",
+  description: "A 顺时针旋转放大消失，B 旋转缩小进入。",
   vertexShader: vertexShader$b,
   fragmentShader: fragmentShader$b,
   properties: {
@@ -331,10 +343,10 @@ let flashWhite = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$a = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$a = "// 顺时针旋转缩放：A 旋转放大消失，B 旋转缩小进入\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvec2 rotateUV(vec2 uv, float angle) {\n    vec2 center = vec2(0.5, 0.5);\n    float s = sin(angle);\n    float c = cos(angle);\n    vec2 p = uv - center;\n    return vec2(p.x * c - p.y * s, p.x * s + p.y * c) + center;\n}\nvoid main() {\n    // A：顺时针旋转 + 放大淡出\n    float angleA = mix * 1.2;\n    float scaleA = 1.0 + mix * 0.5;\n    vec2 center = vec2(0.5, 0.5);\n    vec2 coordA = rotateUV(v_texCoord, angleA);\n    coordA = (coordA - center) * scaleA + center;\n    // B：从缩小旋转进入\n    float angleB = (1.0 - mix) * -1.2;\n    float scaleB = 1.0 + (1.0 - mix) * 0.5;\n    vec2 coordB = rotateUV(v_texCoord, angleB);\n    coordB = (coordB - center) * scaleB + center;\n    vec4 color_a = vec4(0.0);\n    if (coordA.x >= 0.0 && coordA.x <= 1.0 && coordA.y >= 0.0 && coordA.y <= 1.0)\n        color_a = texture2D(u_image_a, coordA);\n    vec4 color_b = vec4(0.0);\n    if (coordB.x >= 0.0 && coordB.x <= 1.0 && coordB.y >= 0.0 && coordB.y <= 1.0)\n        color_b = texture2D(u_image_b, coordB);\n    gl_FragColor = color_a * (1.0 - mix) + color_b * mix;\n}\n";
-let dreamyZoom = {
-  title: "Dreamy Zoom",
-  description: "A 顺时针旋转放大消失，B 旋转缩小进入。",
+const fragmentShader$a = "// 放大：A 从中心放大模糊消失，B 淡入\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec2 center = vec2(0.5, 0.5);\n    // A 放大\n    float scaleA = 1.0 + mix * 1.0;\n    vec2 coordA = (v_texCoord - center) * scaleA + center;\n    vec4 color_a = vec4(0.0);\n    if (coordA.x >= 0.0 && coordA.x <= 1.0 && coordA.y >= 0.0 && coordA.y <= 1.0)\n        color_a = texture2D(u_image_a, coordA) * (1.0 - mix);\n    // B 从缩小放大进入\n    float scaleB = 1.0 + (1.0 - mix) * 0.4;\n    vec2 coordB = (v_texCoord - center) * scaleB + center;\n    vec4 color_b = vec4(0.0);\n    if (coordB.x >= 0.0 && coordB.x <= 1.0 && coordB.y >= 0.0 && coordB.y <= 1.0)\n        color_b = texture2D(u_image_b, coordB) * mix;\n    gl_FragColor = color_a + color_b;\n}\n";
+let zoom = {
+  title: "Zoom",
+  description: "A 从中心放大消失，B 从缩小状态放大进入。",
   vertexShader: vertexShader$a,
   fragmentShader: fragmentShader$a,
   properties: {
@@ -343,35 +355,35 @@ let dreamyZoom = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$9 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$9 = "// 放大：A 从中心放大模糊消失，B 淡入\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec2 center = vec2(0.5, 0.5);\n    // A 放大\n    float scaleA = 1.0 + mix * 1.0;\n    vec2 coordA = (v_texCoord - center) * scaleA + center;\n    vec4 color_a = vec4(0.0);\n    if (coordA.x >= 0.0 && coordA.x <= 1.0 && coordA.y >= 0.0 && coordA.y <= 1.0)\n        color_a = texture2D(u_image_a, coordA) * (1.0 - mix);\n    // B 从缩小放大进入\n    float scaleB = 1.0 + (1.0 - mix) * 0.4;\n    vec2 coordB = (v_texCoord - center) * scaleB + center;\n    vec4 color_b = vec4(0.0);\n    if (coordB.x >= 0.0 && coordB.x <= 1.0 && coordB.y >= 0.0 && coordB.y <= 1.0)\n        color_b = texture2D(u_image_b, coordB) * mix;\n    gl_FragColor = color_a + color_b;\n}\n";
-let zoom = {
-  title: "Zoom",
-  description: "A 从中心放大消失，B 从缩小状态放大进入。",
-  vertexShader: vertexShader$9,
-  fragmentShader: fragmentShader$9,
-  properties: {
-    mix: { type: "uniform", value: 0 }
-  },
-  inputs: ["u_image_a", "u_image_b"]
-};
-const vertexShader$8 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$8 = "// 震动泛光：画面随机横向位移 + 泛光叠加\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nuniform float currentTime;\nvarying vec2 v_texCoord;\nfloat rand(float seed) {\n    return fract(sin(seed * 127.1 + currentTime * 311.7) * 43758.5453);\n}\nvoid main() {\n    // 震动强度在过渡中间最大\n    float intensity = 1.0 - abs(mix * 2.0 - 1.0);\n    intensity = pow(intensity, 0.8);\n    // 横向随机位移（按行分块）\n    float blockY = floor(v_texCoord.y * 12.0);\n    float offsetX = (rand(blockY) - 0.5) * 0.04 * intensity;\n    vec2 coordA = vec2(fract(v_texCoord.x + offsetX), v_texCoord.y);\n    vec2 coordB = vec2(fract(v_texCoord.x - offsetX), v_texCoord.y);\n    vec4 color_a = texture2D(u_image_a, coordA) * (1.0 - mix);\n    vec4 color_b = texture2D(u_image_b, coordB) * mix;\n    vec4 blended = color_a + color_b;\n    // 泛光\n    vec4 white = vec4(1.0, 1.0, 1.0, 1.0);\n    gl_FragColor = blended + white * intensity * 0.35;\n}\n";
+const fragmentShader$9 = "// 震动泛光：画面随机横向位移 + 泛光叠加\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nuniform float currentTime;\nvarying vec2 v_texCoord;\nfloat rand(float seed) {\n    return fract(sin(seed * 127.1 + currentTime * 311.7) * 43758.5453);\n}\nvoid main() {\n    // 震动强度在过渡中间最大\n    float intensity = 1.0 - abs(mix * 2.0 - 1.0);\n    intensity = pow(intensity, 0.8);\n    // 横向随机位移（按行分块）\n    float blockY = floor(v_texCoord.y * 12.0);\n    float offsetX = (rand(blockY) - 0.5) * 0.04 * intensity;\n    vec2 coordA = vec2(fract(v_texCoord.x + offsetX), v_texCoord.y);\n    vec2 coordB = vec2(fract(v_texCoord.x - offsetX), v_texCoord.y);\n    vec4 color_a = texture2D(u_image_a, coordA) * (1.0 - mix);\n    vec4 color_b = texture2D(u_image_b, coordB) * mix;\n    vec4 blended = color_a + color_b;\n    // 泛光\n    vec4 white = vec4(1.0, 1.0, 1.0, 1.0);\n    gl_FragColor = blended + white * intensity * 0.35;\n}\n";
 let glitch = {
   title: "Glitch",
   description: "画面随机横向位移故障抖动，叠加泛光效果。",
-  vertexShader: vertexShader$8,
-  fragmentShader: fragmentShader$8,
+  vertexShader: vertexShader$9,
+  fragmentShader: fragmentShader$9,
   properties: {
     mix: { type: "uniform", value: 0 },
     currentTime: { type: "uniform", value: 0 }
   },
   inputs: ["u_image_a", "u_image_b"]
 };
-const vertexShader$7 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$7 = "// Perlin 溶解：基于平滑噪点的溶解过渡\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\n// 简化版平滑噪点\nfloat hash(vec2 p) {\n    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);\n}\nfloat smoothNoise(vec2 p) {\n    vec2 i = floor(p);\n    vec2 f = fract(p);\n    vec2 u = f * f * (3.0 - 2.0 * f);\n    float a = hash(i);\n    float b = hash(i + vec2(1.0, 0.0));\n    float c = hash(i + vec2(0.0, 1.0));\n    float d = hash(i + vec2(1.0, 1.0));\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(vec2 p) {\n    float v = 0.0;\n    v += smoothNoise(p * 4.0) * 0.5;\n    v += smoothNoise(p * 8.0) * 0.25;\n    v += smoothNoise(p * 16.0) * 0.125;\n    return v;\n}\nvoid main() {\n    float noise = fbm(v_texCoord);\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    float threshold = mix;\n    float edge = 0.08;\n    float alpha = smoothstep(threshold - edge, threshold + edge, noise);\n    gl_FragColor = mix(color_a, color_b, alpha);\n}\n";
+const vertexShader$8 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$8 = "// Perlin 溶解：基于平滑噪点的溶解过渡\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\n// 简化版平滑噪点\nfloat hash(vec2 p) {\n    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);\n}\nfloat smoothNoise(vec2 p) {\n    vec2 i = floor(p);\n    vec2 f = fract(p);\n    vec2 u = f * f * (3.0 - 2.0 * f);\n    float a = hash(i);\n    float b = hash(i + vec2(1.0, 0.0));\n    float c = hash(i + vec2(0.0, 1.0));\n    float d = hash(i + vec2(1.0, 1.0));\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(vec2 p) {\n    float v = 0.0;\n    v += smoothNoise(p * 4.0) * 0.5;\n    v += smoothNoise(p * 8.0) * 0.25;\n    v += smoothNoise(p * 16.0) * 0.125;\n    return v;\n}\nvoid main() {\n    float noise = fbm(v_texCoord);\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    float threshold = mix;\n    float edge = 0.08;\n    float alpha = smoothstep(threshold - edge, threshold + edge, noise);\n    gl_FragColor = mix(color_a, color_b, alpha);\n}\n";
 let perlin = {
   title: "Perlin Dissolve",
   description: "基于 Perlin 分形噪点的平滑溶解过渡。",
+  vertexShader: vertexShader$8,
+  fragmentShader: fragmentShader$8,
+  properties: {
+    mix: { type: "uniform", value: 0 }
+  },
+  inputs: ["u_image_a", "u_image_b"]
+};
+const vertexShader$7 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$7 = "// 叠化（燃烧感）：叠加模式混合，高亮区域先过渡\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    // 亮度越高的区域越早切换到 B（模拟燃烧感）\n    float luma_a = dot(color_a.rgb, vec3(0.299, 0.587, 0.114));\n    float threshold = mix;\n    float edge = 0.15;\n    float alpha = smoothstep(threshold - edge, threshold + edge, luma_a);\n    // 在切换边缘叠加橙色火焰色\n    float fireEdge = smoothstep(threshold - edge, threshold, luma_a) *\n                     (1.0 - smoothstep(threshold, threshold + edge * 0.5, luma_a));\n    vec4 fireColor = vec4(1.0, 0.4, 0.0, 1.0);\n    vec4 blended = mix(color_a, color_b, alpha);\n    gl_FragColor = blended + fireColor * fireEdge * 0.5;\n}\n";
+let burn = {
+  title: "Burn",
+  description: "亮度高的区域先切换，边缘叠加橙色火焰色，产生燃烧叠化感。",
   vertexShader: vertexShader$7,
   fragmentShader: fragmentShader$7,
   properties: {
@@ -380,10 +392,10 @@ let perlin = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$6 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$6 = "// 叠化（燃烧感）：叠加模式混合，高亮区域先过渡\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    // 亮度越高的区域越早切换到 B（模拟燃烧感）\n    float luma_a = dot(color_a.rgb, vec3(0.299, 0.587, 0.114));\n    float threshold = mix;\n    float edge = 0.15;\n    float alpha = smoothstep(threshold - edge, threshold + edge, luma_a);\n    // 在切换边缘叠加橙色火焰色\n    float fireEdge = smoothstep(threshold - edge, threshold, luma_a) *\n                     (1.0 - smoothstep(threshold, threshold + edge * 0.5, luma_a));\n    vec4 fireColor = vec4(1.0, 0.4, 0.0, 1.0);\n    vec4 blended = mix(color_a, color_b, alpha);\n    gl_FragColor = blended + fireColor * fireEdge * 0.5;\n}\n";
-let burn = {
-  title: "Burn",
-  description: "亮度高的区域先切换，边缘叠加橙色火焰色，产生燃烧叠化感。",
+const fragmentShader$6 = "// 闪黑2：A 淡出到黑色，再从黑色淡入 B（与 flashBlack 相同逻辑，独立存在）\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    vec4 black = vec4(0.0, 0.0, 0.0, 1.0);\n    // 使用 smoothstep 让过渡更柔和\n    float t = mix * 2.0;\n    if (t < 1.0) {\n        float s = smoothstep(0.0, 1.0, t);\n        gl_FragColor = color_a * (1.0 - s) + black * s;\n    } else {\n        float s = smoothstep(0.0, 1.0, t - 1.0);\n        gl_FragColor = black * (1.0 - s) + color_b * s;\n    }\n}\n";
+let fadeColor = {
+  title: "Fade Color",
+  description: "A 以 smoothstep 柔和淡出到黑色，再从黑色淡入 B。",
   vertexShader: vertexShader$6,
   fragmentShader: fragmentShader$6,
   properties: {
@@ -392,10 +404,10 @@ let burn = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$5 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$5 = "// 闪黑2：A 淡出到黑色，再从黑色淡入 B（与 flashBlack 相同逻辑，独立存在）\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    vec4 black = vec4(0.0, 0.0, 0.0, 1.0);\n    // 使用 smoothstep 让过渡更柔和\n    float t = mix * 2.0;\n    if (t < 1.0) {\n        float s = smoothstep(0.0, 1.0, t);\n        gl_FragColor = color_a * (1.0 - s) + black * s;\n    } else {\n        float s = smoothstep(0.0, 1.0, t - 1.0);\n        gl_FragColor = black * (1.0 - s) + color_b * s;\n    }\n}\n";
-let fadeColor = {
-  title: "Fade Color",
-  description: "A 以 smoothstep 柔和淡出到黑色，再从黑色淡入 B。",
+const fragmentShader$5 = "// 褪色：A 逐渐去饱和变灰，再从灰色叠化到 B\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvec4 toGray(vec4 color) {\n    float luma = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n    return vec4(luma, luma, luma, color.a);\n}\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    float t = mix * 2.0;\n    if (t < 1.0) {\n        // 前半段：A 彩色 → A 灰度\n        vec4 gray_a = toGray(color_a);\n        gl_FragColor = mix(color_a, gray_a, t);\n    } else {\n        // 后半段：A 灰度 → B 彩色\n        vec4 gray_a = toGray(color_a);\n        gl_FragColor = mix(gray_a, color_b, t - 1.0);\n    }\n}\n";
+let fadeGrayScale = {
+  title: "Fade Gray Scale",
+  description: "A 逐渐去饱和变为灰度，再从灰度叠化到 B 彩色。",
   vertexShader: vertexShader$5,
   fragmentShader: fragmentShader$5,
   properties: {
@@ -404,10 +416,10 @@ let fadeColor = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$4 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$4 = "// 褪色：A 逐渐去饱和变灰，再从灰色叠化到 B\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvec4 toGray(vec4 color) {\n    float luma = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n    return vec4(luma, luma, luma, color.a);\n}\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    float t = mix * 2.0;\n    if (t < 1.0) {\n        // 前半段：A 彩色 → A 灰度\n        vec4 gray_a = toGray(color_a);\n        gl_FragColor = mix(color_a, gray_a, t);\n    } else {\n        // 后半段：A 灰度 → B 彩色\n        vec4 gray_a = toGray(color_a);\n        gl_FragColor = mix(gray_a, color_b, t - 1.0);\n    }\n}\n";
-let fadeGrayScale = {
-  title: "Fade Gray Scale",
-  description: "A 逐渐去饱和变为灰度，再从灰度叠化到 B 彩色。",
+const fragmentShader$4 = "// 圆形遮罩1：圆形从中心向外扩展，B 从圆内显现\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    vec2 center = vec2(0.5, 0.5);\n    // 最大半径为对角线一半，确保能覆盖全屏\n    float maxRadius = 0.7072;\n    float radius = mix * maxRadius;\n    float dist = distance(v_texCoord, center);\n    float edge = 0.02;\n    float alpha = smoothstep(radius - edge, radius + edge, dist);\n    // alpha=1 → 圆外显示 A，alpha=0 → 圆内显示 B\n    gl_FragColor = mix(color_b, color_a, alpha);\n}\n";
+let circleShowUp = {
+  title: "Circle Show Up",
+  description: "圆形遮罩从中心向外扩展，B 从圆内逐渐显现。",
   vertexShader: vertexShader$4,
   fragmentShader: fragmentShader$4,
   properties: {
@@ -416,10 +428,10 @@ let fadeGrayScale = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$3 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$3 = "// 圆形遮罩1：圆形从中心向外扩展，B 从圆内显现\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    vec2 center = vec2(0.5, 0.5);\n    // 最大半径为对角线一半，确保能覆盖全屏\n    float maxRadius = 0.7072;\n    float radius = mix * maxRadius;\n    float dist = distance(v_texCoord, center);\n    float edge = 0.02;\n    float alpha = smoothstep(radius - edge, radius + edge, dist);\n    // alpha=1 → 圆外显示 A，alpha=0 → 圆内显示 B\n    gl_FragColor = mix(color_b, color_a, alpha);\n}\n";
-let circleShowUp = {
-  title: "Circle Show Up",
-  description: "圆形遮罩从中心向外扩展，B 从圆内逐渐显现。",
+const fragmentShader$3 = "// 圆形遮罩2：圆形从外向中心收缩，A 在圆内消失\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    vec2 center = vec2(0.5, 0.5);\n    float maxRadius = 0.7072;\n    // 半径从最大收缩到 0\n    float radius = (1.0 - mix) * maxRadius;\n    float dist = distance(v_texCoord, center);\n    float edge = 0.02;\n    float alpha = smoothstep(radius - edge, radius + edge, dist);\n    // alpha=1 → 圆外显示 B，alpha=0 → 圆内显示 A\n    gl_FragColor = mix(color_a, color_b, alpha);\n}\n";
+let circleHide = {
+  title: "Circle Hide",
+  description: "圆形遮罩从外向中心收缩，A 在圆内逐渐消失，B 从外围显现。",
   vertexShader: vertexShader$3,
   fragmentShader: fragmentShader$3,
   properties: {
@@ -428,24 +440,12 @@ let circleShowUp = {
   inputs: ["u_image_a", "u_image_b"]
 };
 const vertexShader$2 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$2 = "// 圆形遮罩2：圆形从外向中心收缩，A 在圆内消失\nprecision mediump float;\nuniform sampler2D u_image_a;\nuniform sampler2D u_image_b;\nuniform float mix;\nvarying vec2 v_texCoord;\nvoid main() {\n    vec4 color_a = texture2D(u_image_a, v_texCoord);\n    vec4 color_b = texture2D(u_image_b, v_texCoord);\n    vec2 center = vec2(0.5, 0.5);\n    float maxRadius = 0.7072;\n    // 半径从最大收缩到 0\n    float radius = (1.0 - mix) * maxRadius;\n    float dist = distance(v_texCoord, center);\n    float edge = 0.02;\n    float alpha = smoothstep(radius - edge, radius + edge, dist);\n    // alpha=1 → 圆外显示 B，alpha=0 → 圆内显示 A\n    gl_FragColor = mix(color_a, color_b, alpha);\n}\n";
-let circleHide = {
-  title: "Circle Hide",
-  description: "圆形遮罩从外向中心收缩，A 在圆内逐渐消失，B 从外围显现。",
-  vertexShader: vertexShader$2,
-  fragmentShader: fragmentShader$2,
-  properties: {
-    mix: { type: "uniform", value: 0 }
-  },
-  inputs: ["u_image_a", "u_image_b"]
-};
-const vertexShader$1 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
-const fragmentShader$1 = "precision mediump float;\n\nuniform sampler2D u_image;\nuniform sampler2D u_lut;\n\n// LUT 行索引 (0 ~ 15)，对应 strip 中第几种滤镜\nuniform float lutIndex;\n// LUT 总行数，默认 16\nuniform float lutRows;\n// LUT 强度 0.0 = 原图, 1.0 = 完全应用\nuniform float lutStrength;\n// 锐化强度 0.0 = 不锐化\nuniform float sharpen;\n// 暗角强度 0.0 = 无暗角\nuniform float vignette;\n\nvarying vec2 v_texCoord;\n\nvoid main() {\n    vec2 uv = v_texCoord;\n\n    // --- 锐化 (unsharp mask) ---\n    vec4 color = texture2D(u_image, uv);\n    if (sharpen > 0.0) {\n        vec2 texelSize = vec2(1.0 / 512.0, 1.0 / 512.0);\n        vec4 n = texture2D(u_image, uv + vec2(0.0,  texelSize.y));\n        vec4 s = texture2D(u_image, uv + vec2(0.0, -texelSize.y));\n        vec4 e = texture2D(u_image, uv + vec2( texelSize.x, 0.0));\n        vec4 w = texture2D(u_image, uv + vec2(-texelSize.x, 0.0));\n        vec4 blur = (n + s + e + w) * 0.25;\n        color = color + (color - blur) * sharpen;\n    }\n\n    // --- LUT 查表 ---\n    // 计算当前 lutIndex 对应的 v 坐标（行中心）\n    float rowV = (lutIndex + 0.5) / lutRows;\n\n    // 分别对 R/G/B 查表（1D LUT，每个通道独立映射）\n    float r = texture2D(u_lut, vec2(color.r, rowV)).r;\n    float g = texture2D(u_lut, vec2(color.g, rowV)).g;\n    float b = texture2D(u_lut, vec2(color.b, rowV)).b;\n\n    vec4 lutColor = vec4(r, g, b, color.a);\n    vec4 result = mix(color, lutColor, lutStrength);\n\n    // --- 暗角 ---\n    if (vignette > 0.0) {\n        vec2 center = uv - 0.5;\n        float dist = dot(center, center) * 2.0;\n        float vig = 1.0 - dist * vignette;\n        result.rgb *= clamp(vig, 0.0, 1.0);\n    }\n\n    gl_FragColor = result;\n}\n";
+const fragmentShader$2 = "precision mediump float;\n\nuniform sampler2D u_image;\nuniform sampler2D u_lut;\n\n// LUT 行索引 (0 ~ 15)，对应 strip 中第几种滤镜\nuniform float lutIndex;\n// LUT 总行数，默认 16\nuniform float lutRows;\n// LUT 强度 0.0 = 原图, 1.0 = 完全应用\nuniform float lutStrength;\n// 锐化强度 0.0 = 不锐化\nuniform float sharpen;\n// 暗角强度 0.0 = 无暗角\nuniform float vignette;\n\nvarying vec2 v_texCoord;\n\nvoid main() {\n    vec2 uv = v_texCoord;\n\n    // --- 锐化 (unsharp mask) ---\n    vec4 color = texture2D(u_image, uv);\n    if (sharpen > 0.0) {\n        vec2 texelSize = vec2(1.0 / 512.0, 1.0 / 512.0);\n        vec4 n = texture2D(u_image, uv + vec2(0.0,  texelSize.y));\n        vec4 s = texture2D(u_image, uv + vec2(0.0, -texelSize.y));\n        vec4 e = texture2D(u_image, uv + vec2( texelSize.x, 0.0));\n        vec4 w = texture2D(u_image, uv + vec2(-texelSize.x, 0.0));\n        vec4 blur = (n + s + e + w) * 0.25;\n        color = color + (color - blur) * sharpen;\n    }\n\n    // --- LUT 查表 ---\n    // 计算当前 lutIndex 对应的 v 坐标（行中心）\n    float rowV = (lutIndex + 0.5) / lutRows;\n\n    // 分别对 R/G/B 查表（1D LUT，每个通道独立映射）\n    float r = texture2D(u_lut, vec2(color.r, rowV)).r;\n    float g = texture2D(u_lut, vec2(color.g, rowV)).g;\n    float b = texture2D(u_lut, vec2(color.b, rowV)).b;\n\n    vec4 lutColor = vec4(r, g, b, color.a);\n    vec4 result = mix(color, lutColor, lutStrength);\n\n    // --- 暗角 ---\n    if (vignette > 0.0) {\n        vec2 center = uv - 0.5;\n        float dist = dot(center, center) * 2.0;\n        float vig = 1.0 - dist * vignette;\n        result.rgb *= clamp(vig, 0.0, 1.0);\n    }\n\n    gl_FragColor = result;\n}\n";
 let lutFilter = {
   title: "LUT Filter",
   description: "基于 LUT strip 图的色彩滤镜。一张 512×N 的 LUT 图可承载 N 种滤镜，通过 lutIndex 切换。支持锐化与暗角。",
-  vertexShader: vertexShader$1,
-  fragmentShader: fragmentShader$1,
+  vertexShader: vertexShader$2,
+  fragmentShader: fragmentShader$2,
   properties: {
     // LUT 图片，传入 HTMLImageElement
     u_lut: { type: "uniform", value: new Image() },
@@ -459,6 +459,20 @@ let lutFilter = {
     sharpen: { type: "uniform", value: 0 },
     // 暗角强度 0.0 ~ 2.0
     vignette: { type: "uniform", value: 0 }
+  },
+  inputs: ["u_image"]
+};
+const vertexShader$1 = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const fragmentShader$1 = "precision mediump float;\nuniform sampler2D u_image;\nuniform float scale;\nuniform float x;\nuniform float y;\nvarying vec2 v_texCoord;\nvoid main() {\n    // scale: zoom around center; x/y: offset in NDC space (-1~1) mapped to UV space\n    vec2 center = vec2(0.5, 0.5);\n    vec2 uv = (v_texCoord - center) / scale + center;\n    // x/y are in NDC (-1~1), convert to UV offset (divide by 2, flip y)\n    uv -= vec2(x * 0.5, -y * 0.5);\n    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {\n        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);\n    } else {\n        gl_FragColor = texture2D(u_image, uv);\n    }\n}\n";
+let transform = {
+  title: "Transform",
+  description: "Per-clip scale and position transform. scale: 0.1~2 (default 1), x/y: -1~1 (default 0).",
+  vertexShader: vertexShader$1,
+  fragmentShader: fragmentShader$1,
+  properties: {
+    scale: { type: "uniform", value: 1 },
+    x: { type: "uniform", value: 0 },
+    y: { type: "uniform", value: 0 }
   },
   inputs: ["u_image"]
 };
@@ -500,7 +514,8 @@ let DEFINITIONS = {
   FADE_GRAY_SCALE: fadeGrayScale,
   CIRCLE_SHOW_UP: circleShowUp,
   CIRCLE_HIDE: circleHide,
-  LUT_FILTER: lutFilter
+  LUT_FILTER: lutFilter,
+  TRANSFORM: transform
 };
 const TYPE$b = "GraphNode";
 class GraphNode {
@@ -580,6 +595,32 @@ class GraphNode {
    */
   connect(targetNode, targetPort) {
     return this._renderGraph.registerConnection(this, targetNode, targetPort);
+  }
+  /**
+   * Set a per-node output transform applied by DestinationNode at render time.
+   * Does not insert any extra nodes into the graph, so filters and transitions are unaffected.
+   *
+   * @param {Object} transform
+   * @param {number} [transform.scale=1] - Zoom scale, range 0.1~2.
+   * @param {number} [transform.x=0]     - Horizontal offset, range -1~1.
+   * @param {number} [transform.y=0]     - Vertical offset, range -1~1.
+   *
+   * @example
+   * videoNode.setTransform({ scale: 0.5, x: 0.2, y: 0 });
+   */
+  setTransform({ scale = 1, x = 0, y = 0 } = {}) {
+    this._transform = {
+      scale: Math.min(2, Math.max(0.1, scale)),
+      x: Math.min(1, Math.max(-1, x)),
+      y: Math.min(1, Math.max(-1, y))
+    };
+  }
+  /**
+   * Get the current per-node output transform. Returns null if not set.
+   * @return {{ scale: number, x: number, y: number } | null}
+   */
+  getTransform() {
+    return this._transform || null;
   }
   /**
    * Disconnect this node from the targetNode. If targetNode is undefind remove all out-bound connections.
@@ -1124,7 +1165,7 @@ class MediaNode extends SourceNode {
       } else {
         if (this._state !== STATE$1.error) {
           this._ready = false;
-          if (this._state === STATE$1.playing && (this._currentTime >= this._startTime && this._currentTime <= this._stopTime)) {
+          if (this._state === STATE$1.playing && this._currentTime >= this._startTime && this._currentTime <= this._stopTime) {
             this._triggerCallbacks("waiting");
           }
         }
@@ -1583,13 +1624,13 @@ class ProcessingNode extends GraphNode {
   }
 }
 const fragmentShader = "precision mediump float;\nuniform sampler2D u_image;\nvarying vec2 v_texCoord;\nvarying float v_progress;\nvoid main(){\n    gl_FragColor = texture2D(u_image, v_texCoord);\n}\n";
-const vertexShader = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nvoid main() {\n    gl_Position = vec4(vec2(2.0,2.0)*a_position-vec2(1.0, 1.0), 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
+const vertexShader = "attribute vec2 a_position;\nattribute vec2 a_texCoord;\nvarying vec2 v_texCoord;\nuniform float u_scale;\nuniform vec2 u_offset;\nvoid main() {\n    vec2 pos = vec2(2.0, 2.0) * a_position - vec2(1.0, 1.0);\n    pos = pos * u_scale + u_offset;\n    gl_Position = vec4(pos, 0.0, 1.0);\n    v_texCoord = a_texCoord;\n}\n";
 const TYPE$5 = "DestinationNode";
 class DestinationNode extends ProcessingNode {
   /**
    * Initialise an instance of a DestinationNode.
    *
-   * There should only be a single instance of a DestinationNode per VideoContext instance. An VideoContext's destination can be accessed like so: videoContext.desitnation.
+   * There should only be a single instance of a DestinationNode per VideoContext instance. An VideoContext's destination can be accessed like so: videoContext.destination.
    *
    * You should not instantiate this directly.
    */
@@ -1602,6 +1643,8 @@ class DestinationNode extends ProcessingNode {
     };
     super(gl, renderGraph, definition, definition.inputs, false);
     this._displayName = TYPE$5;
+    this._scaleLocation = gl.getUniformLocation(this._program, "u_scale");
+    this._offsetLocation = gl.getUniformLocation(this._program, "u_offset");
   }
   _render() {
     let gl = this._gl;
@@ -1612,6 +1655,14 @@ class DestinationNode extends ProcessingNode {
     gl.clear(gl.COLOR_BUFFER_BIT);
     this.inputs.forEach((node) => {
       super._render();
+      const transform2 = DestinationNode._findTransform(node);
+      if (transform2) {
+        gl.uniform1f(this._scaleLocation, transform2.scale);
+        gl.uniform2f(this._offsetLocation, transform2.x, transform2.y);
+      } else {
+        gl.uniform1f(this._scaleLocation, 1);
+        gl.uniform2f(this._offsetLocation, 0, 0);
+      }
       var texture = node._texture;
       for (let mapping of this._shaderInputsTextureUnitMapping) {
         gl.activeTexture(mapping.textureUnit);
@@ -1620,6 +1671,23 @@ class DestinationNode extends ProcessingNode {
       }
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     });
+  }
+  /**
+   * Walk up the render graph from `node` and return the first transform found.
+   * This means the transform is set on the source node (or any node in the chain),
+   * and is completely independent of filters/transitions in between.
+   */
+  static _findTransform(node) {
+    if (!node)
+      return null;
+    if (node._transform)
+      return node._transform;
+    for (let input of node.inputs || []) {
+      const t = DestinationNode._findTransform(input);
+      if (t)
+        return t;
+    }
+    return null;
   }
 }
 const TYPE$4 = "EffectNode";
@@ -3608,9 +3676,13 @@ class VideoContext {
         });
       }
       if (effectStopTime !== Infinity) {
-        this.registerTimelineCallback(effectStopTime, () => {
-          bypassEffect();
-        }, 1);
+        this.registerTimelineCallback(
+          effectStopTime,
+          () => {
+            bypassEffect();
+          },
+          1
+        );
       }
     };
     effectNode.start = (time) => {
@@ -3643,6 +3715,26 @@ class VideoContext {
       "Warning: createEffectNode will be deprecated in v1.0, please switch to using VideoContext.effect()"
     );
     return this.effect(definition);
+  }
+  /**
+   * Create a transform effect node for per-clip scale and position control.
+   *
+   * @param {number} [scale=1] - Zoom scale, range 0.1~2.
+   * @param {number} [x=0] - Horizontal offset, range -1~1.
+   * @param {number} [y=0] - Vertical offset, range -1~1.
+   * @return {EffectNode} A new transform effect node.
+   *
+   * @example
+   * var transformNode = ctx.transform(0.5, 0.2, 0);
+   * videoNode.connect(transformNode);
+   * transformNode.connect(ctx.destination);
+   */
+  transform(scale = 1, x = 0, y = 0) {
+    const node = this.effect(DEFINITIONS.TRANSFORM);
+    node.scale = Math.min(2, Math.max(0.1, scale));
+    node.x = Math.min(1, Math.max(-1, x));
+    node.y = Math.min(1, Math.max(-1, y));
+    return node;
   }
   /**
    * Create a new compositiing node.

@@ -1,70 +1,131 @@
-import { Slider, Switch, InputNumber, Select } from 'antd'
-import type { IVideoTrackItem } from '@clipwiz/shared'
+import { Slider, InputNumber } from 'antd'
+import type { IVideoTrackItem, Transform } from '@clipwiz/shared'
 import { useEditorStore } from '../../store/editorStore'
-import { FieldRow, Section } from './FieldRow'
+import { Section } from './FieldRow'
+import { eventBus } from '../../utils'
 
 interface Props {
   item: IVideoTrackItem
 }
 
-const PLAY_RATE_OPTIONS = [
-  { label: '0.25x', value: 0.25 },
-  { label: '0.5x', value: 0.5 },
-  { label: '0.75x', value: 0.75 },
-  { label: '1x', value: 1 },
-  { label: '1.25x', value: 1.25 },
-  { label: '1.5x', value: 1.5 },
-  { label: '2x', value: 2 },
-]
+const DEFAULT_TRANSFORM: Transform = { scale: [1, 1, 1], rotate: [0, 0, 0], translate: [0, 0, 0] }
+
+const SliderRow = ({
+  label,
+  min,
+  max,
+  step = 1,
+  value,
+  onChange,
+  formatter,
+  parser,
+}: {
+  label: string
+  min: number
+  max: number
+  step?: number
+  value: number
+  onChange: (v: number) => void
+  formatter?: (v: number | undefined) => string
+  parser?: (v: string | undefined) => number
+}) => (
+  <div className="material-editor__field-row">
+    <span className="material-editor__field-label" title={label}>{label}</span>
+    <Slider
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={onChange}
+      style={{ flex: 1, margin: '0 8px' }}
+    />
+    <InputNumber
+      size="small"
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={(v) => onChange(v ?? min)}
+      formatter={formatter}
+      parser={parser}
+      style={{ width: 72, flexShrink: 0 }}
+    />
+  </div>
+)
 
 const VideoEditor = ({ item }: Props) => {
   const { updateTrackItemById } = useEditorStore()
   const update = (patch: Partial<IVideoTrackItem>) => updateTrackItemById(item.id, patch)
 
+  const transform = item.transform ?? DEFAULT_TRANSFORM
+  const scaleVal = Math.round((transform.scale[0] ?? 1) * 100)
+  const posX = Math.round(transform.translate[0] ?? 0)
+  const posY = Math.round(transform.translate[1] ?? 0)
+  const volumeVal = Math.round((item.volume ?? 1) * 100)
+  const rateVal = Math.round((item.playRate ?? 1) * 100)
+
+  const halfW = Math.round((item.width ?? 1920) / 2)
+  const halfH = Math.round((item.height ?? 1080) / 2)
+
+  const updateTransform = (patch: Partial<Transform>) => {
+    const newTransform = { ...transform, ...patch }
+    update({ transform: newTransform })
+    eventBus.emit('transform:update', { id: item.id, transform: newTransform })
+  }
+
   return (
     <div className="material-editor__fields">
+      <Section title="位置大小" />
+
+      <SliderRow
+        label="缩放"
+        min={10}
+        max={200}
+        value={scaleVal}
+        onChange={(v) => updateTransform({ scale: [v / 100, v / 100, transform.scale[2]] })}
+        formatter={(v) => `${v}%`}
+        parser={(v) => Number(v?.replace('%', '') ?? 100)}
+      />
+
+      <SliderRow
+        label="位置X"
+        min={-halfW}
+        max={halfW}
+        value={posX}
+        onChange={(v) => updateTransform({ translate: [v, transform.translate[1], transform.translate[2]] })}
+      />
+
+      <SliderRow
+        label="位置Y"
+        min={-halfH}
+        max={halfH}
+        value={posY}
+        onChange={(v) => updateTransform({ translate: [transform.translate[0], v, transform.translate[2]] })}
+      />
+
       <Section title="音频" />
-      <FieldRow label="音量">
-        <Slider
-          min={0} max={1} step={0.01}
-          value={item.volume ?? 1}
-          onChange={(v) => update({ volume: v })}
-        />
-      </FieldRow>
-      <FieldRow label="静音">
-        <Switch size="small" checked={item.muted ?? false} onChange={(v) => update({ muted: v })} />
-      </FieldRow>
+
+      <SliderRow
+        label="声音大小"
+        min={0}
+        max={100}
+        value={volumeVal}
+        onChange={(v) => update({ volume: v / 100 })}
+        formatter={(v) => `${v}%`}
+        parser={(v) => Number(v?.replace('%', '') ?? 0)}
+      />
 
       <Section title="播放" />
-      <FieldRow label="倍速">
-        <Select
-          size="small"
-          value={item.playRate ?? 1}
-          options={PLAY_RATE_OPTIONS}
-          onChange={(v) => update({ playRate: v })}
-          style={{ width: '100%' }}
-        />
-      </FieldRow>
 
-      <Section title="淡化" />
-      <FieldRow label="淡入 (ms)">
-        <InputNumber size="small" min={0} step={100} value={item.fadeIn ?? 0}
-          onChange={(v) => update({ fadeIn: v ?? 0 })} style={{ width: '100%' }} />
-      </FieldRow>
-      <FieldRow label="淡出 (ms)">
-        <InputNumber size="small" min={0} step={100} value={item.fadeOut ?? 0}
-          onChange={(v) => update({ fadeOut: v ?? 0 })} style={{ width: '100%' }} />
-      </FieldRow>
-
-      <Section title="裁剪" />
-      <FieldRow label="入点 (ms)">
-        <InputNumber size="small" min={0} value={item.fromTime}
-          onChange={(v) => update({ fromTime: v ?? 0 })} style={{ width: '100%' }} />
-      </FieldRow>
-      <FieldRow label="出点 (ms)">
-        <InputNumber size="small" min={0} value={item.toTime}
-          onChange={(v) => update({ toTime: v ?? 0 })} style={{ width: '100%' }} />
-      </FieldRow>
+      <SliderRow
+        label="视频速率"
+        min={10}
+        max={300}
+        value={rateVal}
+        onChange={(v) => update({ playRate: v / 100 })}
+        formatter={(v) => `${v}%`}
+        parser={(v) => Number(v?.replace('%', '') ?? 100)}
+      />
     </div>
   )
 }

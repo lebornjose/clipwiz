@@ -4,6 +4,16 @@ import { MATERIAL_TYPE, resolveTransitionBetweenItems } from '@clipwiz/shared'
 
 const genId = () => Math.random().toString(36).slice(2, 10)
 
+export interface VideoMaterialPayload {
+  url: string
+  type: 'video' | 'image'
+  duration?: number // ms
+  name?: string
+  width?: number
+  height?: number
+  materialId?: string
+}
+
 interface EditorState {
   trackInfo: ITrackInfo | null
   /** Incremented each time trackInfo is committed (drag end / delete / load). VideoPlayer watches this. */
@@ -11,16 +21,20 @@ interface EditorState {
   selectedActionId: string | null
   selectedTrackId: string | null
   selectedTransitionKey: string | null
+  /** Current playback time in seconds */
+  currentTime: number
 
   setTrackInfo: (info: ITrackInfo) => void
   setSelectedActionId: (id: string | null) => void
   setSelectedAction: (trackId: string, actionId: string) => void
   setSelectedTransitionKey: (key: string | null) => void
+  setCurrentTime: (time: number) => void
   deleteSelectedAction: () => void
   deleteSelectedTransition: () => void
   updateTrackItemById: (id: string, patch: Record<string, any>) => void
   updateSelectedTransition: (patch: Record<string, any>) => void
   addTrackItem: (trackType: MATERIAL_TYPE, item: Record<string, any>) => void
+  addVideoMaterial: (payload: VideoMaterialPayload) => void
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -29,6 +43,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   selectedActionId: null,
   selectedTrackId: null,
   selectedTransitionKey: null,
+  currentTime: 0,
 
   setTrackInfo: (info) =>
     set((state) => ({
@@ -41,6 +56,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setSelectedAction: (trackId, actionId) => set({ selectedActionId: actionId, selectedTrackId: trackId, selectedTransitionKey: null }),
 
   setSelectedTransitionKey: (key) => set({ selectedTransitionKey: key, selectedActionId: null, selectedTrackId: null }),
+
+  setCurrentTime: (time) => set({ currentTime: time }),
 
   deleteSelectedAction: () => {
     const { trackInfo, selectedActionId } = get()
@@ -130,6 +147,74 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const newTrack = { trackId: genId(), trackType, hide: false, children: [newItem] } as ITrack
       newTracks = [...trackInfo.tracks, newTrack]
     }
+    set((state) => ({
+      trackInfo: { ...trackInfo, tracks: newTracks },
+      trackInfoVersion: state.trackInfoVersion + 1,
+    }))
+  },
+
+  addVideoMaterial: (payload) => {
+    const { trackInfo, currentTime } = get()
+    if (!trackInfo) return
+
+    const currentTimeMs = currentTime * 1000
+    const itemDuration = payload.type === 'image' ? 2000 : (payload.duration ?? 2000)
+    const format = payload.type === 'image' ? MATERIAL_TYPE.IMAGE : MATERIAL_TYPE.VIDEO
+
+    const isVideo = payload.type === 'video'
+    const baseItem = {
+      id: genId(),
+      hide: false,
+      url: payload.url,
+      format,
+      title: payload.name,
+      materialId: payload.materialId,
+      duration: itemDuration,
+      width: payload.width ?? 1920,
+      height: payload.height ?? 1080,
+      startTime: 0,
+      endTime: itemDuration,
+    }
+    const newItem = (
+      isVideo
+        ? { ...baseItem, fromTime: 0, toTime: itemDuration, volume: 1, playRate: 1, needCut: 0 }
+        : baseItem
+    ) as IVideoTrackItem
+
+    const videoTracks = trackInfo.tracks.filter((t) => t.trackType === MATERIAL_TYPE.VIDEO)
+    const isOccupied = videoTracks.some((t) =>
+      (t.children as IVideoTrackItem[]).some(
+        (c) => c.startTime <= currentTimeMs && c.endTime > currentTimeMs
+      )
+    )
+
+    let newTracks: ITrack[]
+    if (isOccupied || videoTracks.length === 0) {
+      // Current time is occupied or no video track exists — create a new video track, clip starts at 0
+      const newTrack = {
+        trackId: genId(),
+        trackType: MATERIAL_TYPE.VIDEO,
+        hide: false,
+        children: [newItem],
+      } as ITrack
+      newTracks = [...trackInfo.tracks, newTrack]
+    } else {
+      // Append after the last clip in the first video track
+      const firstVideoTrack = videoTracks[0]
+      const clips = firstVideoTrack.children as IVideoTrackItem[]
+      const maxEnd = clips.reduce((m, c) => Math.max(m, c.endTime), 0)
+      const positioned: IVideoTrackItem = {
+        ...newItem,
+        startTime: maxEnd,
+        endTime: maxEnd + itemDuration,
+      }
+      newTracks = trackInfo.tracks.map((t) =>
+        t.trackId === firstVideoTrack.trackId
+          ? { ...t, children: [...(t.children as IVideoTrackItem[]), positioned] }
+          : t
+      ) as ITrack[]
+    }
+
     set((state) => ({
       trackInfo: { ...trackInfo, tracks: newTracks },
       trackInfoVersion: state.trackInfoVersion + 1,

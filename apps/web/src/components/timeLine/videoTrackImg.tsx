@@ -1,4 +1,5 @@
 import { ColumnWidthOutlined } from '@ant-design/icons';
+import { MATERIAL_TYPE } from '@clipwiz/shared';
 import { TimelineVideoActionData } from './convert';
 
 interface VideoTrackImgProps {
@@ -22,7 +23,8 @@ const getTransitionBadge = (videoTrackItem: TimelineVideoActionData | null) => {
 }
 
 export const VideoTrackImg = ({ videoTrackItem, selectedTransitionKey, onTransitionClick }: VideoTrackImgProps) => {
-  const videoUrl = videoTrackItem?.url || '';
+  const url = videoTrackItem?.url || '';
+  const isImage = videoTrackItem?.format === MATERIAL_TYPE.IMAGE;
   const count = 5;
   const transitionBadge = getTransitionBadge(videoTrackItem)
   const isTransitionSelected = transitionBadge ? transitionBadge.key === selectedTransitionKey : false
@@ -30,15 +32,13 @@ export const VideoTrackImg = ({ videoTrackItem, selectedTransitionKey, onTransit
   return (
     <div className='effect-item-video'>
       <div className='effect-item-video-strip'>
-        {Array.from({ length: count }).map((_, index) => {
-          return (
-            <img
-              src={`${videoUrl}?x-oss-process=video/snapshot,t_${index * 100},w_160,h_100`}
-              key={index}
-              alt={`video-frame-${index}`}
-            />
-          )
-        })}
+        {Array.from({ length: count }).map((_, index) => (
+          <img
+            src={isImage ? url : `${url}?x-oss-process=video/snapshot,t_${index * 100},w_160,h_100`}
+            key={index}
+            alt={`frame-${index}`}
+          />
+        ))}
       </div>
 
       <div className='effect-item-video-overlay'>

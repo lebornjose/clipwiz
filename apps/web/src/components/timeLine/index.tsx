@@ -54,6 +54,7 @@ const TimeLine = () => {
     setSelectedAction,
     selectedTransitionKey,
     setSelectedTransitionKey,
+    setCurrentTime,
   } = useEditorStore();
 
   const [editorData, setEditorData] = useState<CustomTimelineRow[]>(() =>
@@ -117,6 +118,7 @@ const TimeLine = () => {
     if (timelineState.current) {
       timelineState.current.listener.on('afterSetTime', ({ time }: { time: number }) => {
         eventBus.emit('time:update', time);
+        setCurrentTime(time);
       });
     }
 
