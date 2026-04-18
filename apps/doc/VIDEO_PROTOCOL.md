@@ -12,7 +12,7 @@
 interface ITrackInfo {
   width: number    // 导出视频宽度（像素）
   height: number   // 导出视频高度（像素），切换画面比例时只改 width，height 保持不变
-  duration: number // 视频总时长（秒）
+  duration: number // 视频总时长（毫秒）
   fps?: number     // 帧率（默认 25fps）
   tracks: ITrack[] // 轨道列表（有序，渲染时按轨道层级叠加）
 }
@@ -45,15 +45,16 @@ enum MATERIAL_TYPE {
 
 ## 3. 时间模型
 
-所有时间单位均为 **秒（浮点数）**。
+协议层时间单位统一为 **毫秒（ms）**。  
+播放器内部（VideoContext）在运行时会把 ms 换算为秒：`ms / 1000`。
 
 | 字段 | 含义 |
 |------|------|
-| `startTime` | 轨道项在 **整个视频时间轴** 上的起始时间 |
-| `endTime`   | 轨道项在 **整个视频时间轴** 上的结束时间 |
-| `fromTime`  | 素材内部的起始裁剪点（相对于原始素材） |
-| `toTime`    | 素材内部的结束裁剪点（相对于原始素材） |
-| `duration`  | 素材/片段的总时长 |
+| `startTime` | 轨道项在 **整个视频时间轴** 上的起始时间（ms） |
+| `endTime`   | 轨道项在 **整个视频时间轴** 上的结束时间（ms） |
+| `fromTime`  | 素材内部的起始裁剪点（相对于原始素材，ms） |
+| `toTime`    | 素材内部的结束裁剪点（相对于原始素材，ms） |
+| `duration`  | 素材/片段的总时长（ms） |
 
 > **关键关系**：`endTime - startTime = toTime - fromTime`（播放时长 = 素材裁剪时长）
 
@@ -68,8 +69,8 @@ interface TrackItem {
   id: string          // 全局唯一ID
   materialId?: string // 对应的素材库ID
   url?: string        // 素材资源地址（字幕等类型可为空）
-  startTime: number   // 在时间轴上的起始时间（秒）
-  endTime: number     // 在时间轴上的结束时间（秒）
+  startTime: number   // 在时间轴上的起始时间（ms）
+  endTime: number     // 在时间轴上的结束时间（ms）
   hide: boolean       // 是否隐藏该片段
 }
 ```
@@ -95,7 +96,7 @@ interface VideoTrack {
 interface IVideoTrackItem extends TrackItem {
   format: MATERIAL_TYPE.VIDEO | MATERIAL_TYPE.IMAGE
   title?: string        // 素材名称
-  duration: number      // 素材原始时长（秒）
+  duration: number      // 素材原始时长（ms）
   fromTime: number      // 素材裁剪起点
   toTime: number        // 素材裁剪终点
   width: number         // 视频分辨率宽
@@ -110,8 +111,8 @@ interface IVideoTrackItem extends TrackItem {
   soundtrack?: number   // 是否保留原声（0=否，1=是）
   audioStartTime?: number
   audioEndTime?: number
-  fadeIn?: number       // 视频淡入时间（秒）
-  fadeOut?: number      // 视频淡出时间（秒）
+  fadeIn?: number       // 视频淡入时间（ms）
+  fadeOut?: number      // 视频淡出时间（ms）
   scaleMode?: number    // 缩放模式
   segmentId?: string    // 片段ID（分段处理时使用）
   segmentStartTime?: number // 片段可播放最小时间
@@ -138,7 +139,7 @@ interface BgmAudioTrack {
 
 ```ts
 interface IAudioTrackItem extends TrackItem {
-  duration: number       // 音频原始时长（秒）
+  duration: number       // 音频原始时长（ms）
   fromTime: number       // 音频裁剪起点
   toTime: number         // 音频裁剪终点
   title: string          // 音频名称 / 口播文案
@@ -146,8 +147,8 @@ interface IAudioTrackItem extends TrackItem {
   volume: number         // 音量 0~1
   sound: number          // 声音增益
   audioSpeaker?: string  // 口播音色ID
-  fadeIn?: number        // 淡入时间（秒）
-  fadeOut?: number       // 淡出时间（秒）
+  fadeIn?: number        // 淡入时间（ms）
+  fadeOut?: number       // 淡出时间（ms）
   muted: boolean         // 是否静音
   format?: string        // 文件格式
 }
@@ -199,7 +200,7 @@ interface SubtitleTrack {
 interface ISubtitleTrackItem extends TrackItem {
   format: MATERIAL_TYPE.SUBTITLE
   text: string                     // 字幕文本内容
-  duration: number                 // 持续时长（秒）
+  duration: number                 // 持续时长（ms）
   position: [number, number]       // 字幕位置 [x, y]（归一化 0~1）
   fontFamily: string               // 字体名称
   fontSize: number                 // 字号（px）
@@ -288,7 +289,7 @@ interface TransitionItem {
   name: string        // 转场名称
   desc: string        // 描述
   effectId: string    // 转场效果ID
-  duration: number    // 转场时长（秒）
+  duration: number    // 转场时长（ms）
   format: number      // 转场格式标识
   layerList: string[] // 参与转场的图层ID列表
 }
@@ -317,7 +318,7 @@ interface TransitionItem {
 {
   "width": 1920,
   "height": 1080,
-  "duration": 10.0,
+  "duration": 10000,
   "fps": 25,
   "tracks": [
     {
@@ -330,13 +331,13 @@ interface TransitionItem {
           "materialId": "mat-abc",
           "url": "https://cdn.example.com/video.mp4",
           "startTime": 0,
-          "endTime": 5.0,
+          "endTime": 5000,
           "hide": false,
           "format": "video",
           "title": "主视频",
-          "duration": 30.0,
-          "fromTime": 2.0,
-          "toTime": 7.0,
+          "duration": 30000,
+          "fromTime": 2000,
+          "toTime": 7000,
           "width": 1920,
           "height": 1080,
           "volume": 1,
@@ -356,17 +357,17 @@ interface TransitionItem {
           "materialId": "mat-bgm",
           "url": "https://cdn.example.com/bgm.mp3",
           "startTime": 0,
-          "endTime": 10.0,
+          "endTime": 10000,
           "hide": false,
-          "duration": 120.0,
+          "duration": 120000,
           "fromTime": 0,
-          "toTime": 10.0,
+          "toTime": 10000,
           "title": "背景音乐",
           "playRate": 1,
           "volume": 0.8,
           "sound": 1,
-          "fadeIn": 1.0,
-          "fadeOut": 1.0,
+          "fadeIn": 1000,
+          "fadeOut": 1000,
           "muted": false
         }
       ]
@@ -378,12 +379,12 @@ interface TransitionItem {
       "children": [
         {
           "id": "item-003",
-          "startTime": 1.0,
-          "endTime": 3.5,
+          "startTime": 1000,
+          "endTime": 3500,
           "hide": false,
           "format": "subtitle",
           "text": "Hello World",
-          "duration": 2.5,
+          "duration": 2500,
           "position": [0.5, 0.85],
           "fontFamily": "PingFangSC",
           "fontSize": 36,

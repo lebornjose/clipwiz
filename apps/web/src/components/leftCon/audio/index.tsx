@@ -8,7 +8,9 @@ import {
   LoadingOutlined,
   UploadOutlined,
 } from '@ant-design/icons'
+import { MATERIAL_TYPE } from '@clipwiz/shared'
 import { useInfiniteList } from '../../../hooks/useInfiniteList'
+import { useEditorStore } from '../../../store/editorStore'
 import './index.less'
 
 interface AudioItem {
@@ -31,6 +33,9 @@ const formatDuration = (ms?: number) => {
 const AudioList = () => {
   const { items: audioList, loading, hasMore, sentinelRef, refresh } =
     useInfiniteList<AudioItem>(API, { limit: 20 })
+  const addTrackItem = useEditorStore((s) => s.addTrackItem)
+  const currentTime = useEditorStore((s) => s.currentTime)
+  const trackInfo = useEditorStore((s) => s.trackInfo)
   const [playingId, setPlayingId] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -59,7 +64,38 @@ const AudioList = () => {
   }
 
   const handleAdd = (item: AudioItem) => {
-    console.log('添加音频到时间轴:', item)
+    if (!trackInfo) {
+      message.warning('请先打开一个项目再添加音频')
+      return
+    }
+
+    const startTime = Math.max(0, Math.floor(currentTime * 1000))
+    const sourceDuration = Math.max(1000, item.duration ?? 10000)
+    const endTime = Math.min(trackInfo.duration, startTime + sourceDuration)
+    const timelineDuration = endTime - startTime
+
+    if (timelineDuration <= 0) {
+      message.warning('当前时间已在项目结尾，无法添加音频')
+      return
+    }
+
+    addTrackItem(MATERIAL_TYPE.BGM_AUDIO, {
+      format: MATERIAL_TYPE.BGM,
+      title: item.name,
+      url: item.url,
+      duration: sourceDuration,
+      fromTime: 0,
+      toTime: timelineDuration,
+      startTime,
+      endTime,
+      playRate: 1,
+      volume: 1,
+      sound: 1,
+      fadeIn: 0,
+      fadeOut: 0,
+      muted: false,
+    })
+    message.success('已添加到时间轴')
   }
 
   const handleDelete = (item: AudioItem, e: React.MouseEvent) => {

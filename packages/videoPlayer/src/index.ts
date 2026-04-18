@@ -1,6 +1,6 @@
 
 import VideoContext from './videocontext.js'
-import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, STATE, IPhotoTrackItem, IVideoNode, IVideoTrackItem, resolveTransitionBetweenItems, TransitionItem, Transform } from '@clipwiz/shared'
+import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, STATE, IPhotoTrackItem, IVideoNode, IVideoTrackItem, resolveTransitionBetweenItems, TransitionItem, Transform, TIME_CONFIG } from '@clipwiz/shared'
 import { addVideoNode } from './components/video'
 import { addBgm } from './components/audio'
 import { addPhotoNode } from './components/photo'
@@ -457,6 +457,39 @@ export class Editor {
       x: (transform.translate[0] ?? 0) / halfW,
       y: (transform.translate[1] ?? 0) / halfH,
     })
+    void this.draw()
+  }
+
+  setAudioNodeProps(id: string, patch: Partial<IAudioTrackItem>) {
+    const node = this.videoCtx._sourceNodes.find((n: any) => n.id === id && n._elementType === 'audio') as any
+    if (!node) return
+
+    const hasVolumePatch = patch.volume !== undefined
+    const baseVolume =
+      typeof node.sound === 'number'
+        ? node.sound
+        : (typeof node._attributes?.volume === 'number' ? node._attributes.volume : (node.volume ?? 1))
+    const volume = Math.max(0, Math.min(1, hasVolumePatch ? (patch.volume as number) : baseVolume))
+    const muted = patch.muted !== undefined
+      ? patch.muted
+      : (hasVolumePatch ? volume === 0 : Boolean(node.muted))
+    const playRate = patch.playRate ?? node.playbackRate ?? 1
+
+    node.sound = volume
+    node.volume = muted ? 0 : volume
+    node.muted = muted
+    node.playbackRate = Math.min(playRate, 4)
+
+    if (patch.fadeIn !== undefined) {
+      node.fadeIn = Math.max(0, patch.fadeIn)
+    }
+    if (patch.fadeOut !== undefined) {
+      node.fadeOut = Math.max(0, patch.fadeOut)
+    }
+    if (patch.endTime !== undefined) {
+      node.stop(Math.max(0, patch.endTime) / TIME_CONFIG.MILL_TIME_CONVERSION)
+    }
+
     void this.draw()
   }
 
