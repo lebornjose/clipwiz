@@ -292,6 +292,12 @@ export interface ITextTrackItem extends TrackItem {
   text: string // 文本
   format: MATERIAL_TYPE.TEXT
   duration: number // 持续时间
+  position?: [number, number] // 位置
+  fontFamily?: string // 字体
+  strokeWidth?: number // 描边宽度
+  strokeColor?: [number, number, number] // 描边颜色
+  fontSize?: number // 字号
+  color?: [number, number, number] // 字体颜色
 }
 export interface SubtitleTrack {
   trackType: MATERIAL_TYPE.SUBTITLE // 轨道类型

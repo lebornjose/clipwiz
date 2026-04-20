@@ -66,20 +66,21 @@ export const addAudio = (editor: Editor, trackId: string, item: IAudioTrackItem)
     return
   }
   const { prevNodeVolume } = getPervNextVolume(editor, item)
-  const audioNode = editor.videoCtx.audio(item.url!, item.fromTime / 1000, 4, {
+  const audioAttrs: { volume: number } & Record<string, unknown> = {
     volume: item.fadeIn ? prevNodeVolume : (item.hide ? 0 : item.volume),
-  })
+  }
+  if (item.format === MATERIAL_TYPE.BGM) {
+    audioAttrs.loop = true
+  }
+
+  const audioNode = editor.videoCtx.audio(item.url!, item.fromTime / 1000, 4, audioAttrs as any)
   audioNode.id = item.id
   audioNode.trackId = trackId
   audioNode.muted = !!item.hide
   audioNode.start(item.startTime / TIME_CONFIG.MILL_TIME_CONVERSION)
 
-  const videoTotal = (item.toTime - item.fromTime)
-  let endTime: number = Math.min(Math.ceil(videoTotal / item.playRate + item.startTime), item.endTime)
-  if (item.format === MATERIAL_TYPE.BGM) {
-    endTime = item.endTime
-  }
-  audioNode.stop(endTime / TIME_CONFIG.MILL_TIME_CONVERSION)
+  // BGM 倍速变化不改变时间轴长度，固定在 item.endTime 停止
+  audioNode.stop(item.endTime / TIME_CONFIG.MILL_TIME_CONVERSION)
   audioNode.sound = item.volume
   // 限制最大倍率为4
   audioNode.playbackRate = Math.min(item.playRate, 4)

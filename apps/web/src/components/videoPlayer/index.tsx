@@ -4,7 +4,7 @@ import VideoControls from './VideoControls'
 import './index.less'
 import { eventBus } from '../../utils'
 import { useEditorStore } from '../../store/editorStore'
-import type { Transform } from '@clipwiz/shared'
+import type { Transform, IAudioTrackItem, ISubtitleTrackItem, ITextTrackItem } from '@clipwiz/shared'
 
 const gcd = (a: number, b: number): number => {
   let x = Math.abs(a)
@@ -44,6 +44,30 @@ const VideoPlayer = () => {
     }
     eventBus.on('transform:update', onTransformUpdate)
     return () => eventBus.off('transform:update', onTransformUpdate)
+  }, [])
+
+  useEffect(() => {
+    const onAudioUpdate = ({ id, patch }: { id: string; patch: Partial<IAudioTrackItem> }) => {
+      editorRef.current?.setAudioNodeProps(id, patch)
+    }
+    eventBus.on('audio:update', onAudioUpdate)
+    return () => eventBus.off('audio:update', onAudioUpdate)
+  }, [])
+
+  useEffect(() => {
+    const onSubtitleUpdate = ({ id, patch }: { id: string; patch: Partial<ISubtitleTrackItem> }) => {
+      editorRef.current?.setSubtitleNodeProps(id, patch)
+    }
+    eventBus.on('subtitle:update', onSubtitleUpdate)
+    return () => eventBus.off('subtitle:update', onSubtitleUpdate)
+  }, [])
+
+  useEffect(() => {
+    const onTextUpdate = ({ id, patch }: { id: string; patch: Partial<ITextTrackItem> }) => {
+      editorRef.current?.setTextNodeProps(id, patch)
+    }
+    eventBus.on('text:update', onTextUpdate)
+    return () => eventBus.off('text:update', onTextUpdate)
   }, [])
 
   // Reinitialize editor whenever the committed protocol version changes

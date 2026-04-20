@@ -407,8 +407,11 @@ async function processComposite(job: Job, processor: VideoProcessor): Promise<an
 interface AudioSlot {
   sourceUrl: string
   startMs: number  // 在时间轴上的起始位置（ms）
+  timelineDurationMs: number // 在时间轴上的持续时长（ms）
   fromMs: number   // 在源音频中的裁剪起点（ms）
   toMs: number     // 在源音频中的裁剪终点（ms）
+  playRate: number // 播放倍率
+  repeat: boolean  // 是否需要循环补齐
   volume: number   // 音量 0-1
   fadeIn: number   // 淡入时长（ms）
   fadeOut: number  // 淡出时长（ms）
@@ -434,25 +437,32 @@ function normalizeAudioSlots(trackInfo: ITrackInfo): AudioSlot[] {
   audioTracks.forEach((track) => {
     track.children.forEach((item) => {
       const audioItem = item as IAudioTrackItem
-      if (audioItem.muted || audioItem.hide || !audioItem.url) return
+      const volume = audioItem.volume ?? 1
+      if (audioItem.muted || audioItem.hide || !audioItem.url || volume <= 0) return
 
+      const playRate = Math.max(0.5, Math.min(2, audioItem.playRate ?? 1))
       const startMs = Math.max(0, audioItem.startTime)
       const endMs = Math.max(startMs, audioItem.endTime)
       const fromMs = Math.max(0, audioItem.fromTime ?? 0)
-      const slotDurationMs = endMs - startMs
-      const sourceDurationMs = audioItem.toTime != null ? audioItem.toTime - fromMs : slotDurationMs
-      const actualDurationMs = Math.min(slotDurationMs, sourceDurationMs)
+      const timelineDurationMs = endMs - startMs
+      const sourceDurationMs = Math.max(1, (audioItem.toTime ?? (fromMs + timelineDurationMs)) - fromMs)
+      const fadeMax = Math.floor(timelineDurationMs / 2)
+      const outputDurationAfterRate = sourceDurationMs / playRate
+      const repeat = outputDurationAfterRate < timelineDurationMs
 
-      if (actualDurationMs <= 0) return
+      if (timelineDurationMs <= 0) return
 
       slots.push({
         sourceUrl: audioItem.url,
         startMs,
+        timelineDurationMs,
         fromMs,
-        toMs: fromMs + actualDurationMs,
-        volume: audioItem.volume ?? 1,
-        fadeIn: audioItem.fadeIn ?? 0,
-        fadeOut: audioItem.fadeOut ?? 0,
+        toMs: fromMs + sourceDurationMs,
+        playRate,
+        repeat,
+        volume,
+        fadeIn: Math.min(audioItem.fadeIn ?? 0, fadeMax),
+        fadeOut: Math.min(audioItem.fadeOut ?? 0, fadeMax),
       })
     })
   })
@@ -627,9 +637,20 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
   audioSlots.forEach((slot, i) => {
     const inputIndex = videoInputCount + i
     const label = `a${i}`
-    const segDurationSec = ((slot.toMs - slot.fromMs) / 1000).toFixed(3)
+    const timelineDurationSec = (slot.timelineDurationMs / 1000)
+    const segDurationSec = timelineDurationSec.toFixed(3)
 
-    let filterChain = `[${inputIndex}:a]atrim=start=${msToSec(slot.fromMs)}:end=${msToSec(slot.toMs)},asetpts=PTS-STARTPTS`
+    let filterChain = `[${inputIndex}:a]atrim=start=${msToSec(slot.fromMs)}:end=${msToSec(slot.toMs)}`
+
+    if (slot.playRate !== 1) {
+      filterChain += `,atempo=${slot.playRate.toFixed(3)}`
+    }
+
+    if (slot.repeat) {
+      filterChain += `,aloop=loop=-1:size=2147483647`
+    }
+
+    filterChain += `,asetpts=PTS-STARTPTS`
 
     if (slot.volume !== 1) {
       filterChain += `,volume=${slot.volume}`
@@ -638,12 +659,12 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
       filterChain += `,afade=t=in:st=0:d=${msToSec(slot.fadeIn)}`
     }
     if (slot.fadeOut > 0) {
-      const fadeStart = (parseFloat(segDurationSec) - slot.fadeOut / 1000).toFixed(3)
+      const fadeStart = Math.max(0, parseFloat(segDurationSec) - slot.fadeOut / 1000).toFixed(3)
       filterChain += `,afade=t=out:st=${fadeStart}:d=${msToSec(slot.fadeOut)}`
     }
 
-    // adelay 单位是毫秒，支持多声道
-    filterChain += `,adelay=${slot.startMs}|${slot.startMs}[${label}]`
+    // 固定输出到时间轴区间长度，再延迟到 startMs
+    filterChain += `,atrim=end=${segDurationSec},adelay=${slot.startMs}|${slot.startMs}[${label}]`
 
     filters.push(filterChain)
     audioOutLabels.push(`[${label}]`)

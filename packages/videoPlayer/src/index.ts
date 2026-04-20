@@ -1,13 +1,13 @@
 
 import VideoContext from './videocontext.js'
-import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, STATE, IPhotoTrackItem, IVideoNode, IVideoTrackItem, resolveTransitionBetweenItems, TransitionItem, Transform } from '@clipwiz/shared'
+import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, ISubtitleTrackItem, ITextTrackItem, STATE, IPhotoTrackItem, IVideoNode, IVideoTrackItem, resolveTransitionBetweenItems, TransitionItem, Transform, TIME_CONFIG } from '@clipwiz/shared'
 import { addVideoNode } from './components/video'
 import { addBgm } from './components/audio'
 import { addPhotoNode } from './components/photo'
 import { getGifImage } from './components/getBufferImage'
 import Pag from './components/Pag.js'
-import { addSubtitleNode } from './components/subtitle.js'
-import { addTextNode } from './components/text.js'
+import { addSubtitleNode, SubtitleBinding } from './components/subtitle.js'
+import { addTextNode, TextBinding } from './components/text.js'
 import { addFilter, FilterEffect } from './components/filter.js'
 
 export interface IApplicationOptions {
@@ -42,6 +42,8 @@ export class Editor {
     phase: 'pre' | 'transition' | 'post' | 'reset' // current routing state ('reset' = pending reconnect)
   }>
   public videoNodeRegistry: Map<string, IVideoNode>
+  public subtitleRegistry: Map<string, SubtitleBinding>
+  public textRegistry: Map<string, TextBinding>
   public filterEffects: FilterEffect[]    // 滤镜效果列表
 
   public addNodeFunc: {
@@ -71,6 +73,8 @@ export class Editor {
     this.transitionMap = new Map()
     this.transitionRegistry = new Map()
     this.videoNodeRegistry = new Map()
+    this.subtitleRegistry = new Map()
+    this.textRegistry = new Map()
     this.filterEffects = []
     this.canvasHeight = options.trackInfo.height
     this.canvasWidth = options.trackInfo.width
@@ -447,16 +451,75 @@ export class Editor {
   }
 
   setNodeTransform(id: string, transform: Transform) {
-    const node = this.videoNodeRegistry.get(id)
+    const node =
+      this.videoNodeRegistry.get(id) ||
+      (this.videoCtx._sourceNodes.find((n: any) => n.id === id && n._elementType !== 'audio') as any)
     if (!node) return
-    const item = node.metaData
-    const halfW = (item.width ?? 1920) / 2
-    const halfH = (item.height ?? 1080) / 2
+    const item = (node as any).metaData || {}
+    const halfW = (item.width ?? this.canvasWidth ?? 1920) / 2
+    const halfH = (item.height ?? this.canvasHeight ?? 1080) / 2
     ;(node as any).setTransform({
       scale: transform.scale[0] ?? 1,
       x: (transform.translate[0] ?? 0) / halfW,
       y: (transform.translate[1] ?? 0) / halfH,
     })
+    this.forceRefreshCurrentFrame()
+  }
+
+  setAudioNodeProps(id: string, patch: Partial<IAudioTrackItem>) {
+    const node = this.videoCtx._sourceNodes.find((n: any) => n.id === id && n._elementType === 'audio') as any
+    if (!node) return
+
+    const hasVolumePatch = patch.volume !== undefined
+    const baseVolume =
+      typeof node.sound === 'number'
+        ? node.sound
+        : (typeof node._attributes?.volume === 'number' ? node._attributes.volume : (node.volume ?? 1))
+    const volume = Math.max(0, Math.min(1, hasVolumePatch ? (patch.volume as number) : baseVolume))
+    const muted = patch.muted !== undefined
+      ? patch.muted
+      : (hasVolumePatch ? volume === 0 : Boolean(node.muted))
+    const playRate = patch.playRate ?? node.playbackRate ?? 1
+
+    node.sound = volume
+    node.volume = muted ? 0 : volume
+    node.muted = muted
+    node.playbackRate = Math.min(playRate, 4)
+
+    if (patch.fadeIn !== undefined) {
+      node.fadeIn = Math.max(0, patch.fadeIn)
+    }
+    if (patch.fadeOut !== undefined) {
+      node.fadeOut = Math.max(0, patch.fadeOut)
+    }
+    if (patch.endTime !== undefined) {
+      node.stop(Math.max(0, patch.endTime) / TIME_CONFIG.MILL_TIME_CONVERSION)
+    }
+
+    void this.draw()
+  }
+
+  setSubtitleNodeProps(id: string, patch: Partial<ISubtitleTrackItem>) {
+    const subtitle = this.subtitleRegistry.get(id)
+    if (!subtitle) return
+    subtitle.update(patch)
+    this.forceRefreshCurrentFrame()
+  }
+
+  setTextNodeProps(id: string, patch: Partial<ITextTrackItem>) {
+    const textBinding = this.textRegistry.get(id)
+    if (!textBinding) return
+    textBinding.update(patch)
+    this.forceRefreshCurrentFrame()
+  }
+
+  private forceRefreshCurrentFrame() {
+    const current = this.videoCtx.currentTime
+    const epsilon = 1 / 1000
+    // 在不改变用户可见时间的前提下，触发 VideoContext 重新采样当前帧
+    this.videoCtx.currentTime = Math.max(0, current - epsilon)
+    this.videoCtx.currentTime = current
+    this.setProgress(current)
     void this.draw()
   }
 
