@@ -22,10 +22,22 @@ export const addPhotoNode = (editor: Editor, trackId: string, item: IPhotoTrackI
   photoNode.id = item.id
   photoNode.trackId = trackId
   photoNode.materialId = item.materialId || item.id
+  ;(photoNode as any).metaData = item
   photoNode.type = MATERIAL_TYPE.PHOTO
   photoNode.format = item.format as MATERIAL_TYPE.IMAGE | MATERIAL_TYPE.GIF
   photoNode.start(item.startTime / TIME_CONFIG.MILL_TIME_CONVERSION)
   photoNode.stop(item.endTime / TIME_CONFIG.MILL_TIME_CONVERSION)
+
+  if (item.transform && typeof (photoNode as any).setTransform === 'function') {
+    const halfW = (item.width ?? editor.canvasWidth) / 2
+    const halfH = (item.height ?? editor.canvasHeight) / 2
+    ;(photoNode as any).setTransform({
+      scale: item.transform.scale?.[0] ?? 1,
+      x: (item.transform.translate?.[0] ?? 0) / halfW,
+      y: (item.transform.translate?.[1] ?? 0) / halfH,
+    })
+  }
+
   photoNode.connect(editor.videoCtx.destination)
   photoNode.registerCallback('loaded', () => {
     editor.draw();

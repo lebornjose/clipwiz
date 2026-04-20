@@ -1,7 +1,8 @@
-import { Input, InputNumber } from 'antd'
+import { Input, InputNumber, Select, Slider } from 'antd'
 import type { ISubtitleTrackItem } from '@clipwiz/shared'
 import { useEditorStore } from '../../store/editorStore'
 import { FieldRow, Section } from './FieldRow'
+import { eventBus } from '../../utils'
 
 interface Props {
   item: ISubtitleTrackItem
@@ -20,9 +21,26 @@ const fromHex = (hex: string): [number, number, number] => {
 const toHex = (rgb: [number, number, number]) =>
   '#' + rgb.map((v) => v.toString(16).padStart(2, '0')).join('')
 
+const FONT_FAMILY_OPTIONS = [
+  { label: '字制趣喜麦体', value: 'ZiZhiQuXiMaiTi' },
+  { label: '思源黑体', value: 'Source Han Sans' },
+  { label: '思源宋体', value: 'Source Han Serif' },
+  { label: '阿里巴巴普惠体', value: 'Alibaba PuHuiTi' },
+  { label: 'PingFang SC', value: 'PingFang SC' },
+]
+
 const SubtitleEditor = ({ item }: Props) => {
-  const { updateTrackItemById } = useEditorStore()
-  const update = (patch: Partial<ISubtitleTrackItem>) => updateTrackItemById(item.id, patch)
+  const { updateTrackItemById, trackInfo } = useEditorStore()
+  const update = (patch: Partial<ISubtitleTrackItem>) => {
+    updateTrackItemById(item.id, patch)
+    eventBus.emit('subtitle:update', { id: item.id, patch })
+  }
+  const maxX = Math.max(0, trackInfo?.width ?? 1280)
+  const maxY = Math.max(0, trackInfo?.height ?? 720)
+  const currentFont = item.fontFamily || FONT_FAMILY_OPTIONS[0].value
+  const fontOptions = FONT_FAMILY_OPTIONS.some((v) => v.value === currentFont)
+    ? FONT_FAMILY_OPTIONS
+    : [{ label: currentFont, value: currentFont }, ...FONT_FAMILY_OPTIONS]
 
   return (
     <div className="material-editor__fields">
@@ -38,8 +56,13 @@ const SubtitleEditor = ({ item }: Props) => {
           onChange={(v) => update({ fontSize: v ?? 40 })} style={{ width: '100%' }} />
       </FieldRow>
       <FieldRow label="字体">
-        <Input size="small" value={item.fontFamily}
-          onChange={(e) => update({ fontFamily: e.target.value })} />
+        <Select
+          size="small"
+          value={currentFont}
+          options={fontOptions}
+          onChange={(v) => update({ fontFamily: v })}
+          style={{ width: '100%' }}
+        />
       </FieldRow>
 
       <Section title="颜色" />
@@ -64,20 +87,36 @@ const SubtitleEditor = ({ item }: Props) => {
         </div>
       </FieldRow>
       <FieldRow label="描边宽度">
-        <InputNumber size="small" min={0} max={20} value={item.strokeWidth}
-          onChange={(v) => update({ strokeWidth: v ?? 0 })} style={{ width: '100%' }} />
+        <Slider
+          min={0}
+          max={40}
+          step={1}
+          value={item.strokeWidth ?? 0}
+          onChange={(v) => update({ strokeWidth: Number(v) || 0 })}
+          tooltip={{ formatter: (v) => `${v ?? 0}px` }}
+        />
       </FieldRow>
 
       <Section title="位置" />
       <FieldRow label="X (px)">
-        <InputNumber size="small" value={item.position?.[0]}
-          onChange={(v) => update({ position: [v ?? 0, item.position?.[1] ?? 0] })}
-          style={{ width: '100%' }} />
+        <Slider
+          min={0}
+          max={maxX}
+          step={1}
+          value={item.position?.[0] ?? 0}
+          onChange={(v) => update({ position: [Number(v) || 0, item.position?.[1] ?? 0] })}
+          tooltip={{ formatter: (v) => `${v ?? 0}px` }}
+        />
       </FieldRow>
       <FieldRow label="Y (px)">
-        <InputNumber size="small" value={item.position?.[1]}
-          onChange={(v) => update({ position: [item.position?.[0] ?? 0, v ?? 0] })}
-          style={{ width: '100%' }} />
+        <Slider
+          min={0}
+          max={maxY}
+          step={1}
+          value={item.position?.[1] ?? 0}
+          onChange={(v) => update({ position: [item.position?.[0] ?? 0, Number(v) || 0] })}
+          tooltip={{ formatter: (v) => `${v ?? 0}px` }}
+        />
       </FieldRow>
     </div>
   )
