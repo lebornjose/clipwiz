@@ -59,9 +59,11 @@ export const getGifImage = (editor: Editor, node: ISourceNode, canvasEl: HTMLCan
   } // 因为gif第一帧都没有画面
   const track = trackData.get(frameInx)
   if (track) {
-    // node.pipParams.width = track.codedWidth
-    // node.pipParams.height = track.codedHeight
-    return track.imageData
+    return {
+      imageData: track.imageData,
+      codedWidth: track.codedWidth,
+      codedHeight: track.codedHeight,
+    }
   }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   return imageDecoder.decode({ frameIndex: frameInx }).then((frame: { image: CanvasImageSource & { codedWidth: number; codedHeight: number } }) => {
@@ -76,6 +78,10 @@ export const getGifImage = (editor: Editor, node: ISourceNode, canvasEl: HTMLCan
     // node.pipParams.width = codedWidth
     // node.pipParams.height = codedHeight
     trackData.set(frameInx, { codedWidth, codedHeight, imageData })
-    return imageData
-  }) as Promise<ImageData | undefined>
+    return {
+      imageData,
+      codedWidth,
+      codedHeight,
+    }
+  }) as Promise<{ imageData?: ImageData; codedWidth: number; codedHeight: number } | undefined>
 }
