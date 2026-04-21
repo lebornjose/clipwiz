@@ -401,9 +401,28 @@ export class Editor {
     const gifUpdatePromises = nodes
       .filter((item) => item.type === MATERIAL_TYPE.PHOTO && item.format === MATERIAL_TYPE.GIF)
       .map(async (item) => {
-        const data = await getGifImage(this, item, this.gifCanvasEl)
-        if (data && item.ctx) {
-          item.ctx.putImageData(data, 0, 0)
+        const frame = await getGifImage(this, item, this.gifCanvasEl)
+        if (frame?.imageData && item.ctx) {
+          const dstCtx = item.ctx as CanvasRenderingContext2D
+          const dstCanvas = (item as any)._photoCanvas as HTMLCanvasElement | undefined
+          if (!dstCanvas) {
+            dstCtx.putImageData(frame.imageData, 0, 0)
+            return
+          }
+          // Keep GIF aspect ratio in preview to avoid stretching.
+          const srcCanvas = document.createElement('canvas')
+          srcCanvas.width = frame.codedWidth
+          srcCanvas.height = frame.codedHeight
+          const srcCtx = srcCanvas.getContext('2d')
+          if (!srcCtx) return
+          srcCtx.putImageData(frame.imageData, 0, 0)
+          const scale = Math.min(dstCanvas.width / frame.codedWidth, dstCanvas.height / frame.codedHeight)
+          const drawW = Math.max(1, Math.round(frame.codedWidth * scale))
+          const drawH = Math.max(1, Math.round(frame.codedHeight * scale))
+          const x = Math.round((dstCanvas.width - drawW) / 2)
+          const y = Math.round((dstCanvas.height - drawH) / 2)
+          dstCtx.clearRect(0, 0, dstCanvas.width, dstCanvas.height)
+          dstCtx.drawImage(srcCanvas, x, y, drawW, drawH)
         }
       })
 
@@ -456,8 +475,13 @@ export class Editor {
       (this.videoCtx._sourceNodes.find((n: any) => n.id === id && n._elementType !== 'audio') as any)
     if (!node) return
     const item = (node as any).metaData || {}
-    const halfW = (item.width ?? this.canvasWidth ?? 1920) / 2
-    const halfH = (item.height ?? this.canvasHeight ?? 1080) / 2
+    const isPhoto = (node as any).type === MATERIAL_TYPE.PHOTO
+    const halfW = isPhoto
+      ? (this.canvasWidth ?? 1920) / 2
+      : (item.width ?? this.canvasWidth ?? 1920) / 2
+    const halfH = isPhoto
+      ? (this.canvasHeight ?? 1080) / 2
+      : (item.height ?? this.canvasHeight ?? 1080) / 2
     ;(node as any).setTransform({
       scale: transform.scale[0] ?? 1,
       x: (transform.translate[0] ?? 0) / halfW,

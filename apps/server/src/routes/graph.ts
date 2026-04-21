@@ -22,7 +22,18 @@ function isTrackInfoLike(value: unknown): value is ITrackInfo {
 router.post('/', async (req, res, next) => {
   try {
     const requestTrackInfo = req.body?.trackInfo ?? req.body
-    const finalTrackInfo = isTrackInfoLike(requestTrackInfo) ? requestTrackInfo : trackInfo
+    const hasRequestPayload = req.body && Object.keys(req.body).length > 0
+    const useRequestTrackInfo = isTrackInfoLike(requestTrackInfo)
+
+    if (hasRequestPayload && !useRequestTrackInfo) {
+      return res.status(400).json({
+        code: 400,
+        message: 'trackInfo 参数非法，导出已拒绝（未使用 mock 回退）',
+      })
+    }
+
+    const finalTrackInfo = useRequestTrackInfo ? requestTrackInfo : trackInfo
+    console.log('[graph] source:', useRequestTrackInfo ? 'request.trackInfo' : 'server.mock')
 
     const result = await processVideoJob({
       data: {

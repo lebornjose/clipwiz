@@ -69,7 +69,6 @@ const PhotoEditor = ({ item }: Props) => {
   const maxTranslateX = (trackInfo?.width ?? 1280) / 2
   const maxTranslateY = (trackInfo?.height ?? 720) / 2
   const scale = clamp(draft.scale?.[0] ?? 1, 0.1, 2)
-  const rotateZ = clamp(draft.rotate?.[2] ?? 0, 0, 360)
   const translateX = clamp(draft.translate?.[0] ?? 0, -maxTranslateX, maxTranslateX)
   const translateY = clamp(draft.translate?.[1] ?? 0, -maxTranslateY, maxTranslateY)
 

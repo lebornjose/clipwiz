@@ -6,7 +6,7 @@ import { videoQueue } from './queue.js'
 import type { Job } from 'bull'
 import {
   ITrackInfo, MATERIAL_TYPE,
-  IVideoTrackItem, IAudioTrackItem,
+  IVideoTrackItem, IAudioTrackItem, IPhotoTrackItem,
   resolveTransitionBetweenItems,
 } from '@clipwiz/shared'
 
@@ -427,6 +427,16 @@ function itemInputIdx(item: IVideoTrackItem, map: Map<string, number>): number {
   return idx
 }
 
+function photoInputNeedsLoop(url: string): boolean {
+  // 静态图片需要循环输入到整段时长；gif/webp/视频容器可直接按原时间线裁剪
+  return /\.(png|jpe?g|bmp|tiff?|webp)(\?.*)?$/i.test(url)
+}
+
+function toFiniteNumber(value: unknown, fallback = 0): number {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : fallback
+}
+
 function normalizeAudioSlots(trackInfo: ITrackInfo): AudioSlot[] {
   const slots: AudioSlot[] = []
   const audioTrackTypes = [MATERIAL_TYPE.BGM_AUDIO, MATERIAL_TYPE.SOUND_AUDIO, MATERIAL_TYPE.ORAL_AUDIO]
@@ -478,6 +488,14 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
   const durationSec = msToSec(durationMs)
   const fps = Math.max(1, Math.floor(trackInfo.fps || 25))
   const audioSlots = normalizeAudioSlots(trackInfo)
+  const photoTracks = trackInfo.tracks.filter(
+    (t) => t.trackType === MATERIAL_TYPE.PHOTO && !t.hide
+  )
+  const photoItems: IPhotoTrackItem[] = []
+  photoTracks.forEach((track) => {
+    const items = (track.children as IPhotoTrackItem[]).filter((item) => !item.hide && !!item.url)
+    photoItems.push(...items)
+  })
 
   // Collect all video items per track (preserving track adjacency for transition detection)
   const videoTracks = trackInfo.tracks.filter(
@@ -496,6 +514,12 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
   // Build ffmpeg command: all video inputs first, then audio inputs
   let command = ffmpeg()
   allVideoItems.forEach((item) => { command = command.input(item.url!) })
+  photoItems.forEach((item) => {
+    command = command.input(item.url!)
+    if (photoInputNeedsLoop(item.url!)) {
+      command = command.inputOptions(['-loop 1'])
+    }
+  })
   audioSlots.forEach((slot) => { command = command.input(slot.sourceUrl) })
 
   // Map each item to its ffmpeg input index
@@ -630,8 +654,72 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
     currentVideoLabel = nextLabel
   })
 
+  // 处理贴图轨道（始终覆盖在视频层之上）
+  // 支持开始/结束时间、缩放、位移。位移坐标系与前端一致：中心为(0,0)。
+  const photoInputStartIdx = allVideoItems.length
+  photoItems
+    .sort((a, b) => a.startTime - b.startTime)
+    .forEach((item, idx) => {
+      const inputIdx = photoInputStartIdx + idx
+      const itemStart = toFiniteNumber(item.startTime, 0)
+      const itemEnd = toFiniteNumber(item.endTime, itemStart)
+      const startSec = Math.max(0, itemStart / 1000)
+      const endSec = Math.min(durationMs, Math.max(itemStart, itemEnd)) / 1000
+      if (endSec <= startSec) return
+
+      const rawScaleX = toFiniteNumber(item.transform?.scale?.[0], 1)
+      const rawScaleY = toFiniteNumber(item.transform?.scale?.[1], rawScaleX)
+      const scaleX = Math.max(0.01, rawScaleX)
+      const scaleY = Math.max(0.01, rawScaleY)
+      const translateX = toFiniteNumber(item.transform?.translate?.[0], 0)
+      const translateY = toFiniteNumber(item.transform?.translate?.[1], 0)
+
+      // Keep export behavior consistent with web preview:
+      // VideoContext applies transform on a full-canvas quad, not on sticker's own bbox.
+      // So photo base size must be timeline canvas size.
+      const baseW = width
+      const baseH = height
+      const outW = Math.max(2, Math.round(baseW * scaleX))
+      const outH = Math.max(2, Math.round(baseH * scaleY))
+
+      const x = Math.round((width - outW) / 2 + translateX)
+      const y = Math.round((height - outH) / 2 + translateY)
+
+      console.log('[composite][photo-debug]', {
+        id: item.id,
+        materialId: item.materialId,
+        startTime: itemStart,
+        endTime: itemEnd,
+        sourceUrl: item.url,
+        sourceWidth: item.width,
+        sourceHeight: item.height,
+        scaleX,
+        scaleY,
+        translateX,
+        translateY,
+        outW,
+        outH,
+        x,
+        y,
+      })
+
+      const pv = `pv${idx}`
+      const nextLabel = `[po${idx}]`
+      filters.push(
+        `[${inputIdx}:v]scale=${baseW}:${baseH}:force_original_aspect_ratio=decrease:flags=lanczos,` +
+        `pad=${baseW}:${baseH}:(ow-iw)/2:(oh-ih)/2:color=black@0,format=rgba,` +
+        `scale=${outW}:${outH}:flags=lanczos[${pv}]`
+      )
+      filters.push(
+        `${currentVideoLabel}[${pv}]overlay=x=${x}:y=${y}:eof_action=pass:shortest=0:enable='between(t,${startSec.toFixed(3)},${endSec.toFixed(3)})'${nextLabel}`
+      )
+      currentVideoLabel = nextLabel
+    })
+
+  const finalVideoLabel = currentVideoLabel
+
   // 处理背景音频轨道
-  const videoInputCount = allVideoItems.length
+  const videoInputCount = allVideoItems.length + photoItems.length
   const audioOutLabels: string[] = []
 
   audioSlots.forEach((slot, i) => {
@@ -683,7 +771,7 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
   }
 
   const outputOptions = [
-    '-map', '[vout]',
+    '-map', finalVideoLabel,
     ...(hasAudio ? ['-map', '[aout]'] : []),
     '-t', durationSec,
     '-r', `${fps}`,

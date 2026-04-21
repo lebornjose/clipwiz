@@ -34,6 +34,7 @@ interface EditorState {
   updateTrackItemById: (id: string, patch: Record<string, any>) => void
   updateSelectedTransition: (patch: Record<string, any>) => void
   addTrackItem: (trackType: MATERIAL_TYPE, item: Record<string, any>) => void
+  addTextMaterial: (item: Record<string, any>) => void
   addVideoMaterial: (payload: VideoMaterialPayload) => void
 }
 
@@ -145,8 +146,60 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       ) as ITrack[]
     } else {
       const newTrack = { trackId: genId(), trackType, hide: false, children: [newItem] } as ITrack
-      newTracks = [...trackInfo.tracks, newTrack]
+      // 贴图轨道默认置顶，避免新增后出现在时间轴最底部
+      newTracks = trackType === MATERIAL_TYPE.PHOTO
+        ? [newTrack, ...trackInfo.tracks]
+        : [...trackInfo.tracks, newTrack]
     }
+    set((state) => ({
+      trackInfo: { ...trackInfo, tracks: newTracks },
+      trackInfoVersion: state.trackInfoVersion + 1,
+    }))
+  },
+
+  addTextMaterial: (item) => {
+    const { trackInfo, currentTime } = get()
+    if (!trackInfo) return
+
+    const startTime = Math.max(0, Math.floor(currentTime * 1000))
+    const maxDuration = Math.max(1, trackInfo.duration - startTime)
+    const duration = Math.min(2000, maxDuration)
+    const endTime = startTime + duration
+
+    const textItem = {
+      id: genId(),
+      hide: false,
+      format: MATERIAL_TYPE.TEXT,
+      startTime,
+      endTime,
+      duration,
+      text: '',
+      ...item,
+    }
+
+    const textTracks = trackInfo.tracks.filter((t) => t.trackType === MATERIAL_TYPE.TEXT)
+    const occupied = textTracks.some((track) =>
+      (track.children as any[]).some((child) => child.startTime <= startTime && child.endTime > startTime),
+    )
+
+    let newTracks: ITrack[]
+    if (textTracks.length === 0 || occupied) {
+      const newTrack = {
+        trackId: genId(),
+        trackType: MATERIAL_TYPE.TEXT,
+        hide: false,
+        children: [textItem],
+      } as ITrack
+      newTracks = [...trackInfo.tracks, newTrack]
+    } else {
+      const targetTrack = textTracks[0]
+      newTracks = trackInfo.tracks.map((track) =>
+        track.trackId === targetTrack.trackId
+          ? { ...track, children: [...(track.children as any[]), textItem] }
+          : track,
+      ) as ITrack[]
+    }
+
     set((state) => ({
       trackInfo: { ...trackInfo, tracks: newTracks },
       trackInfoVersion: state.trackInfoVersion + 1,
