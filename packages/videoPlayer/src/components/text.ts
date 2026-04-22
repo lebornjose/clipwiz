@@ -11,6 +11,9 @@ export interface TextBinding {
   item: ITextTrackItem
   textNode: any
   canvas: HTMLCanvasElement
+  pagCanvas: HTMLCanvasElement | null
+  pagSize: { width: number; height: number }
+  anchor: { cx: number; cy: number; width: number; height: number } | null
   pagView: any | null
   pagFile: any | null
   editableTextIndices: number[]
@@ -48,17 +51,75 @@ const toPagColor = (rgb: [number, number, number]) => ({
   blue: rgb[2],
 })
 
-const applyPositionToNode = (textNode: any, canvasWidth: number, canvasHeight: number, item: ITextTrackItem) => {
-  if (!textNode || typeof textNode.setTransform !== 'function') return
-  const px = item.position?.[0] ?? canvasWidth / 2
-  const py = item.position?.[1] ?? canvasHeight / 2
-  const halfW = canvasWidth / 2
-  const halfH = canvasHeight / 2
-  textNode.setTransform({
-    scale: 1,
-    x: (px - halfW) / halfW,
-    y: (py - halfH) / halfH,
-  })
+const getPagSize = (pagFile: any, fallbackW: number, fallbackH: number) => {
+  const rawW = typeof pagFile?.width === 'function' ? Number(pagFile.width()) : fallbackW
+  const rawH = typeof pagFile?.height === 'function' ? Number(pagFile.height()) : fallbackH
+  return {
+    width: Number.isFinite(rawW) && rawW > 0 ? Math.round(rawW) : fallbackW,
+    height: Number.isFinite(rawH) && rawH > 0 ? Math.round(rawH) : fallbackH,
+  }
+}
+
+const getTargetPosition = (item: ITextTrackItem, width: number, height: number) => {
+  const pos = item.position
+  if (!pos) return null
+  const x = Number.isFinite(Number(pos[0])) ? Number(pos[0]) : width / 2
+  const y = Number.isFinite(Number(pos[1])) ? Number(pos[1]) : height / 2
+  return { x, y }
+}
+
+const findAlphaBounds = (source: HTMLCanvasElement, sourceW: number, sourceH: number) => {
+  const probeCanvas = document.createElement('canvas')
+  probeCanvas.width = sourceW
+  probeCanvas.height = sourceH
+  const probeCtx = probeCanvas.getContext('2d', { willReadFrequently: true })
+  if (!probeCtx) return { cx: sourceW / 2, cy: sourceH / 2, width: sourceW, height: sourceH }
+  probeCtx.clearRect(0, 0, sourceW, sourceH)
+  probeCtx.drawImage(source, 0, 0, sourceW, sourceH)
+  const data = probeCtx.getImageData(0, 0, sourceW, sourceH).data
+  let minX = sourceW
+  let minY = sourceH
+  let maxX = -1
+  let maxY = -1
+  for (let y = 0; y < sourceH; y++) {
+    for (let x = 0; x < sourceW; x++) {
+      const alpha = data[(y * sourceW + x) * 4 + 3]
+      if (alpha <= 4) continue
+      if (x < minX) minX = x
+      if (x > maxX) maxX = x
+      if (y < minY) minY = y
+      if (y > maxY) maxY = y
+    }
+  }
+  if (maxX < minX || maxY < minY) return { cx: sourceW / 2, cy: sourceH / 2, width: sourceW, height: sourceH }
+  return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, width: maxX - minX + 1, height: maxY - minY + 1 }
+}
+
+const drawPagToCanvas = (binding: TextBinding, canvasWidth: number, canvasHeight: number) => {
+  const ctx = binding.canvas.getContext('2d')
+  if (!ctx || !binding.pagCanvas) return
+  const { width: pagW, height: pagH } = binding.pagSize
+  const fitScale = Math.min(canvasWidth / pagW, canvasHeight / pagH)
+  const drawW = Math.max(1, Math.round(pagW * fitScale))
+  const drawH = Math.max(1, Math.round(pagH * fitScale))
+  if (!binding.anchor) {
+    binding.anchor = findAlphaBounds(binding.pagCanvas, pagW, pagH)
+  }
+  const desiredTextHeight = Math.max(1, binding.textState.fontSize || 0)
+  const maxTextWidth = Math.max(1, canvasWidth * 0.92)
+  const heightScale = desiredTextHeight > 0 ? desiredTextHeight / Math.max(1, binding.anchor.height * fitScale) : 1
+  const widthScale = maxTextWidth / Math.max(1, binding.anchor.width * fitScale)
+  const contentScale = Math.max(0.01, Math.min(heightScale, widthScale, 8))
+  const finalScale = fitScale * contentScale
+  const target = getTargetPosition(binding.item, canvasWidth, canvasHeight)
+  const drawX = target
+    ? Math.round(target.x - binding.anchor.cx * finalScale)
+    : Math.round((canvasWidth - drawW * contentScale) / 2)
+  const drawY = target
+    ? Math.round(target.y - binding.anchor.cy * finalScale)
+    : Math.round((canvasHeight - drawH * contentScale) / 2)
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+  ctx.drawImage(binding.pagCanvas, drawX, drawY, Math.round(drawW * contentScale), Math.round(drawH * contentScale))
 }
 
 const applyLegacyTextLayers = (binding: TextBinding) => {
@@ -182,6 +243,9 @@ export const addTextNode = async (editor: Editor, trackId: string, item: ITextTr
     item,
     textNode,
     canvas,
+    pagCanvas: null,
+    pagSize: { width: editor.canvasWidth, height: editor.canvasHeight },
+    anchor: null,
     pagView: null,
     pagFile: null,
     editableTextIndices: [],
@@ -210,6 +274,7 @@ export const addTextNode = async (editor: Editor, trackId: string, item: ITextTr
 
       if (patch.text !== undefined) {
         binding.textState.text = patch.text
+        binding.anchor = null
       }
       if (patch.fontFamily !== undefined) {
         binding.textState.fontFamily = patch.fontFamily
@@ -229,15 +294,11 @@ export const addTextNode = async (editor: Editor, trackId: string, item: ITextTr
 
       applyReplaceableText(binding)
 
-      if (patch.position !== undefined) {
-        applyPositionToNode(binding.textNode, editor.canvasWidth, editor.canvasHeight, binding.item)
-      }
       // 文案更新后强制以当前时间重绘一帧，避免“数据变了但画面不刷新”
       syncByTimeline()
     },
   }
   editor.textRegistry.set(item.id, binding)
-  applyPositionToNode(textNode, editor.canvasWidth, editor.canvasHeight, item)
 
   const durationSec = Math.max(
     0.001,
@@ -253,6 +314,7 @@ export const addTextNode = async (editor: Editor, trackId: string, item: ITextTr
     }
     if (typeof binding.pagView.flush === 'function') {
       void binding.pagView.flush().then(() => {
+        drawPagToCanvas(binding, editor.canvasWidth, editor.canvasHeight)
         void editor.draw()
       }).catch(() => {
         // ignore
@@ -294,11 +356,16 @@ export const addTextNode = async (editor: Editor, trackId: string, item: ITextTr
     const buffer = await fetch(url).then((response) => response.arrayBuffer())
     const pagFile = await PAG.PAGFile.load(buffer)
     binding.pagFile = pagFile
+    binding.pagSize = getPagSize(pagFile, editor.canvasWidth, editor.canvasHeight)
+    const pagCanvas = document.createElement('canvas')
+    pagCanvas.width = binding.pagSize.width
+    pagCanvas.height = binding.pagSize.height
+    binding.pagCanvas = pagCanvas
 
     if (binding.pagView && typeof binding.pagView.setComposition === 'function') {
       binding.pagView.setComposition(pagFile)
     } else {
-      binding.pagView = await PAG.PAGView.init(pagFile, canvas)
+      binding.pagView = await PAG.PAGView.init(pagFile, pagCanvas)
     }
     // 编辑态关闭缓存，避免模板静态缓存导致文案替换后仍显示旧帧
     if (typeof binding.pagView?.setCacheEnabled === 'function') {

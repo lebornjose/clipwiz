@@ -14,6 +14,7 @@ import MaterialEditor from '../../components/materialEditor'
 import { POST, GET, PUT, downloadFile } from '../../utils'
 import { useEditorStore } from '../../store/editorStore'
 import { useShortcuts } from '../../hooks/useShortcuts'
+import { prepareTrackInfoWithPagPrerender } from '../../utils/pagPrerender'
 import '../../App.css'
 
 const { Header } = Layout
@@ -138,10 +139,27 @@ export default function EditorPage() {
 
   const handleExportVideo = async () => {
     if (!trackInfo) return
-    const data = await POST('/api/graph', { trackInfo })
-    const url = data.data.downloadUrl
-    downloadFile(url, 'exported-video.mp4')
-    message.success('导出视频成功')
+    const hideLoading = message.loading('正在预渲染字幕并导出，请稍候...', 0)
+    try {
+      const exportTrackInfo = await prepareTrackInfoWithPagPrerender(trackInfo, (done, total) => {
+        message.open({
+          key: 'export-prerender-progress',
+          type: 'loading',
+          content: `字幕预渲染中 ${done}/${total}`,
+          duration: 0,
+        })
+      })
+      message.destroy('export-prerender-progress')
+      const data = await POST('/api/graph', { trackInfo: exportTrackInfo })
+      const url = data.data.downloadUrl
+      downloadFile(url, 'exported-video.mp4')
+      message.success('导出视频成功')
+    } catch (error: any) {
+      message.destroy('export-prerender-progress')
+      message.error(error?.message || '导出失败')
+    } finally {
+      hideLoading()
+    }
   }
 
   if (loading) {

@@ -2,7 +2,6 @@ import { Router } from 'express'
 import fs from 'fs'
 import path from 'path'
 import { processVideoJob } from '../services/videoProcessor.js'
-import trackInfo from '../services/mock.js'
 import type { ITrackInfo } from '@clipwiz/shared'
 
 const router = Router()
@@ -22,23 +21,20 @@ function isTrackInfoLike(value: unknown): value is ITrackInfo {
 router.post('/', async (req, res, next) => {
   try {
     const requestTrackInfo = req.body?.trackInfo ?? req.body
-    const hasRequestPayload = req.body && Object.keys(req.body).length > 0
-    const useRequestTrackInfo = isTrackInfoLike(requestTrackInfo)
 
-    if (hasRequestPayload && !useRequestTrackInfo) {
+    if (!isTrackInfoLike(requestTrackInfo)) {
       return res.status(400).json({
         code: 400,
-        message: 'trackInfo 参数非法，导出已拒绝（未使用 mock 回退）',
+        message: 'trackInfo 参数缺失或非法，导出已拒绝',
       })
     }
 
-    const finalTrackInfo = useRequestTrackInfo ? requestTrackInfo : trackInfo
-    console.log('[graph] source:', useRequestTrackInfo ? 'request.trackInfo' : 'server.mock')
+    console.log('[graph] source: request.trackInfo')
 
     const result = await processVideoJob({
       data: {
         operation: 'composite',
-        trackInfo: finalTrackInfo
+        trackInfo: requestTrackInfo
       },
       progress: (percent: number) => {
         console.log(`合成进度: ${percent}%`)
