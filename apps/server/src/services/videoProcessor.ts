@@ -437,6 +437,33 @@ function toFiniteNumber(value: unknown, fallback = 0): number {
   return Number.isFinite(n) ? n : fallback
 }
 
+type IPagMattePhotoTrackItem = IPhotoTrackItem & {
+  colorUrl?: string
+  alphaUrl?: string
+}
+
+function isPagMattePhoto(item: IPhotoTrackItem): item is IPagMattePhotoTrackItem {
+  const desc = String(item?.desc || '')
+  const format = String((item as any)?.format || '')
+  return desc.startsWith('pag-matte-') || format === 'pagMatte' || !!(item as IPagMattePhotoTrackItem).alphaUrl
+}
+
+function normalizeInputSource(source: string): string {
+  if (!source) return source
+
+  // 前端可能传入 /uploads/xxx，服务端直接映射到本地文件，避免走 HTTP 拉取到错误内容
+  if (source.startsWith('/uploads/')) {
+    const rel = source.replace(/^\/uploads\//, '')
+    return path.resolve(uploadDir, rel)
+  }
+  if (source.startsWith('uploads/')) {
+    const rel = source.replace(/^uploads\//, '')
+    return path.resolve(uploadDir, rel)
+  }
+
+  return source
+}
+
 function normalizeAudioSlots(trackInfo: ITrackInfo): AudioSlot[] {
   const slots: AudioSlot[] = []
   const audioTrackTypes = [MATERIAL_TYPE.BGM_AUDIO, MATERIAL_TYPE.SOUND_AUDIO, MATERIAL_TYPE.ORAL_AUDIO]
@@ -513,14 +540,31 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
 
   // Build ffmpeg command: all video inputs first, then audio inputs
   let command = ffmpeg()
-  allVideoItems.forEach((item) => { command = command.input(item.url!) })
+  allVideoItems.forEach((item) => { command = command.input(normalizeInputSource(item.url!)) })
+  const photoInputMap = new Map<IPhotoTrackItem, { colorIdx: number; alphaIdx?: number }>()
+  let nextInputIdx = allVideoItems.length
   photoItems.forEach((item) => {
-    command = command.input(item.url!)
-    if (photoInputNeedsLoop(item.url!)) {
-      command = command.inputOptions(['-loop 1'])
+    if (isPagMattePhoto(item)) {
+      const colorUrl = item.colorUrl || item.url
+      const alphaUrl = item.alphaUrl
+      if (!colorUrl || !alphaUrl) {
+        throw new Error(`PAG matte item ${item.id} 缺少 colorUrl 或 alphaUrl`)
+      }
+      command = command.input(normalizeInputSource(colorUrl))
+      const colorIdx = nextInputIdx++
+      command = command.input(normalizeInputSource(alphaUrl))
+      const alphaIdx = nextInputIdx++
+      photoInputMap.set(item, { colorIdx, alphaIdx })
+    } else {
+      const normalizedUrl = normalizeInputSource(item.url!)
+      command = command.input(normalizedUrl)
+      if (photoInputNeedsLoop(normalizedUrl)) {
+        command = command.inputOptions(['-loop 1'])
+      }
+      photoInputMap.set(item, { colorIdx: nextInputIdx++ })
     }
   })
-  audioSlots.forEach((slot) => { command = command.input(slot.sourceUrl) })
+  audioSlots.forEach((slot) => { command = command.input(normalizeInputSource(slot.sourceUrl)) })
 
   // Map each item to its ffmpeg input index
   const itemToInputIdx = new Map(allVideoItems.map((item, i) => [item.id, i]))
@@ -656,11 +700,11 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
 
   // 处理贴图轨道（始终覆盖在视频层之上）
   // 支持开始/结束时间、缩放、位移。位移坐标系与前端一致：中心为(0,0)。
-  const photoInputStartIdx = allVideoItems.length
   photoItems
     .sort((a, b) => a.startTime - b.startTime)
     .forEach((item, idx) => {
-      const inputIdx = photoInputStartIdx + idx
+      const inputInfo = photoInputMap.get(item)
+      if (!inputInfo) return
       const itemStart = toFiniteNumber(item.startTime, 0)
       const itemEnd = toFiniteNumber(item.endTime, itemStart)
       const startSec = Math.max(0, itemStart / 1000)
@@ -691,6 +735,8 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
         startTime: itemStart,
         endTime: itemEnd,
         sourceUrl: item.url,
+        colorUrl: (item as IPagMattePhotoTrackItem).colorUrl,
+        alphaUrl: (item as IPagMattePhotoTrackItem).alphaUrl,
         sourceWidth: item.width,
         sourceHeight: item.height,
         scaleX,
@@ -704,14 +750,38 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
       })
 
       const pv = `pv${idx}`
+      const pt = `pt${idx}`
       const nextLabel = `[po${idx}]`
+
+      if (isPagMattePhoto(item)) {
+        if (inputInfo.alphaIdx === undefined) return
+        const pc = `pc${idx}`
+        const pa = `pa${idx}`
+        filters.push(
+          `[${inputInfo.colorIdx}:v]scale=${baseW}:${baseH}:force_original_aspect_ratio=decrease:flags=lanczos,` +
+          `pad=${baseW}:${baseH}:(ow-iw)/2:(oh-ih)/2:color=black,` +
+          `format=rgb24[${pc}]`
+        )
+        filters.push(
+          `[${inputInfo.alphaIdx}:v]scale=${baseW}:${baseH}:force_original_aspect_ratio=decrease:flags=lanczos,` +
+          `pad=${baseW}:${baseH}:(ow-iw)/2:(oh-ih)/2:color=black,` +
+          `format=gray[${pa}]`
+        )
+        filters.push(`[${pc}][${pa}]alphamerge,format=rgba,scale=${outW}:${outH}:flags=lanczos[${pv}]`)
+      } else {
+        filters.push(
+          `[${inputInfo.colorIdx}:v]scale=${baseW}:${baseH}:force_original_aspect_ratio=decrease:flags=lanczos,` +
+          `pad=${baseW}:${baseH}:(ow-iw)/2:(oh-ih)/2:color=black@0,format=rgba,` +
+          `scale=${outW}:${outH}:flags=lanczos[${pv}]`
+        )
+      }
+      // 使用 trim + setpts 显式对齐到时间轴，避免仅靠 overlay enable 带来的提前显示问题
       filters.push(
-        `[${inputIdx}:v]scale=${baseW}:${baseH}:force_original_aspect_ratio=decrease:flags=lanczos,` +
-        `pad=${baseW}:${baseH}:(ow-iw)/2:(oh-ih)/2:color=black@0,format=rgba,` +
-        `scale=${outW}:${outH}:flags=lanczos[${pv}]`
+        `[${pv}]trim=start=0:end=${(endSec - startSec).toFixed(3)},` +
+        `setpts=PTS-STARTPTS+${startSec.toFixed(3)}/TB[${pt}]`
       )
       filters.push(
-        `${currentVideoLabel}[${pv}]overlay=x=${x}:y=${y}:eof_action=pass:shortest=0:enable='between(t,${startSec.toFixed(3)},${endSec.toFixed(3)})'${nextLabel}`
+        `${currentVideoLabel}[${pt}]overlay=x=${x}:y=${y}:eof_action=pass:shortest=0${nextLabel}`
       )
       currentVideoLabel = nextLabel
     })
@@ -719,7 +789,7 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
   const finalVideoLabel = currentVideoLabel
 
   // 处理背景音频轨道
-  const videoInputCount = allVideoItems.length + photoItems.length
+  const videoInputCount = nextInputIdx
   const audioOutLabels: string[] = []
 
   audioSlots.forEach((slot, i) => {

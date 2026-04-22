@@ -5,6 +5,9 @@ export interface SubtitleBinding {
   item: ISubtitleTrackItem
   subtitleNode: any
   canvas: HTMLCanvasElement
+  pagCanvas: HTMLCanvasElement | null
+  pagSize: { width: number; height: number }
+  anchor: { cx: number; cy: number; width: number; height: number } | null
   pagView: any | null
   textLayer: any | null
   update: (patch: Partial<ISubtitleTrackItem>) => void
@@ -59,17 +62,69 @@ const applyStyleToLayer = (textLayer: any | null, item: ISubtitleTrackItem) => {
   }
 }
 
-const applyPositionToNode = (subtitleNode: any, canvasWidth: number, canvasHeight: number, item: ISubtitleTrackItem) => {
-  if (!subtitleNode || typeof subtitleNode.setTransform !== 'function') return
-  const px = item.position?.[0] ?? canvasWidth / 2
-  const py = item.position?.[1] ?? canvasHeight / 2
-  const halfW = canvasWidth / 2
-  const halfH = canvasHeight / 2
-  subtitleNode.setTransform({
-    scale: 1,
-    x: (px - halfW) / halfW,
-    y: (py - halfH) / halfH,
-  })
+const getPagSize = (pagFile: any, fallbackW: number, fallbackH: number) => {
+  const rawW = typeof pagFile?.width === 'function' ? Number(pagFile.width()) : fallbackW
+  const rawH = typeof pagFile?.height === 'function' ? Number(pagFile.height()) : fallbackH
+  return {
+    width: Number.isFinite(rawW) && rawW > 0 ? Math.round(rawW) : fallbackW,
+    height: Number.isFinite(rawH) && rawH > 0 ? Math.round(rawH) : fallbackH,
+  }
+}
+
+const getTargetPosition = (item: ISubtitleTrackItem, width: number, height: number) => {
+  const x = Number.isFinite(Number(item.position?.[0])) ? Number(item.position?.[0]) : width / 2
+  const rawY = Number.isFinite(Number(item.position?.[1])) ? Number(item.position?.[1]) : height / 2
+  return { x, y: height - rawY }
+}
+
+const findAlphaBounds = (source: HTMLCanvasElement, sourceW: number, sourceH: number) => {
+  const probeCanvas = document.createElement('canvas')
+  probeCanvas.width = sourceW
+  probeCanvas.height = sourceH
+  const probeCtx = probeCanvas.getContext('2d', { willReadFrequently: true })
+  if (!probeCtx) return { cx: sourceW / 2, cy: sourceH / 2, width: sourceW, height: sourceH }
+  probeCtx.clearRect(0, 0, sourceW, sourceH)
+  probeCtx.drawImage(source, 0, 0, sourceW, sourceH)
+  const data = probeCtx.getImageData(0, 0, sourceW, sourceH).data
+  let minX = sourceW
+  let minY = sourceH
+  let maxX = -1
+  let maxY = -1
+  for (let y = 0; y < sourceH; y++) {
+    for (let x = 0; x < sourceW; x++) {
+      const alpha = data[(y * sourceW + x) * 4 + 3]
+      if (alpha <= 4) continue
+      if (x < minX) minX = x
+      if (x > maxX) maxX = x
+      if (y < minY) minY = y
+      if (y > maxY) maxY = y
+    }
+  }
+  if (maxX < minX || maxY < minY) return { cx: sourceW / 2, cy: sourceH / 2, width: sourceW, height: sourceH }
+  return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, width: maxX - minX + 1, height: maxY - minY + 1 }
+}
+
+const drawPagToCanvas = (binding: SubtitleBinding, canvasWidth: number, canvasHeight: number) => {
+  const ctx = binding.canvas.getContext('2d')
+  if (!ctx || !binding.pagCanvas) return
+  const { width: pagW, height: pagH } = binding.pagSize
+  const fitScale = Math.min(canvasWidth / pagW, canvasHeight / pagH)
+  const drawW = Math.max(1, Math.round(pagW * fitScale))
+  const drawH = Math.max(1, Math.round(pagH * fitScale))
+  if (!binding.anchor) {
+    binding.anchor = findAlphaBounds(binding.pagCanvas, pagW, pagH)
+  }
+  const desiredTextHeight = Math.max(1, binding.item.fontSize || 0)
+  const maxTextWidth = Math.max(1, canvasWidth * 0.92)
+  const heightScale = desiredTextHeight > 0 ? desiredTextHeight / Math.max(1, binding.anchor.height * fitScale) : 1
+  const widthScale = maxTextWidth / Math.max(1, binding.anchor.width * fitScale)
+  const contentScale = Math.max(0.01, Math.min(heightScale, widthScale, 8))
+  const finalScale = fitScale * contentScale
+  const target = getTargetPosition(binding.item, canvasWidth, canvasHeight)
+  const drawX = Math.round(target.x - binding.anchor.cx * finalScale)
+  const drawY = Math.round(target.y - binding.anchor.cy * finalScale)
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+  ctx.drawImage(binding.pagCanvas, drawX, drawY, Math.round(drawW * contentScale), Math.round(drawH * contentScale))
 }
 
 export const addSubtitleNode = (editor: Editor, trackId: string, item: ISubtitleTrackItem) => {
@@ -91,12 +146,16 @@ export const addSubtitleNode = (editor: Editor, trackId: string, item: ISubtitle
     item,
     subtitleNode,
     canvas,
+    pagCanvas: null,
+    pagSize: { width: editor.canvasWidth, height: editor.canvasHeight },
+    anchor: null,
     pagView: null,
     textLayer: null,
     update: (patch) => {
       binding.item = { ...binding.item, ...patch }
       if (patch.text !== undefined) {
         applyTextToLayer(binding.textLayer, patch.text)
+        binding.anchor = null
       }
       if (
         patch.fontFamily !== undefined ||
@@ -107,16 +166,15 @@ export const addSubtitleNode = (editor: Editor, trackId: string, item: ISubtitle
       ) {
         applyStyleToLayer(binding.textLayer, binding.item)
       }
-      if (patch.position !== undefined) {
-        applyPositionToNode(binding.subtitleNode, editor.canvasWidth, editor.canvasHeight, binding.item)
-      }
       if (binding.pagView && typeof binding.pagView.flush === 'function') {
-        binding.pagView.flush()
+        void binding.pagView.flush().then(() => {
+          drawPagToCanvas(binding, editor.canvasWidth, editor.canvasHeight)
+          editor.draw()
+        })
       }
     },
   }
   editor.subtitleRegistry.set(item.id, binding)
-  applyPositionToNode(subtitleNode, editor.canvasWidth, editor.canvasHeight, item)
 
   const durationSec = Math.max(
     0.001,
@@ -131,7 +189,10 @@ export const addSubtitleNode = (editor: Editor, trackId: string, item: ISubtitle
       binding.pagView.setProgress(normalized)
     }
     if (typeof binding.pagView.flush === 'function') {
-      binding.pagView.flush()
+      void binding.pagView.flush().then(() => {
+        drawPagToCanvas(binding, editor.canvasWidth, editor.canvasHeight)
+        editor.draw()
+      })
     }
   }
 
@@ -163,7 +224,12 @@ export const addSubtitleNode = (editor: Editor, trackId: string, item: ISubtitle
 
       const buffer = await fetch(item.url).then((resp) => resp.arrayBuffer())
       const pagFile = await PAG.PAGFile.load(buffer)
-      binding.pagView = await PAG.PAGView.init(pagFile, canvas)
+      binding.pagSize = getPagSize(pagFile, editor.canvasWidth, editor.canvasHeight)
+      const pagCanvas = document.createElement('canvas')
+      pagCanvas.width = binding.pagSize.width
+      pagCanvas.height = binding.pagSize.height
+      binding.pagCanvas = pagCanvas
+      binding.pagView = await PAG.PAGView.init(pagFile, pagCanvas)
       binding.textLayer = findFirstTextLayer(pagFile)
       applyTextToLayer(binding.textLayer, binding.item.text || '')
       applyStyleToLayer(binding.textLayer, binding.item)

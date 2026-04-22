@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      libpag: path.resolve(__dirname, '../../packages/videoPlayer/node_modules/libpag'),
     },
   },
   server: {
@@ -27,4 +28,3 @@ export default defineConfig({
   // 配置资源处理
   assetsInclude: ['**/*.wasm'],
 })
-
