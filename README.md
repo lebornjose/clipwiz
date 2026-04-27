@@ -79,7 +79,7 @@ clipWiz/
 └── package.json
 ```
 ## 截图
-[2.png]
+![截图](./2.png)
 
 ## 🛠️ 技术栈
 
