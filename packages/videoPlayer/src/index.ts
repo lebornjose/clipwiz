@@ -2,7 +2,7 @@
 import VideoContext from './videocontext.js'
 import { ITrackInfo, ITrack, MATERIAL_TYPE, IAudioTrackItem, ISubtitleTrackItem, ITextTrackItem, STATE, IPhotoTrackItem, IVideoNode, IVideoTrackItem, resolveTransitionBetweenItems, TransitionItem, Transform, TIME_CONFIG } from '@clipwiz/shared'
 import { addVideoNode } from './components/video'
-import { addBgm } from './components/audio'
+import { addAudio, addBgm } from './components/audio'
 import { addPhotoNode } from './components/photo'
 import { getGifImage } from './components/getBufferImage'
 import Pag from './components/Pag.js'
@@ -85,6 +85,7 @@ export class Editor {
     this.addNodeFunc = {
       [MATERIAL_TYPE.VIDEO]: addVideoNode,
       [MATERIAL_TYPE.BGM_AUDIO]: addBgm,
+      [MATERIAL_TYPE.SOUND_AUDIO]: addAudio,
       [MATERIAL_TYPE.PHOTO]: addPhotoNode,
       [MATERIAL_TYPE.SUBTITLE]: addSubtitleNode,
       [MATERIAL_TYPE.TEXT]: addTextNode,
@@ -280,7 +281,7 @@ export class Editor {
     console.log(this.videoTrack)
     for (const track of this.videoTrack) {
       track.children?.forEach((child, childIndex) => {
-        if ([MATERIAL_TYPE.BGM_AUDIO, MATERIAL_TYPE.VIDEO].includes(track.trackType as MATERIAL_TYPE)) {
+        if ([MATERIAL_TYPE.BGM_AUDIO, MATERIAL_TYPE.SOUND_AUDIO, MATERIAL_TYPE.VIDEO].includes(track.trackType as MATERIAL_TYPE)) {
           track.children.forEach((child) => {
             const c = child as IAudioTrackItem
             if (c.volume === undefined) {
@@ -288,7 +289,7 @@ export class Editor {
             }
           })
         }
-        if ([MATERIAL_TYPE.ORAL_AUDIO, MATERIAL_TYPE.BGM_AUDIO, MATERIAL_TYPE.VIDEO].includes(track.trackType as MATERIAL_TYPE)) {
+        if ([MATERIAL_TYPE.ORAL_AUDIO, MATERIAL_TYPE.BGM_AUDIO, MATERIAL_TYPE.SOUND_AUDIO, MATERIAL_TYPE.VIDEO].includes(track.trackType as MATERIAL_TYPE)) {
           track.children.forEach((child) => {
             const c = child as IAudioTrackItem
             if (c.volume === undefined) {

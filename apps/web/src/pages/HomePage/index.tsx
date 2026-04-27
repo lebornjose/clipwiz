@@ -26,6 +26,7 @@ const { Text } = Typography
 interface Project {
   _id: string
   title: string
+  coverUrl?: string
   createdAt: string
   updatedAt: string
 }
@@ -163,7 +164,15 @@ export default function HomePage() {
                 onKeyDown={(e) => e.key === 'Enter' && navigate(`/editor/${project._id}`)}
               >
                 <div className="project-card__thumb">
-                  <FolderOpenOutlined className="project-card__thumb-icon" />
+                  {project.coverUrl ? (
+                    <img
+                      src={project.coverUrl}
+                      alt={project.title}
+                      className="project-card__thumb-image"
+                    />
+                  ) : (
+                    <FolderOpenOutlined className="project-card__thumb-icon" />
+                  )}
                 </div>
                 <div className="project-card__body">
                   <div className="project-card__title-row">

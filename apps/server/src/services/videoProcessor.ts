@@ -727,7 +727,9 @@ function generateCompositeCommand(trackInfo: ITrackInfo, outputPath: string): ff
       const outH = Math.max(2, Math.round(baseH * scaleY))
 
       const x = Math.round((width - outW) / 2 + translateX)
-      const y = Math.round((height - outH) / 2 + translateY)
+      // Web preview uses a centered coordinate system where positive Y moves upward.
+      // FFmpeg overlay uses top-left origin where positive Y moves downward, so invert it.
+      const y = Math.round((height - outH) / 2 - translateY)
 
       console.log('[composite][photo-debug]', {
         id: item.id,

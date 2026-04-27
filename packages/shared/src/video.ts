@@ -249,6 +249,13 @@ export interface BgmAudioTrack {
   hide: boolean
 }
 
+export interface SoundAudioTrack {
+  trackType: MATERIAL_TYPE.SOUND_AUDIO // 轨道类型
+  children: IAudioTrackItem[] // 音效列表
+  trackId: string
+  hide: boolean
+}
+
 export interface IFilterTrackItem extends TrackItem {
   format: MATERIAL_TYPE.FILTER
   name: string
@@ -320,7 +327,7 @@ export interface FilterTrack {
   hide: boolean
 }
 
-export type ITrack = (VideoTrack | BgmAudioTrack | PhotoTrack | SubtitleTrack | TextTrack | FilterTrack) // 轨道列表
+export type ITrack = (VideoTrack | BgmAudioTrack | SoundAudioTrack | PhotoTrack | SubtitleTrack | TextTrack | FilterTrack) // 轨道列表
 
 export interface ITrackInfo {
   width: number // 导出视频的宽度

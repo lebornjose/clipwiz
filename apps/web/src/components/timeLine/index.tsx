@@ -27,6 +27,7 @@ import { useEditorStore } from '../../store/editorStore';
 const TRACK_TYPE_ICON_MAP: Record<string, React.ReactNode> = {
   [MATERIAL_TYPE.VIDEO]: <VideoCameraOutlined />,
   [MATERIAL_TYPE.BGM_AUDIO]: <AudioOutlined />,
+  [MATERIAL_TYPE.SOUND_AUDIO]: <AudioOutlined />,
   [MATERIAL_TYPE.PHOTO]: <FileImageOutlined />,
   [MATERIAL_TYPE.SUBTITLE]: <FileTextOutlined />,
   [MATERIAL_TYPE.TEXT]: <FontSizeOutlined />,
@@ -36,6 +37,7 @@ const TRACK_TYPE_ICON_MAP: Record<string, React.ReactNode> = {
 const TRACK_TYPE_CLASS_MAP: Record<string, string> = {
   [MATERIAL_TYPE.VIDEO]: 'video-item',
   [MATERIAL_TYPE.BGM_AUDIO]: 'bgm-item',
+  [MATERIAL_TYPE.SOUND_AUDIO]: 'bgm-item',
   [MATERIAL_TYPE.PHOTO]: 'photo-item',
   [MATERIAL_TYPE.SUBTITLE]: 'subtitle-item',
   [MATERIAL_TYPE.TEXT]: 'text-item',
@@ -272,6 +274,12 @@ const TimeLine = () => {
               </div>
             ),
             [MATERIAL_TYPE.BGM_AUDIO]: () => (
+              <div className="effect-item-audio action-content" {...actionAttrs}>
+                <AudioOutlined />
+                {(trackItem as IAudioTrackItem)?.title}
+              </div>
+            ),
+            [MATERIAL_TYPE.SOUND_AUDIO]: () => (
               <div className="effect-item-audio action-content" {...actionAttrs}>
                 <AudioOutlined />
                 {(trackItem as IAudioTrackItem)?.title}

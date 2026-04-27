@@ -133,21 +133,45 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   addTrackItem: (trackType, item) => {
-    const { trackInfo } = get()
+    const { trackInfo, currentTime } = get()
     if (!trackInfo) return
-    const newItem = { id: genId(), hide: false, startTime: 0, endTime: trackInfo.duration, ...item }
+    const currentTimeMs = Math.max(0, Math.floor(currentTime * 1000))
+    const topTrackTypes = new Set([MATERIAL_TYPE.PHOTO, MATERIAL_TYPE.FILTER, MATERIAL_TYPE.BGM_AUDIO, MATERIAL_TYPE.SOUND_AUDIO])
+    const pointerStartTrackTypes = new Set([MATERIAL_TYPE.PHOTO, MATERIAL_TYPE.FILTER, MATERIAL_TYPE.BGM_AUDIO, MATERIAL_TYPE.SOUND_AUDIO])
+    const defaultStartTime = pointerStartTrackTypes.has(trackType) ? currentTimeMs : 0
+    const explicitStartTime = typeof item.startTime === 'number' ? item.startTime : undefined
+    const startTime = explicitStartTime ?? defaultStartTime
+    const explicitDuration = typeof item.duration === 'number' ? item.duration : undefined
+    const explicitEndTime = typeof item.endTime === 'number' ? item.endTime : undefined
+    const duration = explicitDuration ?? Math.max(0, trackInfo.duration - startTime)
+    const endTime = explicitEndTime ?? Math.min(trackInfo.duration, startTime + duration)
+    const newItem = {
+      id: genId(),
+      hide: false,
+      ...item,
+      startTime,
+      endTime,
+      duration,
+    }
     const existingTrack = trackInfo.tracks.find((t) => t.trackType === trackType)
     let newTracks: ITrack[]
     if (existingTrack) {
-      newTracks = trackInfo.tracks.map((t) =>
+      const updatedTracks = trackInfo.tracks.map((t) =>
         t.trackType === trackType
           ? { ...t, children: [...(t.children as any[]), newItem] }
           : t
       ) as ITrack[]
+      if (topTrackTypes.has(trackType)) {
+        const targetTrack = updatedTracks.find((t) => t.trackType === trackType)
+        const otherTracks = updatedTracks.filter((t) => t.trackType !== trackType)
+        newTracks = targetTrack ? [targetTrack, ...otherTracks] : updatedTracks
+      } else {
+        newTracks = updatedTracks
+      }
     } else {
       const newTrack = { trackId: genId(), trackType, hide: false, children: [newItem] } as ITrack
-      // 贴图轨道默认置顶，避免新增后出现在时间轴最底部
-      newTracks = trackType === MATERIAL_TYPE.PHOTO
+      // 贴图/滤镜/音频轨道默认置顶，避免新增后出现在时间轴最底部
+      newTracks = topTrackTypes.has(trackType)
         ? [newTrack, ...trackInfo.tracks]
         : [...trackInfo.tracks, newTrack]
     }
@@ -190,7 +214,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         hide: false,
         children: [textItem],
       } as ITrack
-      newTracks = [...trackInfo.tracks, newTrack]
+      // 花字轨道默认置顶，保证新增后展示在时间轴最上方
+      newTracks = [newTrack, ...trackInfo.tracks]
     } else {
       const targetTrack = textTracks[0]
       newTracks = trackInfo.tracks.map((track) =>

@@ -49,7 +49,7 @@ const BgmEditor = ({ item }: Props) => {
 
   return (
     <div className="material-editor__fields">
-      <Section title="音频" />
+      <Section title="声音" />
       <FieldRow label="音量">
         <Slider
           min={0}
