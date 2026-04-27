@@ -18,6 +18,7 @@ import { prepareTrackInfoWithPagPrerender } from '../../utils/pagPrerender'
 import '../../App.css'
 
 const { Header } = Layout
+const COVER_CAPTURE_DELAY_MS = 80
 
 export default function EditorPage() {
   const { id } = useParams<{ id: string }>()
@@ -40,6 +41,40 @@ export default function EditorPage() {
   const containerRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number | null>(null)
 
+  const uploadProjectCover = useCallback(async () => {
+    if (!id) return null
+
+    const canvas = document.querySelector('.video-canvas') as HTMLCanvasElement | null
+    if (!canvas) return null
+
+    await new Promise((resolve) => window.setTimeout(resolve, COVER_CAPTURE_DELAY_MS))
+
+    const blob = await new Promise<Blob | null>((resolve) => {
+      try {
+        canvas.toBlob((result) => resolve(result), 'image/png')
+      } catch {
+        resolve(null)
+      }
+    })
+
+    if (!blob) return null
+
+    const formData = new FormData()
+    formData.append('file', blob, `project-cover-${id}.png`)
+
+    const res = await fetch(`/api/project/${id}/cover`, {
+      method: 'POST',
+      body: formData,
+    })
+
+    const data = await res.json()
+    if (data.code !== 200) {
+      throw new Error(data.message || '封面上传失败')
+    }
+
+    return data.data as { coverUrl: string; coverOssKey: string }
+  }, [id])
+
   // 加载项目
   useEffect(() => {
     if (!id) return
@@ -57,18 +92,42 @@ export default function EditorPage() {
   }, [id, navigate, setTrackInfo])
 
   // 保存项目
-  const handleSave = useCallback(async () => {
-    if (!id || !trackInfo) return
+  const handleSave = useCallback(async (options?: { silent?: boolean }) => {
+    if (!id || !trackInfo) return false
     setSaving(true)
     try {
-      await PUT(`/api/project/${id}`, { title: projectTitle, protocol: trackInfo })
-      message.success('保存成功', 2)
+      let coverPayload: { coverUrl: string; coverOssKey: string } | null = null
+
+      try {
+        coverPayload = await uploadProjectCover()
+      } catch (error) {
+        console.warn('Project cover capture/upload failed:', error)
+      }
+
+      await PUT(`/api/project/${id}`, {
+        title: projectTitle,
+        protocol: trackInfo,
+        ...(coverPayload ?? {}),
+      })
+
+      if (!options?.silent) {
+        if (coverPayload) {
+          message.success('保存成功', 2)
+        } else {
+          message.warning('项目已保存，封面生成失败', 2)
+        }
+      }
+
+      return true
     } catch {
-      message.error('保存失败')
+      if (!options?.silent) {
+        message.error('保存失败')
+      }
+      return false
     } finally {
       setSaving(false)
     }
-  }, [id, trackInfo, projectTitle])
+  }, [id, trackInfo, projectTitle, uploadProjectCover])
 
   const handleDelete = useCallback(() => {
     if (selectedTransitionKey) {
@@ -139,6 +198,11 @@ export default function EditorPage() {
 
   const handleExportVideo = async () => {
     if (!trackInfo) return
+    const saved = await handleSave({ silent: true })
+    if (!saved) {
+      message.error('保存失败，已取消导出')
+      return
+    }
     const hideLoading = message.loading('正在预渲染字幕并导出，请稍候...', 0)
     try {
       const exportTrackInfo = await prepareTrackInfoWithPagPrerender(trackInfo, (done, total) => {

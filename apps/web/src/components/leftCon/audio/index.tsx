@@ -65,7 +65,7 @@ const AudioList = () => {
 
   const handleAdd = (item: AudioItem) => {
     if (!trackInfo) {
-      message.warning('请先打开一个项目再添加音频')
+      message.warning('请先打开一个项目再添加音效')
       return
     }
 
@@ -75,12 +75,12 @@ const AudioList = () => {
     const timelineDuration = endTime - startTime
 
     if (timelineDuration <= 0) {
-      message.warning('当前时间已在项目结尾，无法添加音频')
+      message.warning('当前时间已在项目结尾，无法添加音效')
       return
     }
 
-    addTrackItem(MATERIAL_TYPE.BGM_AUDIO, {
-      format: MATERIAL_TYPE.BGM,
+    addTrackItem(MATERIAL_TYPE.SOUND_AUDIO, {
+      format: MATERIAL_TYPE.AUDIO,
       title: item.name,
       url: item.url,
       duration: sourceDuration,
@@ -143,7 +143,7 @@ const AudioList = () => {
       >
         {uploading
           ? <><LoadingOutlined /><span>{uploadProgress}%</span></>
-          : <><UploadOutlined /><span>上传音频</span></>}
+          : <><UploadOutlined /><span>上传音效</span></>}
       </div>
 
       <input
@@ -199,7 +199,7 @@ const AudioList = () => {
         ))}
 
         {audioList.length === 0 && !loading && (
-          <div className="audio-empty">暂无音频，点击上传按钮添加</div>
+          <div className="audio-empty">暂无音效，点击上传按钮添加</div>
         )}
       </div>
 

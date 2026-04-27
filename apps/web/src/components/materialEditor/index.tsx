@@ -20,6 +20,7 @@ import './index.less'
 const TITLE_MAP: Record<string, string> = {
   [MATERIAL_TYPE.VIDEO]: '视频',
   [MATERIAL_TYPE.BGM_AUDIO]: 'BGM',
+  [MATERIAL_TYPE.SOUND_AUDIO]: '音效',
   [MATERIAL_TYPE.SUBTITLE]: '字幕',
   [MATERIAL_TYPE.TEXT]: '花字',
   [MATERIAL_TYPE.PHOTO]: '贴图',
@@ -84,6 +85,9 @@ const MaterialEditor = () => {
           <VideoEditor item={selected.data as IVideoTrackItem} />
         )}
         {selected.type === MATERIAL_TYPE.BGM_AUDIO && (
+          <BgmEditor item={selected.data as IAudioTrackItem} />
+        )}
+        {selected.type === MATERIAL_TYPE.SOUND_AUDIO && (
           <BgmEditor item={selected.data as IAudioTrackItem} />
         )}
         {selected.type === MATERIAL_TYPE.SUBTITLE && (
