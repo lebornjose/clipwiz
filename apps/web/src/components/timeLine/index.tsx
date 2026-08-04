@@ -6,6 +6,11 @@ import {
   FileTextOutlined,
   FontSizeOutlined,
   FilterOutlined,
+  DeleteOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  MinusOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
 import {
   MATERIAL_TYPE,
@@ -57,11 +62,19 @@ const TimeLine = () => {
     selectedTransitionKey,
     setSelectedTransitionKey,
     setCurrentTime,
+    toggleTrackVisibility,
+    deleteTrack,
+    selectedTrackId,
   } = useEditorStore();
 
   const [editorData, setEditorData] = useState<CustomTimelineRow[]>(() =>
     trackInfo ? convertTrackInfoToTimelineRow(trackInfo) : []
   );
+  const [zoomLevel, setZoomLevel] = useState(1);
+
+  const updateZoom = (nextZoom: number) => {
+    setZoomLevel(Math.min(4, Math.max(0.25, nextZoom)));
+  };
 
   // Re-derive editorData whenever the committed protocol changes (load / delete / external update)
   useEffect(() => {
@@ -188,33 +201,99 @@ const TimeLine = () => {
       ref={timelineContainerRef}
       className="time-line"
     >
-      <div
-        ref={domRef}
-        style={{ overflow: 'overlay' as any }}
-        onScroll={(e) => {
-          timelineState.current?.setScrollTop((e.target as HTMLDivElement).scrollTop);
-        }}
-        className="timeline-list"
-      >
-        {trackInfo.tracks.map((item) => {
-          const trackType = item.trackType as MATERIAL_TYPE;
-          return (
-            <div
-              key={item.trackId}
-              className={`timeline-list-item ${TRACK_TYPE_CLASS_MAP[trackType] || ''}`}
-            >
-              {TRACK_TYPE_ICON_MAP[trackType] || null}
-            </div>
-          );
-        })}
+      <div className="timeline-function-bar">
+        <button
+          type="button"
+          className="timeline-function-action"
+          aria-label="删除选中轨道"
+          title="删除选中轨道"
+          disabled={!selectedTrackId}
+          onClick={() => selectedTrackId && deleteTrack(selectedTrackId)}
+        >
+          <DeleteOutlined />
+        </button>
+        <button
+          type="button"
+          className="timeline-function-action"
+          aria-label="隐藏或显示选中轨道"
+          title="隐藏或显示选中轨道"
+          disabled={!selectedTrackId}
+          onClick={() => selectedTrackId && toggleTrackVisibility(selectedTrackId)}
+        >
+          {selectedTrackId && trackInfo.tracks.find((track) => track.trackId === selectedTrackId)?.hide
+            ? <EyeInvisibleOutlined />
+            : <EyeOutlined />}
+        </button>
+        <div className="timeline-zoom-control" aria-label="轨道缩放">
+          <button
+            type="button"
+            className="timeline-zoom-button"
+            aria-label="缩小轨道"
+            title="缩小轨道"
+            disabled={zoomLevel <= 0.25}
+            onClick={() => updateZoom(zoomLevel - 0.25)}
+          >
+            <MinusOutlined />
+          </button>
+          <input
+            className="timeline-zoom-slider"
+            type="range"
+            min="0.25"
+            max="4"
+            step="0.25"
+            value={zoomLevel}
+            aria-label={`轨道缩放 ${Math.round(zoomLevel * 100)}%`}
+            onChange={(event) => updateZoom(Number(event.target.value))}
+          />
+          <span className="timeline-zoom-value" aria-live="polite">
+            {`${zoomLevel}x`}
+          </span>
+          <button
+            type="button"
+            className="timeline-zoom-button"
+            aria-label="放大轨道"
+            title="放大轨道"
+            disabled={zoomLevel >= 4}
+            onClick={() => updateZoom(zoomLevel + 0.25)}
+          >
+            <PlusOutlined />
+          </button>
+        </div>
       </div>
+      <div className="timeline-editor-area">
+        <div
+          ref={domRef}
+          style={{ overflow: 'overlay' as any }}
+          onScroll={(e) => {
+            timelineState.current?.setScrollTop((e.target as HTMLDivElement).scrollTop);
+          }}
+          className="timeline-list"
+        >
+          {trackInfo.tracks.map((item) => {
+            const trackType = item.trackType as MATERIAL_TYPE;
+            return (
+              <div
+                key={item.trackId}
+                className={`timeline-list-item ${TRACK_TYPE_CLASS_MAP[trackType] || ''} ${item.hide ? 'is-hidden' : ''}`}
+              >
+                {TRACK_TYPE_ICON_MAP[trackType] || null}
+              </div>
+            );
+          })}
+        </div>
 
-      <Timeline
+        <Timeline
         ref={timelineState}
         autoScroll={true}
         style={{ width: '100%', height: '400px' }}
-        scale={1}
+        scale={1 / zoomLevel}
         scaleSplitCount={25}
+        getScaleRender={(seconds) => {
+          const fps = trackInfo.fps || 25;
+          return zoomLevel < 1
+            ? `${Math.round(seconds * fps)}f`
+            : `${seconds}s`;
+        }}
         editorData={editorData}
         effects={mockEffect}
         onChange={(data) => {
@@ -313,7 +392,8 @@ const TimeLine = () => {
 
           return renderers[effectId]?.() || null;
         }}
-      />
+        />
+      </div>
     </div>
   );
 };
