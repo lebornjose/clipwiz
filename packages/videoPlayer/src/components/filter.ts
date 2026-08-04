@@ -25,3 +25,29 @@ export const addFilter = (editor: Editor, _trackId: string, item: IFilterTrackIt
     routedNodes: new Map(),
   })
 }
+
+/** 将滤镜稳定地路由到当前视频节点。effect 节点只允许一个输入。 */
+export const syncFilterRoute = (
+  editor: Editor,
+  filter: FilterEffect,
+  node: any,
+): void => {
+  const routedNode = filter.routedNodes.keys().next().value
+  if (routedNode === node) return
+
+  filter.effectNode.disconnect(editor.videoCtx.destination)
+  filter.routedNodes.forEach((originalZIndex: number, routed: any) => {
+    routed.disconnect(filter.effectNode)
+    routed.connect(editor.videoCtx.destination, originalZIndex)
+  })
+  filter.routedNodes.clear()
+
+  if (!node) return
+  const conns: any[] = (editor.videoCtx as any)._renderGraph.getZIndexInputsForNode(editor.videoCtx.destination)
+  const conn = conns.find((candidate: any) => candidate.source === node)
+  const originalZIndex = conn ? conn.zIndex : 0
+  node.disconnect()
+  node.connect(filter.effectNode)
+  filter.effectNode.connect(editor.videoCtx.destination, originalZIndex)
+  filter.routedNodes.set(node, originalZIndex)
+}

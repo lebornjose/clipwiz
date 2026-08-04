@@ -29,6 +29,8 @@ interface EditorState {
   setSelectedAction: (trackId: string, actionId: string) => void
   setSelectedTransitionKey: (key: string | null) => void
   setCurrentTime: (time: number) => void
+  toggleTrackVisibility: (trackId: string) => void
+  deleteTrack: (trackId: string) => void
   deleteSelectedAction: () => void
   deleteSelectedTransition: () => void
   updateTrackItemById: (id: string, patch: Record<string, any>) => void
@@ -59,6 +61,31 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setSelectedTransitionKey: (key) => set({ selectedTransitionKey: key, selectedActionId: null, selectedTrackId: null }),
 
   setCurrentTime: (time) => set({ currentTime: time }),
+
+  toggleTrackVisibility: (trackId) => {
+    const { trackInfo } = get()
+    if (!trackInfo) return
+    const newTracks = trackInfo.tracks.map((track) =>
+      track.trackId === trackId ? { ...track, hide: !track.hide } : track
+    )
+    set((state) => ({
+      trackInfo: { ...trackInfo, tracks: newTracks },
+      trackInfoVersion: state.trackInfoVersion + 1,
+    }))
+  },
+
+  deleteTrack: (trackId) => {
+    const { trackInfo } = get()
+    if (!trackInfo) return
+    const newTracks = trackInfo.tracks.filter((track) => track.trackId !== trackId)
+    set((state) => ({
+      trackInfo: { ...trackInfo, tracks: newTracks },
+      trackInfoVersion: state.trackInfoVersion + 1,
+      selectedActionId: null,
+      selectedTrackId: null,
+      selectedTransitionKey: null,
+    }))
+  },
 
   deleteSelectedAction: () => {
     const { trackInfo, selectedActionId } = get()

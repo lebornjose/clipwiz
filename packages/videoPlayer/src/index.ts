@@ -8,7 +8,7 @@ import { getGifImage } from './components/getBufferImage'
 import Pag from './components/Pag.js'
 import { addSubtitleNode, SubtitleBinding } from './components/subtitle.js'
 import { addTextNode, TextBinding } from './components/text.js'
-import { addFilter, FilterEffect } from './components/filter.js'
+import { addFilter, FilterEffect, syncFilterRoute } from './components/filter.js'
 
 export interface IApplicationOptions {
   canvas: HTMLCanvasElement
@@ -333,20 +333,10 @@ export class Editor {
         node.stopTime > time
 
       if (inRange && !filter.active) {
-        // 进入滤镜区间：videoNode 路由到 effectNode，effectNode 以原 zIndex 接入 destination
+        // 进入滤镜区间：effectNode 只有一个输入，只路由当前最上层视频节点
         filter.active = true
-        sourceNodes.forEach((node: any) => {
-          if (isFilterable(node)) {
-            const conns: any[] = (this.videoCtx as any)._renderGraph.getZIndexInputsForNode(this.videoCtx.destination)
-            const conn = conns.find((c: any) => c.source === node)
-            const originalZIndex = conn ? conn.zIndex : 0
-            node.disconnect()
-            node.connect(filter.effectNode)
-            // effectNode 以视频节点原来的 zIndex 接入 destination，保持渲染层级
-            filter.effectNode.connect(this.videoCtx.destination, originalZIndex)
-            filter.routedNodes.set(node, originalZIndex)
-          }
-        })
+        const activeNode = [...sourceNodes].reverse().find(isFilterable)
+        syncFilterRoute(this, filter, activeNode)
       } else if (!inRange && filter.active) {
         // 离开滤镜区间：effectNode 断开，videoNode 以原始 zIndex 恢复到 destination
         filter.active = false
@@ -357,17 +347,9 @@ export class Editor {
         })
         filter.routedNodes.clear()
       } else if (inRange && filter.active) {
-        // 仍在滤镜区间内：补路由新进入的活跃节点
-        sourceNodes.forEach((node: any) => {
-          if (isFilterable(node) && !filter.routedNodes.has(node)) {
-            const conns: any[] = (this.videoCtx as any)._renderGraph.getZIndexInputsForNode(this.videoCtx.destination)
-            const conn = conns.find((c: any) => c.source === node)
-            const originalZIndex = conn ? conn.zIndex : 0
-            node.disconnect()
-            node.connect(filter.effectNode)
-            filter.routedNodes.set(node, originalZIndex)
-          }
-        })
+        // 仍在滤镜区间内：视频切段或转场时切换唯一的滤镜输入
+        const activeNode = [...sourceNodes].reverse().find(isFilterable)
+        syncFilterRoute(this, filter, activeNode)
       }
     }
   }
